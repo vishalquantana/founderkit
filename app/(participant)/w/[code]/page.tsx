@@ -1,5 +1,5 @@
 import { getWorkshopByJoinCode } from "@/db/queries/workshops";
-import { ConsentGate } from "@/components/participant/ConsentGate";
+import { ParticipantWizard } from "@/components/participant/ParticipantWizard";
 import { workshopJoinState } from "./join-state";
 import { NotLive } from "./not-live";
 
@@ -16,5 +16,14 @@ export default async function WorkshopJoinPage({
     return <NotLive state={state} />;
   }
 
-  return <ConsentGate consentText={workshop!.consentText} />;
+  return (
+    <ParticipantWizard
+      workshop={{
+        id: workshop!.id,
+        joinCode: workshop!.joinCode,
+        name: workshop!.name,
+        consentText: workshop!.consentText,
+      }}
+    />
+  );
 }
