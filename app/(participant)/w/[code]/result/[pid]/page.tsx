@@ -63,6 +63,8 @@ export default async function ResultPage({
       answers={answers}
       founderName={participant!.founderName}
       startupName={participant!.startupName}
+      code={code}
+      pid={pid}
     />
   );
 }

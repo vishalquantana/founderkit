@@ -15,6 +15,8 @@ export interface ResultViewProps {
   answers: Record<SectionKey, string>;
   founderName: string;
   startupName: string;
+  code: string;
+  pid: string;
 }
 
 const containerVariants: Variants = {
@@ -47,7 +49,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
  * breakdown toggle (score hidden until requested), and the interactive
  * lean canvas board. Warm, mobile-first, never leads with the number.
  */
-export function ResultView({ result, answers, founderName, startupName }: ResultViewProps) {
+export function ResultView({ result, answers, founderName, startupName, code, pid }: ResultViewProps) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const colors = stageColorClasses(result.readinessStage);
@@ -72,6 +74,28 @@ export function ResultView({ result, answers, founderName, startupName }: Result
         <StageReveal className="relative">
           <StageBadge stage={result.readinessStage} />
         </StageReveal>
+
+        <a
+          href={`/w/${code}/result/${pid}/pdf`}
+          className="relative inline-flex items-center gap-2 rounded-full border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 shadow-sm transition hover:bg-purple-50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+            aria-hidden="true"
+          >
+            <path d="M12 3v12" />
+            <path d="m7 10 5 5 5-5" />
+            <path d="M5 21h14" />
+          </svg>
+          Download PDF
+        </a>
       </div>
 
       <motion.div
