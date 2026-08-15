@@ -53,12 +53,20 @@ export default async function WorkshopDetailPage({
             Join code <span className="font-mono font-semibold tracking-widest">{workshop!.joinCode}</span>
           </p>
         </div>
-        <Link
-          href={`/present/${id}`}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
-        >
-          Open Present mode
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/api/workshops/${id}/export`}
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+          >
+            Download CSV
+          </a>
+          <Link
+            href={`/present/${id}`}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+          >
+            Open Present mode
+          </Link>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
