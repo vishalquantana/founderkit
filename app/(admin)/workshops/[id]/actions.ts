@@ -1,0 +1,31 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
+import { getWorkshopById } from "@/db/queries/workshops";
+import { setWorkshopStatus, setWorkshopSettings } from "@/db/queries/admin";
+import type { WorkshopStatus } from "@/db/schema";
+import type { WorkshopSettings } from "@/db/queries/workshops";
+import { assertOwnership } from "./ownership";
+
+export async function updateStatus(id: string, status: WorkshopStatus): Promise<void> {
+  const session = await auth();
+  const workshop = await getWorkshopById(id);
+  if (!assertOwnership(session?.user?.id, workshop)) {
+    throw new Error("Not authorized to update this workshop.");
+  }
+
+  await setWorkshopStatus(id, status);
+  revalidatePath(`/workshops/${id}`);
+}
+
+export async function updateSettings(id: string, settings: WorkshopSettings): Promise<void> {
+  const session = await auth();
+  const workshop = await getWorkshopById(id);
+  if (!assertOwnership(session?.user?.id, workshop)) {
+    throw new Error("Not authorized to update this workshop.");
+  }
+
+  await setWorkshopSettings(id, settings);
+  revalidatePath(`/workshops/${id}`);
+}
