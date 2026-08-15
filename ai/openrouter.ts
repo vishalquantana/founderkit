@@ -1,0 +1,72 @@
+import { EvaluationResultSchema, type EvaluationResult } from "./schema";
+import { SYSTEM_PROMPT, buildScoringPrompt, type ScoringPromptInput } from "./prompts";
+
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+const INVALID_OUTPUT_NOTE =
+  "Your previous output was invalid JSON for the schema; return only valid JSON matching the required shape.";
+
+export function hasOpenRouterKey(): boolean {
+  return !!process.env.OPENROUTER_API_KEY;
+}
+
+type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+
+async function callOpenRouter(messages: ChatMessage[]): Promise<unknown> {
+  const response = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_SCORE_MODEL,
+      messages,
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenRouter request failed with status ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data?.choices?.[0]?.message?.content;
+
+  if (typeof content !== "string") {
+    throw new Error("OpenRouter response missing message content");
+  }
+
+  return JSON.parse(content);
+}
+
+export async function openRouterEvaluate(input: ScoringPromptInput): Promise<EvaluationResult> {
+  const userPrompt = buildScoringPrompt(input);
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "user", content: userPrompt },
+  ];
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const parsed = await callOpenRouter(messages);
+      const result = EvaluationResultSchema.safeParse(parsed);
+      if (result.success) {
+        return result.data;
+      }
+      if (attempt === 0) {
+        messages.push({ role: "user", content: INVALID_OUTPUT_NOTE });
+        continue;
+      }
+      throw new Error(`OpenRouter output failed schema validation: ${result.error.message}`);
+    } catch (error) {
+      if (attempt === 0 && error instanceof SyntaxError) {
+        messages.push({ role: "user", content: INVALID_OUTPUT_NOTE });
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("OpenRouter evaluation failed after retry");
+}
