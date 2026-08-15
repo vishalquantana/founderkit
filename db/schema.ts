@@ -53,6 +53,7 @@ export const participants = sqliteTable("participants", {
   consentFollowup: integer("consent_followup", { mode: "boolean" }).notNull().default(false),
   createdAt: createdAt(),
   completedAt: integer("completed_at", { mode: "timestamp" }),
+  resultEmailedAt: integer("result_emailed_at", { mode: "timestamp" }),
 });
 
 export const responses = sqliteTable("responses", {

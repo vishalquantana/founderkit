@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createParticipant, completeParticipant } from "@/db/queries/participants";
 import { saveResponse } from "@/db/queries/responses";
 import { getWorkshopById } from "@/db/queries/workshops";
+import { maybeEmailResult } from "@/email/send-result";
 import type { SectionKey } from "@/db/schema";
 
 const PID_COOKIE = "mrs_pid";
@@ -69,4 +70,5 @@ export async function saveSectionAnswer(input: {
 export async function finishParticipant(participantId: string): Promise<void> {
   await assertOwnsParticipant(participantId);
   await completeParticipant(participantId);
+  await maybeEmailResult(participantId).catch(() => {});
 }

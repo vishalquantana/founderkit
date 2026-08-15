@@ -24,6 +24,10 @@ export async function completeParticipant(id: string): Promise<void> {
   await db.update(participants).set({ completedAt: new Date() }).where(eq(participants.id, id));
 }
 
+export async function markResultEmailed(id: string): Promise<void> {
+  await db.update(participants).set({ resultEmailedAt: new Date() }).where(eq(participants.id, id));
+}
+
 export async function countByWorkshop(workshopId: string): Promise<number> {
   const [row] = await db.select({ n: count() }).from(participants)
     .where(eq(participants.workshopId, workshopId));

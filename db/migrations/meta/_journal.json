@@ -15,6 +15,13 @@
       "when": 1786815223254,
       "tag": "0001_dapper_vin_gonzales",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786815475105,
+      "tag": "0002_rare_gamora",
+      "breakpoints": true
     }
   ]
 }

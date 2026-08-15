@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { createParticipant, saveResponse, completeParticipant, getWorkshopById } = vi.hoisted(() => ({
+const { createParticipant, saveResponse, completeParticipant, getWorkshopById, maybeEmailResult } = vi.hoisted(() => ({
   createParticipant: vi.fn(),
   saveResponse: vi.fn(),
   completeParticipant: vi.fn(),
   getWorkshopById: vi.fn(),
+  maybeEmailResult: vi.fn(),
 }));
 vi.mock("@/db/queries/participants", () => ({ createParticipant, completeParticipant }));
 vi.mock("@/db/queries/responses", () => ({ saveResponse }));
 vi.mock("@/db/queries/workshops", () => ({ getWorkshopById }));
+vi.mock("@/email/send-result", () => ({ maybeEmailResult }));
 
 // Simple in-memory cookie store standing in for next/headers' cookies().
 const cookieStore = new Map<string, string>();
@@ -26,6 +28,8 @@ describe("participant actions", () => {
     saveResponse.mockReset();
     completeParticipant.mockReset();
     getWorkshopById.mockReset();
+    maybeEmailResult.mockReset();
+    maybeEmailResult.mockResolvedValue(undefined);
     cookieStore.clear();
   });
 
@@ -93,6 +97,14 @@ describe("participant actions", () => {
   it("finishParticipant completes when the cookie matches", async () => {
     cookieStore.set("mrs_pid", "p1");
     await finishParticipant("p1");
+    expect(completeParticipant).toHaveBeenCalledWith("p1");
+    expect(maybeEmailResult).toHaveBeenCalledWith("p1");
+  });
+
+  it("finishParticipant still completes when maybeEmailResult rejects", async () => {
+    cookieStore.set("mrs_pid", "p1");
+    maybeEmailResult.mockRejectedValue(new Error("email boom"));
+    await expect(finishParticipant("p1")).resolves.toBeUndefined();
     expect(completeParticipant).toHaveBeenCalledWith("p1");
   });
 

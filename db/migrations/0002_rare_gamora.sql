@@ -1,0 +1,1 @@
+ALTER TABLE `participants` ADD `result_emailed_at` integer;
