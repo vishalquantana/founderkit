@@ -73,7 +73,7 @@ export function ParticipantWizard({ workshop }: ParticipantWizardProps) {
     const isLast = sectionIndex === SECTIONS.length - 1;
     if (isLast) {
       await finishParticipant(participantId);
-      router.push(`/w/${workshop.joinCode}/done`);
+      router.push(`/w/${workshop.joinCode}/result/${participantId}`);
       return;
     }
     setStep(sectionIndex + 1);
