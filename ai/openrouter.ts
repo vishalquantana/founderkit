@@ -1,5 +1,6 @@
 import { EvaluationResultSchema, type EvaluationResult } from "./schema";
 import { SYSTEM_PROMPT, buildScoringPrompt, type ScoringPromptInput } from "./prompts";
+import { stageForScore } from "@/lib/readiness";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -52,7 +53,9 @@ export async function openRouterEvaluate(input: ScoringPromptInput): Promise<Eva
       const parsed = await callOpenRouter(messages);
       const result = EvaluationResultSchema.safeParse(parsed);
       if (result.success) {
-        return result.data;
+        // Recompute the stage from the backend score so a model that returns
+        // an inconsistent readinessStage can never persist a mismatched value.
+        return { ...result.data, readinessStage: stageForScore(result.data.backendScore) };
       }
       if (attempt === 0) {
         messages.push({ role: "user", content: INVALID_OUTPUT_NOTE });

@@ -5,15 +5,7 @@ import { newId } from "@/lib/ids";
 import type { EvaluationResult } from "@/ai/schema";
 
 export async function saveResult(participantId: string, r: EvaluationResult): Promise<void> {
-  const existing = await db.query.results.findFirst({
-    where: eq(results.participantId, participantId),
-  });
-  if (existing) {
-    await db.delete(results).where(eq(results.id, existing.id));
-  }
-  await db.insert(results).values({
-    id: newId(),
-    participantId,
+  const values = {
     backendScore: r.backendScore,
     dimensionScores: r.dimensionScores,
     readinessStage: r.readinessStage,
@@ -24,7 +16,11 @@ export async function saveResult(participantId: string, r: EvaluationResult): Pr
     sevenDayPlan: r.sevenDayPlan,
     improvedPitch: r.improvedPitch,
     reflectionQuestion: r.reflectionQuestion,
-  });
+  };
+  await db
+    .insert(results)
+    .values({ id: newId(), participantId, ...values })
+    .onConflictDoUpdate({ target: results.participantId, set: values });
 }
 
 export async function getResult(participantId: string): Promise<EvaluationResult | undefined> {

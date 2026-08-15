@@ -8,7 +8,9 @@ export const authConfig = {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       const isProtected =
-        pathname.startsWith("/dashboard") || pathname.startsWith("/workshops");
+        pathname.startsWith("/dashboard") ||
+        pathname.startsWith("/workshops") ||
+        pathname.startsWith("/present");
       if (isProtected) return !!auth?.user;
       return true;
     },

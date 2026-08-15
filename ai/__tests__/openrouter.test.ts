@@ -19,6 +19,17 @@ describe("openRouterEvaluate", () => {
     expect(r.readinessStage).toBe("mvp_candidate");
   });
 
+  it("overrides an inconsistent model-provided stage with the score-derived stage", async () => {
+    const inconsistent = { ...validJson, backendScore: 5, readinessStage: "revenue_ready" };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: JSON.stringify(inconsistent) } }],
+    }))));
+    const { openRouterEvaluate } = await import("../openrouter");
+    const r = await openRouterEvaluate({ participant: { founderName: "A", startupName: "S" }, responses: [] });
+    expect(r.backendScore).toBe(5);
+    expect(r.readinessStage).toBe("idea_clarity");
+  });
+
   it("retries once then throws on persistently invalid output", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({
       choices: [{ message: { content: JSON.stringify({ bad: true }) } }],

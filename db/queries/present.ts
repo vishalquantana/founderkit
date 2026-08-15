@@ -24,8 +24,10 @@ export async function getPresentData(workshopId: string): Promise<{
     where: eq(participants.workshopId, workshopId),
   });
 
+  const completedParticipants = parts.filter((p) => p.completedAt != null);
+
   const problems: string[] = [];
-  for (const p of parts) {
+  for (const p of completedParticipants) {
     const problemResponses = await db.query.responses.findMany({
       where: eq(responses.participantId, p.id),
     });
@@ -36,7 +38,6 @@ export async function getPresentData(workshopId: string): Promise<{
     }
   }
 
-  const completedParticipants = parts.filter((p) => p.completedAt != null);
   const progression: { alias: string; stage: ReadinessStage }[] = [];
   let index = 0;
   for (const p of completedParticipants) {
