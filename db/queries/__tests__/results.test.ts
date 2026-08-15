@@ -47,7 +47,7 @@ const RESULT: EvaluationResult = {
 describe("results queries", () => {
   beforeEach(async () => {
     await client.execute("PRAGMA foreign_keys=OFF");
-    for (const t of ["results", "responses", "participants", "workshops", "users"]) {
+    for (const t of ["otp_codes", "results", "responses", "participants", "workshops", "users"]) {
       await client.execute(`DROP TABLE IF EXISTS ${t}`);
     }
     await migrate();

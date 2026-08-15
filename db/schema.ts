@@ -11,6 +11,15 @@ const id = () => text("id").primaryKey();
 const createdAt = () =>
   integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`);
 
+export const otpCodes = sqliteTable("otp_codes", {
+  id: id(),
+  email: text("email").notNull(),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  consumedAt: integer("consumed_at", { mode: "timestamp" }),
+  createdAt: createdAt(),
+});
+
 export const users = sqliteTable("users", {
   id: id(),
   email: text("email").notNull().unique(),

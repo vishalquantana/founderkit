@@ -18,24 +18,36 @@ async function migrate() {
   }
 }
 
-describe("workshop queries", () => {
+describe("otp queries", () => {
   beforeEach(async () => {
     await client.execute("PRAGMA foreign_keys=OFF");
     for (const t of ["otp_codes", "results", "responses", "participants", "workshops", "users"]) {
       await client.execute(`DROP TABLE IF EXISTS ${t}`);
     }
     await migrate();
-    await testDb.insert(schema.users).values({
-      id: "u1", email: "a@b.com", passwordHash: "x", name: "Admin",
-    });
   });
 
-  it("creates a workshop with a join code and defaults", async () => {
-    const { createWorkshop, getWorkshopByJoinCode } = await import("../workshops");
-    const w = await createWorkshop({ ownerId: "u1", name: "Tripura" });
-    expect(w.joinCode).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
-    expect(w.status).toBe("draft");
-    const found = await getWorkshopByJoinCode(w.joinCode);
-    expect(found?.id).toBe(w.id);
+  it("creates, finds active, then consumes an otp code", async () => {
+    const { createOtp, findActiveOtp, consumeOtp } = await import("../otp");
+    const future = new Date(Date.now() + 10 * 60 * 1000);
+    await createOtp("a@b.com", "hashedcode", future);
+
+    const active = await findActiveOtp("a@b.com");
+    expect(active).toBeDefined();
+    expect(active?.codeHash).toBe("hashedcode");
+
+    await consumeOtp(active!.id);
+
+    const after = await findActiveOtp("a@b.com");
+    expect(after).toBeUndefined();
+  });
+
+  it("does not return expired codes", async () => {
+    const { createOtp, findActiveOtp } = await import("../otp");
+    const past = new Date(Date.now() - 60 * 1000);
+    await createOtp("expired@b.com", "hashedcode", past);
+
+    const active = await findActiveOtp("expired@b.com");
+    expect(active).toBeUndefined();
   });
 });
