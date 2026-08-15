@@ -16,7 +16,7 @@ export function NotLive({ state }: { state: NotLiveState }) {
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -25,7 +25,7 @@ export function NotLive({ state }: { state: NotLiveState }) {
           strokeWidth={1.6}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="h-7 w-7 text-amber-500"
+          className="h-7 w-7 text-[#f472b6]"
           aria-hidden="true"
         >
           <path d="M12 8v4" />
@@ -33,8 +33,8 @@ export function NotLive({ state }: { state: NotLiveState }) {
           <circle cx="12" cy="12" r="9" />
         </svg>
       </div>
-      <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
-      <p className="max-w-xs text-sm leading-relaxed text-slate-500">{body}</p>
+      <h1 className="font-display text-xl font-extrabold tracking-tight text-[#ECEAF6]">{title}</h1>
+      <p className="max-w-xs text-sm leading-relaxed text-[#A9A9C9]">{body}</p>
     </main>
   );
 }

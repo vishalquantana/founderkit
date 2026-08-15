@@ -1,26 +1,161 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Pulse design system tokens */
+  --background: #0a0a14;
+  --foreground: #eceaf6;
+  --muted: #a9a9c9;
+
+  --pulse-bg-gradient:
+    radial-gradient(100% 70% at 80% 0%, #2a0f4d 0%, transparent 60%),
+    radial-gradient(90% 60% at 0% 100%, #160a28 0%, transparent 60%),
+    #0a0a14;
+
+  --pulse-surface: rgba(255, 255, 255, 0.04);
+  --pulse-surface-strong: rgba(255, 255, 255, 0.07);
+  --pulse-border: rgba(255, 255, 255, 0.09);
+  --pulse-border-strong: rgba(255, 255, 255, 0.14);
+
+  --pulse-violet: #8b5cf6;
+  --pulse-pink: #f472b6;
+  --pulse-gold: #f4c748;
+  --pulse-gradient: linear-gradient(135deg, #8b5cf6, #f472b6);
+
+  --pulse-text: #eceaf6;
+  --pulse-text-muted: #a9a9c9;
+  --pulse-kicker: #f472b6;
+
+  /* stage colors (semantic, glow tints on dark) */
+  --stage-idea: #94a3b8;
+  --stage-discovery: #60a5fa;
+  --stage-mvp: #a78bfa;
+  --stage-pilot: #4ade80;
+  --stage-revenue: #f4c748;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 }
 
 body {
-  background: var(--background);
+  background: var(--pulse-bg-gradient);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), "Chakra Petch", sans-serif;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), "Orbitron", sans-serif;
+  }
+
+  .text-gradient {
+    background: var(--pulse-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .pulse-card {
+    background: var(--pulse-surface);
+    border: 1px solid var(--pulse-border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px -30px rgba(139, 92, 246, 0.35);
+  }
+
+  .pulse-kicker {
+    color: var(--pulse-kicker);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  .pulse-btn {
+    font-family: var(--font-body), "Chakra Petch", sans-serif;
+    background: var(--pulse-gradient);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    border-radius: 9999px;
+    box-shadow: 0 8px 30px -8px rgba(139, 92, 246, 0.6);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  .pulse-btn:hover {
+    box-shadow: 0 10px 36px -6px rgba(244, 114, 182, 0.65);
+  }
+
+  .pulse-btn:disabled {
+    opacity: 0.5;
+    box-shadow: none;
+  }
+
+  .pulse-btn-secondary {
+    font-family: var(--font-body), "Chakra Petch", sans-serif;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--pulse-text);
+    border: 1px solid var(--pulse-border-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    border-radius: 9999px;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .pulse-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+
+  .pulse-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--pulse-text);
+    border-radius: 0.75rem;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .pulse-input::placeholder {
+    color: var(--pulse-text-muted);
+  }
+
+  .pulse-input:focus {
+    outline: none;
+    border-color: var(--pulse-violet);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  }
+
+  .pulse-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--pulse-text-muted);
+    border-radius: 9999px;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .pulse-chip[data-selected="true"],
+  .pulse-chip.is-selected {
+    background: var(--pulse-gradient);
+    border-color: transparent;
+    color: #fff;
+  }
 }

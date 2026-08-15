@@ -14,12 +14,14 @@ export function LoginTabs({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+      <div className="flex gap-1 rounded-full border border-white/10 bg-white/5 p-1">
         <button
           type="button"
           onClick={() => setTab("password")}
-          className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            tab === "password" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+          className={`flex-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
+            tab === "password"
+              ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow-[0_8px_24px_-8px_rgba(139,92,246,0.6)]"
+              : "text-[#A9A9C9] hover:text-[#ECEAF6]"
           }`}
         >
           Password
@@ -27,8 +29,10 @@ export function LoginTabs({
         <button
           type="button"
           onClick={() => setTab("otp")}
-          className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            tab === "otp" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+          className={`flex-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
+            tab === "otp"
+              ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow-[0_8px_24px_-8px_rgba(139,92,246,0.6)]"
+              : "text-[#A9A9C9] hover:text-[#ECEAF6]"
           }`}
         >
           Email code
@@ -52,18 +56,16 @@ function PasswordForm({ action }: { action: (formData: FormData) => Promise<void
         type="email"
         placeholder="Email"
         required
-        className="rounded-lg border px-3 py-2"
+        className="pulse-input px-3 py-2 outline-none"
       />
       <input
         name="password"
         type="password"
         placeholder="Password"
         required
-        className="rounded-lg border px-3 py-2"
+        className="pulse-input px-3 py-2 outline-none"
       />
-      <button className="rounded-lg bg-slate-900 px-4 py-2 font-medium text-white">
-        Sign in
-      </button>
+      <button className="pulse-btn px-4 py-2">Sign in</button>
     </form>
   );
 }
@@ -93,7 +95,7 @@ function OtpForm() {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="rounded-lg border px-3 py-2"
+        className="pulse-input px-3 py-2 outline-none"
       />
 
       {!sent ? (
@@ -101,13 +103,13 @@ function OtpForm() {
           type="button"
           onClick={handleSendCode}
           disabled={!email || isPending}
-          className="rounded-lg bg-slate-900 px-4 py-2 font-medium text-white disabled:opacity-50"
+          className="pulse-btn px-4 py-2"
         >
           {isPending ? "Sending..." : "Send code"}
         </button>
       ) : (
         <>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[#A9A9C9]">
             We sent a 6-digit code to {email} if an account exists. Check your inbox.
           </p>
           <input
@@ -120,16 +122,14 @@ function OtpForm() {
             required
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="rounded-lg border px-3 py-2 tracking-widest"
+            className="pulse-input px-3 py-2 tracking-widest outline-none"
           />
-          <button className="rounded-lg bg-slate-900 px-4 py-2 font-medium text-white">
-            Sign in
-          </button>
+          <button className="pulse-btn px-4 py-2">Sign in</button>
           <button
             type="button"
             onClick={handleSendCode}
             disabled={isPending}
-            className="text-sm font-medium text-slate-500 underline disabled:opacity-50"
+            className="text-sm font-medium text-[#A9A9C9] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[#ECEAF6] disabled:opacity-50"
           >
             {isPending ? "Sending..." : "Resend code"}
           </button>

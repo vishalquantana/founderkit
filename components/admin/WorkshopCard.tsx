@@ -17,9 +17,9 @@ export interface WorkshopCardProps {
 }
 
 const STATUS_STYLES: Record<WorkshopStatus, string> = {
-  draft: "border-amber-200 bg-amber-50 text-amber-700",
-  live: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  closed: "border-slate-200 bg-slate-100 text-slate-600",
+  draft: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+  live: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  closed: "border-white/15 bg-white/5 text-[#A9A9C9]",
 };
 
 const STATUS_LABELS: Record<WorkshopStatus, string> = {
@@ -43,10 +43,13 @@ export function WorkshopCard({ id, name, status, joinCode, participantCount, ind
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 26, delay: index * 0.05 }}
-      className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+      className="pulse-card flex flex-col gap-4 p-5 transition-shadow hover:shadow-[0_24px_70px_-30px_rgba(139,92,246,0.5)]"
     >
       <div className="flex items-start justify-between gap-3">
-        <Link href={`/workshops/${id}`} className="font-semibold text-slate-900 hover:text-indigo-600">
+        <Link
+          href={`/workshops/${id}`}
+          className="font-display font-semibold text-[#ECEAF6] transition-colors hover:text-gradient"
+        >
           {name}
         </Link>
         <span
@@ -58,27 +61,23 @@ export function WorkshopCard({ id, name, status, joinCode, participantCount, ind
 
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Participants</p>
-          <AnimatedNumber value={participantCount} className="text-2xl font-semibold text-slate-900" />
+          <p className="text-xs font-medium uppercase tracking-wide text-[#A9A9C9]">Participants</p>
+          <AnimatedNumber
+            value={participantCount}
+            className="font-display text-gradient text-2xl font-bold"
+          />
         </div>
         <div className="text-right">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Join code</p>
-          <p className="font-mono text-lg font-semibold tracking-widest text-slate-700">{joinCode}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-[#A9A9C9]">Join code</p>
+          <p className="font-mono text-lg font-semibold tracking-widest text-[#ECEAF6]">{joinCode}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowQr((v) => !v)}
-          className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-indigo-200 hover:bg-indigo-50/60"
-        >
+        <button type="button" onClick={() => setShowQr((v) => !v)} className="pulse-btn-secondary flex-1 px-3 py-1.5 text-sm">
           {showQr ? "Hide QR" : "Show QR"}
         </button>
-        <Link
-          href={`/workshops/${id}`}
-          className="flex-1 rounded-lg bg-slate-900 px-3 py-1.5 text-center text-sm font-medium text-white transition-colors hover:bg-slate-800"
-        >
+        <Link href={`/workshops/${id}`} className="pulse-btn flex-1 px-3 py-1.5 text-center text-sm">
           Open
         </Link>
       </div>

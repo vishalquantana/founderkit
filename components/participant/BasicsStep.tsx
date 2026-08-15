@@ -73,66 +73,66 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
       className="flex flex-1 flex-col gap-6"
     >
       <div className="flex flex-col gap-1 text-center">
-        <h1 className="text-xl font-semibold text-slate-800">Let&apos;s start with the basics</h1>
-        <p className="text-sm text-slate-500">A little about you and your startup.</p>
+        <h1 className="font-display text-xl font-extrabold tracking-tight text-[#ECEAF6]">Let&apos;s start with the basics</h1>
+        <p className="text-sm text-[#A9A9C9]">A little about you and your startup.</p>
       </div>
 
       <div className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-slate-600">Your name</span>
+          <span className="text-sm font-medium text-[#A9A9C9]">Your name</span>
           <input
             type="text"
             value={values.founderName}
             onChange={(e) => update("founderName", e.target.value)}
             placeholder="e.g. Asha Rao"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            className="pulse-input w-full px-4 py-3 text-sm outline-none"
           />
           {touched && !values.founderName.trim() && (
-            <span className="text-xs text-rose-500">This field is required.</span>
+            <span className="text-xs text-rose-400">This field is required.</span>
           )}
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-slate-600">Startup name</span>
+          <span className="text-sm font-medium text-[#A9A9C9]">Startup name</span>
           <input
             type="text"
             value={values.startupName}
             onChange={(e) => update("startupName", e.target.value)}
             placeholder="e.g. KiranaConnect"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            className="pulse-input w-full px-4 py-3 text-sm outline-none"
           />
           {touched && !values.startupName.trim() && (
-            <span className="text-xs text-rose-500">This field is required.</span>
+            <span className="text-xs text-rose-400">This field is required.</span>
           )}
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-slate-600">Phone or email</span>
+          <span className="text-sm font-medium text-[#A9A9C9]">Phone or email</span>
           <input
             type="text"
             value={values.contact}
             onChange={(e) => update("contact", e.target.value)}
             placeholder="So we can send your snapshot"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            className="pulse-input w-full px-4 py-3 text-sm outline-none"
           />
           {touched && !values.contact.trim() && (
-            <span className="text-xs text-rose-500">This field is required.</span>
+            <span className="text-xs text-rose-400">This field is required.</span>
           )}
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-slate-600">Sector (optional)</span>
+          <span className="text-sm font-medium text-[#A9A9C9]">Sector (optional)</span>
           <input
             type="text"
             value={values.sector}
             onChange={(e) => update("sector", e.target.value)}
             placeholder="e.g. Fintech, EdTech, Retail"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            className="pulse-input w-full px-4 py-3 text-sm outline-none"
           />
         </label>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-slate-600">Stage</legend>
+          <legend className="text-sm font-medium text-[#A9A9C9]">Stage</legend>
           <div className="flex flex-wrap gap-2">
             {STAGE_OPTIONS.map((opt) => (
               <Chip
@@ -147,7 +147,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-slate-600">Product type</legend>
+          <legend className="text-sm font-medium text-[#A9A9C9]">Product type</legend>
           <div className="flex flex-wrap gap-2">
             {PRODUCT_TYPE_OPTIONS.map((opt) => (
               <Chip
@@ -162,7 +162,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-slate-600">Team size</legend>
+          <legend className="text-sm font-medium text-[#A9A9C9]">Team size</legend>
           <div className="flex flex-wrap gap-2">
             {TEAM_SIZE_OPTIONS.map((opt) => (
               <Chip
@@ -177,7 +177,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-slate-600">Business model</legend>
+          <legend className="text-sm font-medium text-[#A9A9C9]">Business model</legend>
           <div className="flex flex-wrap gap-2">
             {BUSINESS_MODEL_OPTIONS.map((opt) => (
               <Chip
@@ -191,12 +191,12 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
           </div>
         </fieldset>
 
-        <label className="flex items-start gap-3 rounded-xl bg-white/60 p-3 text-sm text-slate-600">
+        <label className="flex items-start gap-3 rounded-xl bg-white/5 p-3 text-sm text-[#ECEAF6]">
           <input
             type="checkbox"
             checked={values.consentFollowup}
             onChange={(e) => update("consentFollowup", e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-500 focus:ring-indigo-400"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 text-[#8b5cf6] focus:ring-[#8b5cf6]"
           />
           <span>You can follow up with me about my results or upcoming programs.</span>
         </label>
@@ -206,7 +206,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         type="submit"
         disabled={submitting}
         whileTap={{ scale: 0.97 }}
-        className="w-full rounded-full bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+        className="pulse-btn w-full px-5 py-3"
       >
         {submitting ? "Starting…" : "Continue"}
       </motion.button>

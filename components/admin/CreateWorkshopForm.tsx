@@ -25,10 +25,10 @@ export function CreateWorkshopForm() {
     <form
       ref={formRef}
       action={handleSubmit}
-      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end"
+      className="pulse-card flex flex-col gap-3 p-5 sm:flex-row sm:items-end"
     >
       <div className="flex-1">
-        <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-600">
+        <label htmlFor="name" className="mb-1 block text-sm font-medium text-[#A9A9C9]">
           New workshop name
         </label>
         <input
@@ -37,7 +37,7 @@ export function CreateWorkshopForm() {
           type="text"
           required
           placeholder="e.g. Founders Sprint — August"
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+          className="pulse-input w-full px-3 py-2 text-sm outline-none"
         />
       </div>
       <motion.button
@@ -46,12 +46,12 @@ export function CreateWorkshopForm() {
         whileTap={{ scale: 0.97 }}
         whileHover={isPending ? undefined : { scale: 1.01 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="pulse-btn inline-flex items-center justify-center px-4 py-2 text-sm disabled:cursor-not-allowed"
       >
         {isPending ? "Creating…" : "Create workshop"}
       </motion.button>
       {error && (
-        <p role="alert" className="text-sm font-medium text-rose-600 sm:basis-full">
+        <p role="alert" className="text-sm font-medium text-rose-400 sm:basis-full">
           {error}
         </p>
       )}

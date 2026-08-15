@@ -45,25 +45,22 @@ export default async function WorkshopDetailPage({
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 p-6 sm:p-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Link href="/dashboard" className="text-sm text-slate-400 hover:text-slate-600">
+          <Link href="/dashboard" className="text-sm text-[#A9A9C9] transition-colors hover:text-[#ECEAF6]">
             ← Back to workshops
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">{workshop!.name}</h1>
-          <p className="text-sm text-slate-500">
-            Join code <span className="font-mono font-semibold tracking-widest">{workshop!.joinCode}</span>
+          <h1 className="font-display text-gradient mt-1 text-2xl font-bold">{workshop!.name}</h1>
+          <p className="text-sm text-[#A9A9C9]">
+            Join code{" "}
+            <span className="font-mono font-semibold tracking-widest text-[#ECEAF6]">
+              {workshop!.joinCode}
+            </span>
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <a
-            href={`/api/workshops/${id}/export`}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-          >
+          <a href={`/api/workshops/${id}/export`} className="pulse-btn-secondary px-4 py-2 text-sm">
             Download CSV
           </a>
-          <Link
-            href={`/present/${id}`}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
-          >
+          <Link href={`/present/${id}`} className="pulse-btn px-4 py-2 text-sm">
             Open Present mode
           </Link>
         </div>
@@ -74,14 +71,14 @@ export default async function WorkshopDetailPage({
           <StatsPanel workshopId={id} initialStats={stats} />
 
           <div>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
               Submissions
             </h2>
             <SubmissionsTable submissions={submissionRows} />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="pulse-card p-5">
           <WorkshopControls
             workshopId={id}
             status={workshop!.status as WorkshopStatus}

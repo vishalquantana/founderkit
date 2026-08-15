@@ -11,9 +11,14 @@ export default function LoginPage() {
     });
   }
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6">
-      <h1 className="text-2xl font-semibold">Presenter sign in</h1>
-      <LoginTabs passwordAction={login} />
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
+      <div>
+        <p className="pulse-kicker mb-2">Founders Sprint</p>
+        <h1 className="font-display text-gradient text-3xl font-bold">Presenter sign in</h1>
+      </div>
+      <div className="pulse-card p-6">
+        <LoginTabs passwordAction={login} />
+      </div>
     </main>
   );
 }

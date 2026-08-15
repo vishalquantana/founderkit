@@ -5,12 +5,12 @@ import { buildWordFrequencies } from "@/lib/present";
 import type { PresentData } from "@/components/present/types";
 
 const PALETTE = [
-  "text-sky-300",
-  "text-violet-300",
-  "text-emerald-300",
-  "text-amber-200",
-  "text-pink-300",
-  "text-cyan-300",
+  "text-[var(--pulse-violet)]",
+  "text-[var(--pulse-pink)]",
+  "text-[var(--pulse-gold)]",
+  "text-[var(--stage-mvp)]",
+  "text-[var(--pulse-text)]",
+  "text-[var(--stage-discovery)]",
 ];
 
 function fontSizeFor(count: number, maxCount: number): number {
@@ -33,7 +33,9 @@ export function WordCloudView({ data }: WordCloudViewProps) {
   if (words.length === 0) {
     return (
       <div className="flex min-h-[24rem] items-center justify-center">
-        <p className="text-2xl font-medium text-slate-400">Words will appear here as founders submit problems.</p>
+        <p className="text-2xl font-medium text-[var(--pulse-text-muted)]">
+          Words will appear here as founders submit problems.
+        </p>
       </div>
     );
   }
@@ -58,7 +60,7 @@ export function WordCloudView({ data }: WordCloudViewProps) {
             scale: { delay: i * 0.025, type: "spring", stiffness: 200, damping: 18 },
             y: { delay: i * 0.025 + 0.4, duration: 4 + (i % 5) * 0.4, repeat: Infinity, ease: "easeInOut" },
           }}
-          className={`font-bold leading-none tracking-tight ${PALETTE[i % PALETTE.length]}`}
+          className={`font-display font-bold leading-none tracking-tight ${PALETTE[i % PALETTE.length]}`}
           style={{ fontSize: `${fontSizeFor(w.count, maxCount)}rem` }}
         >
           {w.word}

@@ -5,20 +5,12 @@ import { STAGE_META } from "@/lib/readiness";
 import { STAGE_ORDER } from "@/lib/present";
 import type { PresentData } from "@/components/present/types";
 
-const COLUMN_STYLES: Record<string, string> = {
-  idea_clarity: "border-slate-400/30 bg-slate-400/10",
-  discovery_ready: "border-blue-400/30 bg-blue-400/10",
-  mvp_candidate: "border-violet-400/30 bg-violet-400/10",
-  pilot_ready: "border-emerald-400/30 bg-emerald-400/10",
-  revenue_ready: "border-amber-300/30 bg-amber-300/10",
-};
-
-const CHIP_STYLES: Record<string, string> = {
-  idea_clarity: "bg-slate-500/30 text-slate-100",
-  discovery_ready: "bg-blue-500/30 text-blue-100",
-  mvp_candidate: "bg-violet-500/30 text-violet-100",
-  pilot_ready: "bg-emerald-500/30 text-emerald-100",
-  revenue_ready: "bg-amber-400/30 text-amber-100",
+const STAGE_COLORS: Record<string, string> = {
+  idea_clarity: "var(--stage-idea)",
+  discovery_ready: "var(--stage-discovery)",
+  mvp_candidate: "var(--stage-mvp)",
+  pilot_ready: "var(--stage-pilot)",
+  revenue_ready: "var(--stage-revenue)",
 };
 
 export interface ProgressionViewProps {
@@ -34,21 +26,27 @@ export function ProgressionView({ data }: ProgressionViewProps) {
 
   return (
     <div>
-      <p className="mb-6 text-center text-lg font-medium text-slate-300">
+      <p className="mb-6 text-center text-lg font-medium text-[var(--pulse-text-muted)]">
         Every founder here is further along than when they walked in — celebrate the journey.
       </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {STAGE_ORDER.map((stage, colIndex) => {
           const meta = STAGE_META[stage];
           const entries = byStage.get(stage) ?? [];
+          const stageColor = STAGE_COLORS[stage];
           return (
             <div
               key={stage}
-              className={`flex min-h-[16rem] flex-col gap-3 rounded-2xl border p-4 ${COLUMN_STYLES[stage]}`}
+              className="flex min-h-[16rem] flex-col gap-3 rounded-2xl border p-4"
+              style={{ borderColor: `${stageColor}4d`, backgroundColor: `${stageColor}1a` }}
             >
               <div className="text-center">
-                <p className="text-sm font-bold uppercase tracking-wide text-white">{meta.label}</p>
-                <p className="text-xs text-slate-300">{entries.length} founder{entries.length === 1 ? "" : "s"}</p>
+                <p className="font-display text-sm font-bold uppercase tracking-wide text-[var(--pulse-text)]">
+                  {meta.label}
+                </p>
+                <p className="text-xs text-[var(--pulse-text-muted)]">
+                  {entries.length} founder{entries.length === 1 ? "" : "s"}
+                </p>
               </div>
               <div className="flex flex-1 flex-col gap-2">
                 {entries.map((entry, i) => (
@@ -62,13 +60,14 @@ export function ProgressionView({ data }: ProgressionViewProps) {
                       stiffness: 260,
                       damping: 22,
                     }}
-                    className={`rounded-full px-3 py-1.5 text-center text-sm font-semibold ${CHIP_STYLES[stage]}`}
+                    className="rounded-full px-3 py-1.5 text-center text-sm font-semibold"
+                    style={{ backgroundColor: `${stageColor}4d`, color: "var(--pulse-text)" }}
                   >
                     {entry.alias}
                   </motion.span>
                 ))}
                 {entries.length === 0 && (
-                  <p className="mt-4 text-center text-xs text-slate-500">No founders here yet</p>
+                  <p className="mt-4 text-center text-xs text-[var(--pulse-text-muted)]">No founders here yet</p>
                 )}
               </div>
             </div>

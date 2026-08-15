@@ -53,18 +53,18 @@ export function SectionStep({ section, initialValue, isLast, onNext, onAutosave 
       className="flex flex-1 flex-col gap-5"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-xl font-semibold text-slate-800">{section.heading}</h1>
-        <p className="text-sm leading-relaxed text-slate-600">{section.mainQuestion}</p>
+        <h1 className="font-display text-xl font-extrabold tracking-tight text-[#ECEAF6]">{section.heading}</h1>
+        <p className="text-sm leading-relaxed text-[#ECEAF6]">{section.mainQuestion}</p>
         {section.promptHelp && (
-          <p className="text-xs leading-relaxed text-slate-400">{section.promptHelp}</p>
+          <p className="text-xs leading-relaxed text-[#A9A9C9]">{section.promptHelp}</p>
         )}
         {section.example && (
-          <p className="rounded-xl bg-white/60 p-3 text-xs italic leading-relaxed text-slate-400">
+          <p className="rounded-xl bg-white/5 p-3 text-xs italic leading-relaxed text-[#A9A9C9]">
             e.g. {section.example}
           </p>
         )}
         {section.keyLine && (
-          <p className="text-xs font-medium tracking-wide text-indigo-400">{section.keyLine}</p>
+          <p className="text-xs font-medium tracking-wide text-[#f472b6]">{section.keyLine}</p>
         )}
       </div>
 
@@ -85,21 +85,21 @@ export function SectionStep({ section, initialValue, isLast, onNext, onAutosave 
           onBlur={handleBlur}
           rows={6}
           placeholder="Type your answer here…"
-          className="w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+          className="pulse-input w-full resize-none p-4 text-sm leading-relaxed outline-none"
         />
-        <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex items-center justify-between text-xs text-[#A9A9C9]">
           <span>Aim for around {SUGGESTED_LENGTH} words — a few honest sentences beat a polished paragraph.</span>
           <span className="tabular-nums">{wordCount}w</span>
         </div>
         {touched && !isValid && (
-          <span className="text-xs text-rose-500">This field is required.</span>
+          <span className="text-xs text-rose-400">This field is required.</span>
         )}
       </div>
 
       {/* AI Coach probe card slot (Plan 3): a contextual follow-up question
           with Answer / Skip actions will render here once the response is
           saved. Intentionally left empty for now. */}
-      <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-center text-xs text-slate-300">
+      <div className="pulse-card border-l-2 border-l-[#8b5cf6] p-4 text-center text-xs text-[#A9A9C9]">
         AI Coach follow-up coming soon
       </div>
 
@@ -107,7 +107,7 @@ export function SectionStep({ section, initialValue, isLast, onNext, onAutosave 
         type="button"
         onClick={handleNext}
         whileTap={{ scale: 0.97 }}
-        className="w-full rounded-full bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150"
+        className="pulse-btn w-full px-5 py-3"
       >
         {isLast ? "Finish" : "Next"}
       </motion.button>

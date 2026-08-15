@@ -34,8 +34,8 @@ export function ConsentGate({ consentText, onStart }: ConsentGateProps) {
         transition={{ type: "spring", stiffness: 260, damping: 28 }}
         className="flex flex-1 flex-col items-center justify-center gap-3 text-center"
       >
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-300 border-t-amber-500" />
-        <p className="text-sm font-medium text-slate-500">Starting your snapshot…</p>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#8b5cf6]/30 border-t-[#8b5cf6]" />
+        <p className="text-sm font-medium text-[#A9A9C9]">Starting your snapshot…</p>
       </motion.main>
     );
   }
@@ -48,29 +48,29 @@ export function ConsentGate({ consentText, onStart }: ConsentGateProps) {
       className="flex flex-1 flex-col justify-center gap-6"
     >
       <div className="flex flex-col items-center gap-3 text-center">
-        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium tracking-wide text-amber-700">
+        <span className="pulse-kicker">
           5-minute check-in
         </span>
-        <h1 className="text-2xl font-semibold text-slate-800">MVP Readiness Snapshot</h1>
-        <p className="text-base text-slate-600">
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-gradient">MVP Readiness Snapshot</h1>
+        <p className="text-base text-[#ECEAF6]">
           Find your next best MVP move in 5 minutes.
         </p>
-        <p className="text-sm leading-relaxed text-slate-400">
+        <p className="text-sm leading-relaxed text-[#A9A9C9]">
           This is not an exam. The goal is to help you identify what to validate before
           building too much.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-amber-100 bg-white/70 p-4 shadow-sm">
-        <p className="text-xs leading-relaxed text-slate-500">{consentText}</p>
+      <div className="pulse-card p-4">
+        <p className="text-xs leading-relaxed text-[#A9A9C9]">{consentText}</p>
       </div>
 
-      <label className="flex items-start gap-3 rounded-xl bg-white/60 p-3 text-sm text-slate-600">
+      <label className="flex items-start gap-3 rounded-xl bg-white/5 p-3 text-sm text-[#ECEAF6]">
         <input
           type="checkbox"
           checked={consented}
           onChange={(e) => setConsented(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 text-[#8b5cf6] focus:ring-[#8b5cf6]"
         />
         <span>I understand and agree to continue.</span>
       </label>
@@ -80,7 +80,7 @@ export function ConsentGate({ consentText, onStart }: ConsentGateProps) {
         onClick={handleStart}
         disabled={!consented}
         whileTap={consented ? { scale: 0.97 } : undefined}
-        className="w-full rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+        className="pulse-btn w-full px-5 py-3"
       >
         Start Snapshot
       </motion.button>

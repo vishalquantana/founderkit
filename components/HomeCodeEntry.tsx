@@ -21,12 +21,12 @@ export function HomeCodeEntry() {
         onChange={(e) => setCode(e.target.value.toUpperCase())}
         placeholder="e.g. H2D3G9"
         autoCapitalize="characters"
-        className="w-full rounded-xl border border-[#e9e2d8] bg-white px-3 py-3 font-mono tracking-widest outline-none focus:border-[#6b1f9c]"
+        className="pulse-input w-full px-3 py-3 font-mono tracking-widest outline-none"
       />
       <motion.button
         type="submit"
         whileTap={{ scale: 0.96 }}
-        className="shrink-0 rounded-xl bg-slate-900 px-5 py-3 font-bold text-white"
+        className="pulse-btn shrink-0 px-5 py-3"
       >
         Start
       </motion.button>

@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { STAGE_META } from "@/lib/readiness";
-import { stageColorClasses } from "@/lib/result-view";
 import type { ReadinessStage } from "@/db/schema";
 
 export interface StageDistributionProps {
@@ -18,6 +17,14 @@ const STAGE_ORDER: ReadinessStage[] = [
   "revenue_ready",
 ];
 
+const STAGE_COLOR_VAR: Record<ReadinessStage, string> = {
+  idea_clarity: "var(--stage-idea)",
+  discovery_ready: "var(--stage-discovery)",
+  mvp_candidate: "var(--stage-mvp)",
+  pilot_ready: "var(--stage-pilot)",
+  revenue_ready: "var(--stage-revenue)",
+};
+
 /**
  * Animated horizontal bars showing how many participants landed in each
  * readiness stage, in soft stage colors. Grows from zero on mount/update.
@@ -27,25 +34,26 @@ export function StageDistribution({ distribution, className }: StageDistribution
 
   return (
     <div className={className}>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
         Readiness stage distribution
       </h2>
       <div className="flex flex-col gap-3">
         {STAGE_ORDER.map((stage) => {
           const meta = STAGE_META[stage];
-          const colors = stageColorClasses(stage);
+          const color = STAGE_COLOR_VAR[stage];
           const count = distribution[stage] ?? 0;
           const pct = total > 0 ? Math.round((count / total) * 100) : 0;
 
           return (
             <div key={stage} className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-600">{meta.label}</span>
-                <span className="tabular-nums text-slate-400">{count}</span>
+                <span className="font-medium text-[#ECEAF6]">{meta.label}</span>
+                <span className="tabular-nums text-[#A9A9C9]">{count}</span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/5">
                 <motion.div
-                  className={`h-full rounded-full ${colors.bar}`}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: color, boxShadow: `0 0 12px -2px ${color}` }}
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
                   transition={{ type: "spring", stiffness: 140, damping: 22 }}

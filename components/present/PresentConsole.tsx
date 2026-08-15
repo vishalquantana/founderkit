@@ -65,11 +65,11 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
   const joinUrl = getJoinUrl(joinCode);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-white">
+    <div className="flex min-h-screen flex-col bg-[#0a0a14] text-[var(--pulse-text)]">
       <header className="flex flex-wrap items-center justify-between gap-4 px-8 pt-8">
         <div>
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-slate-400">Present Mode</p>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
+          <p className="pulse-kicker">Present Mode</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
         </div>
         <nav className="flex items-center gap-2" aria-label="View switcher">
           {views.map((view, i) => (
@@ -81,8 +81,8 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
               className={[
                 "rounded-full px-5 py-2 text-sm font-semibold tracking-tight transition-colors duration-150",
                 i === index
-                  ? "bg-white text-slate-900 shadow-lg shadow-white/10"
-                  : "bg-white/5 text-slate-300 hover:bg-white/10",
+                  ? "pulse-btn"
+                  : "pulse-btn-secondary",
               ].join(" ")}
             >
               {VIEW_LABELS[view]}
@@ -108,15 +108,15 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         </AnimatePresence>
       </main>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 bg-black/30 px-8 py-6">
+      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--pulse-border)] bg-black/30 px-8 py-6">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium uppercase tracking-[0.25em] text-slate-400">Join now</span>
-          <span className="font-mono text-3xl font-bold tracking-[0.35em] text-white sm:text-4xl">
+          <span className="pulse-kicker">Join now</span>
+          <span className="font-display text-gradient text-3xl font-bold tracking-[0.35em] sm:text-4xl">
             {joinCode}
           </span>
         </div>
-        <p className="text-lg font-medium text-slate-300 sm:text-xl">{joinUrl}</p>
-        <p className="text-xs text-slate-500">
+        <p className="text-lg font-medium text-[var(--pulse-text-muted)] sm:text-xl">{joinUrl}</p>
+        <p className="text-xs text-[var(--pulse-text-muted)]">
           Use ← / → to switch views · {views.length} view{views.length === 1 ? "" : "s"} live
         </p>
       </footer>

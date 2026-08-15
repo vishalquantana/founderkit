@@ -51,18 +51,14 @@ export function QrPoster({ joinUrl, joinCode, workshopName }: QrPosterProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-      <p className="text-sm font-medium text-slate-500">Scan to join</p>
+    <div className="pulse-card flex flex-col items-center gap-4 p-6 text-center">
+      <p className="pulse-kicker">Scan to join</p>
       <div ref={svgWrapperRef} className="rounded-xl bg-white p-3">
         <QRCodeSVG value={joinUrl} size={QR_SIZE} level="M" includeMargin />
       </div>
-      <p className="font-mono text-3xl font-semibold tracking-[0.2em] text-slate-900">{joinCode}</p>
-      <p className="max-w-xs break-all text-xs text-slate-400">{joinUrl}</p>
-      <button
-        type="button"
-        onClick={handleDownload}
-        className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-800"
-      >
+      <p className="font-display text-gradient text-3xl font-bold tracking-[0.2em]">{joinCode}</p>
+      <p className="max-w-xs break-all text-xs text-[#A9A9C9]">{joinUrl}</p>
+      <button type="button" onClick={handleDownload} className="pulse-btn px-4 py-2 text-sm">
         Download QR (PNG)
       </button>
     </div>

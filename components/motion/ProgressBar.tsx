@@ -23,21 +23,22 @@ export function ProgressBar({ current, total, className }: ProgressBarProps) {
 
   return (
     <div className={className}>
-      <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-slate-500">
+      <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-[#A9A9C9]">
         <span>
           Step {current} of {total}
         </span>
-        <span className="tabular-nums text-slate-400">{pct}%</span>
+        <span className="tabular-nums text-[#7a7a99]">{pct}%</span>
       </div>
       <div
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
-        className="h-2 w-full overflow-hidden rounded-full bg-slate-100"
+        className="h-2 w-full overflow-hidden rounded-full bg-white/10"
       >
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-indigo-500"
+          className="h-full rounded-full"
+          style={{ background: "var(--pulse-gradient)" }}
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ type: "spring", stiffness: 260, damping: 30 }}

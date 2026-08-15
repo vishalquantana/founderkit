@@ -6,9 +6,17 @@ import { StageReveal } from "@/components/motion/StageReveal";
 import { StageBadge } from "@/components/result/StageBadge";
 import { DimensionBars } from "@/components/result/DimensionBars";
 import { CanvasBoard } from "@/components/result/CanvasBoard";
-import { stageColorClasses } from "@/lib/result-view";
 import type { EvaluationResult } from "@/ai/schema";
-import type { SectionKey } from "@/db/schema";
+import type { SectionKey, ReadinessStage } from "@/db/schema";
+
+/** Same stage keys as `lib/result-view.ts`, re-expressed as Pulse glow vars. */
+const STAGE_GLOW_VAR: Record<ReadinessStage, string> = {
+  idea_clarity: "var(--stage-idea)",
+  discovery_ready: "var(--stage-discovery)",
+  mvp_candidate: "var(--stage-mvp)",
+  pilot_ready: "var(--stage-pilot)",
+  revenue_ready: "var(--stage-revenue)",
+};
 
 export interface ResultViewProps {
   result: EvaluationResult;
@@ -38,9 +46,7 @@ function RevealSection({ children }: { children: React.ReactNode }) {
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">{children}</h2>
-  );
+  return <h2 className="pulse-kicker">{children}</h2>;
 }
 
 /**
@@ -52,7 +58,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function ResultView({ result, answers, founderName, startupName, code, pid }: ResultViewProps) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const shouldReduceMotion = useReducedMotion();
-  const colors = stageColorClasses(result.readinessStage);
+  const glow = STAGE_GLOW_VAR[result.readinessStage];
 
   return (
     <div className="flex flex-1 flex-col gap-8 pb-10">
@@ -63,11 +69,12 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: [0, 0.5, 0], scale: [0.6, 1.4, 1.6] }}
             transition={{ duration: 1.4, ease: "easeOut" }}
-            className={`pointer-events-none absolute -top-6 h-40 w-40 rounded-full blur-2xl ${colors.bar}`}
+            className="pointer-events-none absolute -top-6 h-40 w-40 rounded-full blur-2xl"
+            style={{ background: glow }}
           />
         ) : null}
 
-        <p className="relative text-sm font-medium text-slate-500">
+        <p className="relative text-sm font-medium text-[#A9A9C9]">
           {founderName}, here&apos;s where {startupName} stands
         </p>
 
@@ -77,7 +84,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
         <a
           href={`/w/${code}/result/${pid}/pdf`}
-          className="relative inline-flex items-center gap-2 rounded-full border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 shadow-sm transition hover:bg-purple-50"
+          className="pulse-btn-secondary relative inline-flex items-center gap-2 px-4 py-2 text-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +113,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
       >
         <RevealSection>
           <SectionLabel>Your snapshot</SectionLabel>
-          <p className="text-sm leading-relaxed text-slate-700">{result.summary}</p>
+          <p className="text-sm leading-relaxed text-[#ECEAF6]">{result.summary}</p>
         </RevealSection>
 
         <RevealSection>
@@ -115,7 +122,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
             {result.strengths.map((strength) => (
               <li
                 key={strength}
-                className="rounded-2xl border border-green-200 bg-green-50/70 px-4 py-3 text-sm leading-relaxed text-green-800"
+                className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 text-sm leading-relaxed text-emerald-300"
               >
                 {strength}
               </li>
@@ -129,7 +136,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
             {result.assumptions.map((assumption) => (
               <li
                 key={assumption}
-                className="rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm leading-relaxed text-amber-800"
+                className="rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-amber-300"
               >
                 {assumption}
               </li>
@@ -139,7 +146,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
         <RevealSection>
           <SectionLabel>Your next MVP experiment</SectionLabel>
-          <p className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm">
+          <p className="pulse-card px-4 py-3 text-sm leading-relaxed text-[#ECEAF6]">
             {result.mvpExperiment}
           </p>
         </RevealSection>
@@ -150,9 +157,9 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
             {result.sevenDayPlan.map((day, index) => (
               <li
                 key={`${day.day}-${index}`}
-                className="flex gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm"
+                className="pulse-card flex gap-3 px-4 py-3 text-sm leading-relaxed text-[#ECEAF6]"
               >
-                <span className="shrink-0 font-semibold text-slate-400">{day.day}</span>
+                <span className="font-display shrink-0 font-semibold text-[#A9A9C9]">{day.day}</span>
                 <span>{day.text}</span>
               </li>
             ))}
@@ -161,22 +168,22 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
         <RevealSection>
           <SectionLabel>Your pitch, sharpened</SectionLabel>
-          <p className="rounded-2xl border border-indigo-200 bg-indigo-50/70 px-4 py-3 text-sm leading-relaxed text-indigo-800">
+          <p className="rounded-2xl border border-violet-400/25 bg-violet-500/10 px-4 py-3 text-sm leading-relaxed text-violet-200">
             {result.improvedPitch}
           </p>
         </RevealSection>
 
         <RevealSection>
           <SectionLabel>Something to sit with</SectionLabel>
-          <p className="text-sm italic leading-relaxed text-slate-500">{result.reflectionQuestion}</p>
+          <p className="text-sm italic leading-relaxed text-[#A9A9C9]">{result.reflectionQuestion}</p>
         </RevealSection>
       </motion.div>
 
-      <div className="flex flex-col gap-3 border-t border-slate-200 pt-6">
+      <div className="flex flex-col gap-3 border-t border-[var(--pulse-border)] pt-6">
         <button
           type="button"
           onClick={() => setShowBreakdown((v) => !v)}
-          className="self-start text-sm font-semibold text-slate-500 underline-offset-4 transition hover:text-slate-700 hover:underline"
+          className="self-start text-sm font-semibold text-[#A9A9C9] underline-offset-4 transition hover:text-[#ECEAF6] hover:underline"
           aria-expanded={showBreakdown}
         >
           {showBreakdown ? "Hide detailed breakdown" : "View detailed breakdown"}
@@ -200,8 +207,10 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
       <div className="flex flex-col gap-3">
         <SectionLabel>Your lean canvas</SectionLabel>
-        <p className="text-xs text-slate-400">Tap a tile to see the full answer and how it scored.</p>
-        <CanvasBoard result={result} answers={answers} />
+        <p className="text-xs text-[#A9A9C9]">Tap a tile to see the full answer and how it scored.</p>
+        <div className="pulse-card p-3 sm:p-5">
+          <CanvasBoard result={result} answers={answers} />
+        </div>
       </div>
     </div>
   );

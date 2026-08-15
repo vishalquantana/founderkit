@@ -18,15 +18,13 @@ export function Chip({ selected = false, children, onClick, disabled, className 
       onClick={onClick}
       disabled={disabled}
       aria-pressed={selected}
+      data-selected={selected ? "true" : undefined}
       whileTap={{ scale: 0.96 }}
       whileHover={disabled ? undefined : { scale: 1.02 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={[
-        "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium",
-        "transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50",
-        selected
-          ? "border-indigo-500 bg-indigo-500 text-white shadow-sm"
-          : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/60",
+        "pulse-chip inline-flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         className ?? "",
       ].join(" ")}
     >

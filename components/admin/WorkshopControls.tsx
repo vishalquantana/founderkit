@@ -29,8 +29,8 @@ interface ToggleRowProps {
 
 function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm">
-      <span className="font-medium text-slate-600">{label}</span>
+    <label className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.09] bg-white/[0.04] px-4 py-2.5 text-sm">
+      <span className="font-medium text-[#ECEAF6]">{label}</span>
       <button
         type="button"
         role="switch"
@@ -38,7 +38,7 @@ function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-          checked ? "bg-indigo-500" : "bg-slate-200"
+          checked ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)]" : "bg-white/10"
         }`}
       >
         <motion.span
@@ -87,7 +87,7 @@ export function WorkshopControls({
   return (
     <div className={`flex flex-col gap-5 ${className ?? ""}`}>
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
           Workshop status
         </h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -96,7 +96,7 @@ export function WorkshopControls({
               type="button"
               disabled={isPending}
               onClick={() => changeStatus("live")}
-              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-600 disabled:opacity-50"
+              className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(16,185,129,0.6)] transition-colors hover:bg-emerald-400 disabled:opacity-50"
             >
               Open workshop
             </button>
@@ -105,19 +105,20 @@ export function WorkshopControls({
               type="button"
               disabled={isPending}
               onClick={() => changeStatus("closed")}
-              className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-600 disabled:opacity-50"
+              className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(239,68,68,0.6)] transition-colors hover:bg-red-400 disabled:opacity-50"
             >
               Close workshop
             </button>
           )}
-          <span className="text-sm text-slate-400">
-            Current status: <span className="font-medium text-slate-600">{STATUS_LABELS[currentStatus]}</span>
+          <span className="text-sm text-[#A9A9C9]">
+            Current status:{" "}
+            <span className="font-medium text-[#ECEAF6]">{STATUS_LABELS[currentStatus]}</span>
           </span>
         </div>
       </div>
 
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
           Live views
         </h2>
         <div className="flex flex-col gap-2">
@@ -158,7 +159,7 @@ export function WorkshopControls({
       </div>
 
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
           Other settings
         </h2>
         <div className="flex flex-col gap-2">
