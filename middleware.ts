@@ -1,11 +1,8 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export default auth((req) => {
-  const isLogin = req.nextUrl.pathname === "/login";
-  if (!req.auth && !isLogin) {
-    return Response.redirect(new URL("/login", req.nextUrl));
-  }
-});
+export const { auth: middleware } = NextAuth(authConfig);
+export default middleware;
 
 export const config = {
   matcher: ["/dashboard/:path*", "/workshops/:path*"],
