@@ -1,11 +1,12 @@
-import { Document, Page, View, Text, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
-import type { PdfModel } from "./model";
+import { Document, Page, View, Text, Image, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import type { PdfModel, PdfModelBlock } from "./model";
+import { QUANTANA_LOGO_DATA_URI } from "./logo";
 
 const BRAND_PURPLE = "#6b1f9c";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 32,
+    padding: 28,
     fontSize: 10,
     color: "#1e293b",
     backgroundColor: "#fffdf9",
@@ -14,39 +15,39 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 10,
   },
-  wordmark: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: BRAND_PURPLE,
+  logo: {
+    width: 100,
+    height: 22,
+    objectFit: "contain",
   },
   headerTagline: {
     fontSize: 9,
     color: "#64748b",
   },
   title: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 700,
-    marginBottom: 10,
+    marginBottom: 8,
     color: "#1e293b",
   },
   stageBanner: {
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 14,
-    marginBottom: 16,
+    marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
   stageLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 700,
     color: "#ffffff",
   },
   stageScore: {
-    fontSize: 11,
+    fontSize: 10,
     color: "#ffffff",
   },
   sectionHeading: {
@@ -55,45 +56,64 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     color: "#64748b",
     marginBottom: 6,
-    marginTop: 14,
+    marginTop: 12,
   },
-  canvasGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  cell: {
-    width: "48%",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 6,
-    padding: 8,
-    marginBottom: 8,
-  },
-  cellTitle: {
-    fontSize: 10,
+  canvasWordmark: {
+    position: "absolute",
+    bottom: 3,
+    right: 5,
+    fontSize: 7,
     fontWeight: 700,
-    marginBottom: 3,
+    color: "#94a3b8",
+  },
+  // Lean Canvas grid
+  canvasFrame: {
+    width: "100%",
+    height: 300,
+    borderWidth: 1,
+    borderColor: "#000000",
+    position: "relative",
+    marginBottom: 6,
+  },
+  block: {
+    position: "absolute",
+    borderWidth: 1,
+    borderColor: "#000000",
+    padding: 4,
+    overflow: "hidden",
+  },
+  blockMain: {
+    flex: 1,
+  },
+  blockTitle: {
+    fontSize: 6.5,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    color: "#000000",
+    marginBottom: 2,
+  },
+  blockHelper: {
+    fontSize: 6,
+    fontStyle: "italic",
+    color: "#94a3b8",
+    lineHeight: 1.3,
+  },
+  blockAnswer: {
+    fontSize: 6.5,
     color: "#1e293b",
+    lineHeight: 1.3,
   },
-  cellAnswer: {
-    fontSize: 9,
-    color: "#334155",
-    marginBottom: 4,
-    lineHeight: 1.4,
-  },
-  cellMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  cellFeedback: {
-    fontSize: 8,
+  blockFeedback: {
+    fontSize: 5.5,
     color: BRAND_PURPLE,
     fontWeight: 700,
+    marginTop: 2,
   },
-  cellScore: {
-    fontSize: 8,
-    color: "#64748b",
+  subBlock: {
+    borderTopWidth: 1,
+    borderTopColor: "#000000",
+    padding: 3,
+    height: "30%",
   },
   dimensionRow: {
     flexDirection: "row",
@@ -124,22 +144,102 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: "absolute",
-    bottom: 20,
-    left: 32,
-    right: 32,
+    bottom: 16,
+    left: 28,
+    right: 28,
     textAlign: "center",
     fontSize: 8,
     color: "#94a3b8",
   },
 });
 
+// Row heights as fractions of the canvas frame height: rows 1-2 (the tall
+// blocks) are taller than row 3 (the Cost Structure / Revenue Streams
+// band), matching the authentic template proportions.
+const ROW_FRACS = [0.36, 0.36, 0.28];
+const COLS = 10;
+
+function parseGridArea(gridArea: string) {
+  const [rowStart, colStart, rowEnd, colEnd] = gridArea.split("/").map((n) => parseInt(n.trim(), 10));
+  return { rowStart, colStart, rowEnd, colEnd };
+}
+
+function rowOffset(rowIndex1: number): number {
+  // cumulative fraction of rows before rowIndex1 (1-indexed)
+  return ROW_FRACS.slice(0, rowIndex1 - 1).reduce((a, b) => a + b, 0);
+}
+
+function blockPosition(gridArea: string) {
+  const { rowStart, colStart, rowEnd, colEnd } = parseGridArea(gridArea);
+  const top = rowOffset(rowStart) * 100;
+  const height = (rowOffset(rowEnd) - rowOffset(rowStart)) * 100;
+  const left = ((colStart - 1) / COLS) * 100;
+  const width = ((colEnd - colStart) / COLS) * 100;
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    width: `${width}%`,
+    height: `${height}%`,
+  };
+}
+
+function BlockContent({ title, helper, answer, feedback, score, max }: {
+  title: string;
+  helper: string;
+  answer: string | null;
+  feedback?: string | null;
+  score?: number;
+  max?: number;
+}) {
+  return (
+    <>
+      <Text style={styles.blockTitle}>{title}</Text>
+      {answer ? (
+        <>
+          <Text style={styles.blockAnswer}>{answer}</Text>
+          {feedback ? (
+            <Text style={styles.blockFeedback}>
+              {feedback}
+              {score !== undefined && max !== undefined ? `  ·  ${score}/${max}` : ""}
+            </Text>
+          ) : null}
+        </>
+      ) : (
+        <Text style={styles.blockHelper}>{helper} (not captured in this snapshot)</Text>
+      )}
+    </>
+  );
+}
+
+function CanvasBlock({ block }: { block: PdfModelBlock }) {
+  const pos = blockPosition(block.gridArea);
+  return (
+    <View style={[styles.block, pos, { flexDirection: "column" }]}>
+      <View style={styles.blockMain}>
+        <BlockContent
+          title={block.title}
+          helper={block.helper}
+          answer={block.answer}
+          feedback={block.feedback}
+          score={block.score}
+          max={block.max}
+        />
+      </View>
+      {block.sub ? (
+        <View style={styles.subBlock}>
+          <BlockContent title={block.sub.title} helper={block.sub.helper} answer={block.sub.answer} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 export function ResultDocument({ model }: { model: PdfModel }) {
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" orientation="landscape" style={styles.page}>
         <View style={styles.header}>
-          {/* Swap for <Image src="/quantana-logo.png" style={{ width: 100 }} /> once a PNG/JPG asset exists. */}
-          <Text style={styles.wordmark}>quantana</Text>
+          <Image src={QUANTANA_LOGO_DATA_URI} style={styles.logo} />
           <Text style={styles.headerTagline}>MVP Readiness Snapshot</Text>
         </View>
 
@@ -150,23 +250,12 @@ export function ResultDocument({ model }: { model: PdfModel }) {
           <Text style={styles.stageScore}>{model.score} / 100</Text>
         </View>
 
-        <Text style={styles.sectionHeading}>Snapshot</Text>
-        <Text style={styles.bodyText}>{model.summary}</Text>
-
         <Text style={styles.sectionHeading}>Your Lean Canvas</Text>
-        <View style={styles.canvasGrid}>
-          {model.cells.map((cell) => (
-            <View key={cell.title} style={styles.cell}>
-              <Text style={styles.cellTitle}>{cell.title}</Text>
-              <Text style={styles.cellAnswer}>{cell.answer}</Text>
-              <View style={styles.cellMeta}>
-                <Text style={styles.cellFeedback}>{cell.feedback}</Text>
-                <Text style={styles.cellScore}>
-                  {cell.score} / {cell.max}
-                </Text>
-              </View>
-            </View>
+        <View style={styles.canvasFrame}>
+          {model.blocks.map((block) => (
+            <CanvasBlock key={block.key} block={block} />
           ))}
+          <Text style={styles.canvasWordmark}>Lean Canvas · Quantana</Text>
         </View>
 
         <Text style={styles.sectionHeading}>Dimension Breakdown</Text>

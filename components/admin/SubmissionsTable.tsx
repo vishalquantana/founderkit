@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { STAGE_META } from "@/lib/readiness";
-import { stageColorClasses, CANVAS_CELLS } from "@/lib/result-view";
+import { stageColorClasses, LEAN_CANVAS_BLOCKS } from "@/lib/result-view";
 import type { EvaluationResult } from "@/ai/schema";
 import type { Participant } from "@/db/queries/participants";
 import type { SectionKey } from "@/db/schema";
@@ -107,16 +107,16 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
                     )}
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {CANVAS_CELLS.map((cell) => {
-                        const answer = answers[cell.section];
+                      {LEAN_CANVAS_BLOCKS.filter((block) => block.source).map((block) => {
+                        const answer = answers[block.source!];
                         if (!answer) return null;
                         return (
                           <div
-                            key={cell.section}
+                            key={block.key}
                             className="rounded-xl border border-slate-100 bg-slate-50/70 p-3"
                           >
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                              {cell.title}
+                              {block.title}
                             </p>
                             <p className="mt-1 text-sm leading-relaxed text-slate-700">{answer}</p>
                           </div>

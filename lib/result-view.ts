@@ -65,18 +65,115 @@ export function cellFeedback(score: number, max: number): CellFeedback {
   return { label: "Worth sharpening", tone: "sharpen" };
 }
 
-export interface CanvasCell {
-  section: SectionKey;
-  dimension: Dimension;
+export interface LeanCanvasSubBlock {
+  key: string;
   title: string;
+  helper: string;
+  source?: SectionKey;
+  pitchSource?: boolean;
 }
 
-/** The 6 canvas cells in a pleasing board order with short titles. */
-export const CANVAS_CELLS: CanvasCell[] = [
-  { section: "problem", dimension: "problemClarity", title: "Problem" },
-  { section: "customer", dimension: "customerClarity", title: "Customer Map" },
-  { section: "value", dimension: "valuePayment", title: "Value & Payment" },
-  { section: "mvp", dimension: "mvpQuality", title: "MVP" },
-  { section: "distribution", dimension: "distribution", title: "Distribution" },
-  { section: "proof", dimension: "validation", title: "Proof" },
+export interface LeanCanvasBlock {
+  key: string;
+  title: string;
+  helper: string;
+  /** CSS grid-area style coordinates: "row-start / col-start / row-end / col-end" */
+  gridArea: string;
+  source?: SectionKey;
+  pitchSource?: boolean;
+  dimension?: Dimension;
+  sub?: LeanCanvasSubBlock;
+}
+
+/**
+ * The authentic Ash Maurya Lean Canvas — 9 blocks laid out on a
+ * 10-column x 3-row grid, plus the bottom Cost Structure / Revenue
+ * Streams band. Populated where the app's 6 sections map onto the
+ * template; the rest carry the verbatim template helper text and are
+ * explicitly marked as not captured in this snapshot.
+ */
+export const LEAN_CANVAS_BLOCKS: LeanCanvasBlock[] = [
+  {
+    key: "problem",
+    title: "Problem",
+    helper: "List your top 1–3 problems.",
+    gridArea: "1 / 1 / 3 / 3",
+    source: "problem",
+    dimension: "problemClarity",
+    sub: {
+      key: "existingAlternatives",
+      title: "Existing Alternatives",
+      helper: "List how these problems are solved today.",
+    },
+  },
+  {
+    key: "solution",
+    title: "Solution",
+    helper: "Outline a possible solution for each problem.",
+    gridArea: "1 / 3 / 2 / 5",
+    source: "mvp",
+    dimension: "mvpQuality",
+  },
+  {
+    key: "keyMetrics",
+    title: "Key Metrics",
+    helper: "List the key numbers that tell you how your business is doing.",
+    gridArea: "2 / 3 / 3 / 5",
+    source: "proof",
+    dimension: "validation",
+  },
+  {
+    key: "uniqueValueProposition",
+    title: "Unique Value Proposition",
+    helper:
+      "Single, clear, compelling message that states why you are different and worth paying attention.",
+    gridArea: "1 / 5 / 3 / 7",
+    source: "value",
+    dimension: "valuePayment",
+    sub: {
+      key: "highLevelConcept",
+      title: "High-Level Concept",
+      helper: "List your X for Y analogy e.g. YouTube = Flickr for videos.",
+      pitchSource: true,
+    },
+  },
+  {
+    key: "unfairAdvantage",
+    title: "Unfair Advantage",
+    helper: "Something that cannot easily be bought or copied.",
+    gridArea: "1 / 7 / 2 / 9",
+  },
+  {
+    key: "channels",
+    title: "Channels",
+    helper: "List your path to customers (inbound or outbound).",
+    gridArea: "2 / 7 / 3 / 9",
+    source: "distribution",
+    dimension: "distribution",
+  },
+  {
+    key: "customerSegments",
+    title: "Customer Segments",
+    helper: "List your target customers and users.",
+    gridArea: "1 / 9 / 3 / 11",
+    source: "customer",
+    dimension: "customerClarity",
+    sub: {
+      key: "earlyAdopters",
+      title: "Early Adopters",
+      helper: "List the characteristics of your ideal customers.",
+    },
+  },
+  {
+    key: "costStructure",
+    title: "Cost Structure",
+    helper: "List your fixed and variable costs.",
+    gridArea: "3 / 1 / 4 / 6",
+  },
+  {
+    key: "revenueStreams",
+    title: "Revenue Streams",
+    helper: "List your sources of revenue.",
+    gridArea: "3 / 6 / 4 / 11",
+  },
 ];

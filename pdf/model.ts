@@ -1,7 +1,7 @@
 import type { EvaluationResult } from "@/ai/schema";
 import type { ReadinessStage, SectionKey } from "@/db/schema";
 import { STAGE_META, DIMENSION_MAX, DIMENSIONS } from "@/lib/readiness";
-import { CANVAS_CELLS, cellFeedback } from "@/lib/result-view";
+import { LEAN_CANVAS_BLOCKS, cellFeedback } from "@/lib/result-view";
 
 export const STAGE_COLOR_HEX: Record<ReadinessStage, string> = {
   idea_clarity: "#64748b",
@@ -11,12 +11,22 @@ export const STAGE_COLOR_HEX: Record<ReadinessStage, string> = {
   revenue_ready: "#d4a017",
 };
 
-export interface PdfModelCell {
+export interface PdfModelSubBlock {
   title: string;
-  answer: string;
-  feedback: string;
-  score: number;
-  max: number;
+  helper: string;
+  answer: string | null;
+}
+
+export interface PdfModelBlock {
+  key: string;
+  title: string;
+  helper: string;
+  gridArea: string;
+  answer: string | null;
+  feedback: string | null;
+  score?: number;
+  max?: number;
+  sub?: PdfModelSubBlock;
 }
 
 export interface PdfModelDimension {
@@ -37,7 +47,7 @@ export interface PdfModel {
   improvedPitch: string;
   reflectionQuestion: string;
   score: number;
-  cells: PdfModelCell[];
+  blocks: PdfModelBlock[];
   dimensions: PdfModelDimension[];
 }
 
@@ -59,18 +69,44 @@ const DIMENSION_LABELS: Record<(typeof DIMENSIONS)[number], string> = {
   cashflow: "Cashflow",
 };
 
+function resolveAnswer(
+  answers: Record<SectionKey, string>,
+  result: EvaluationResult,
+  source?: SectionKey,
+  pitchSource?: boolean,
+): string | null {
+  if (source) return (answers[source] ?? "").trim() || null;
+  if (pitchSource) return result.improvedPitch?.trim() || null;
+  return null;
+}
+
 export function buildPdfModel(input: BuildPdfModelInput): PdfModel {
   const { founderName, startupName, result, answers } = input;
 
-  const cells: PdfModelCell[] = CANVAS_CELLS.map((cell) => {
-    const score = result.dimensionScores[cell.dimension];
-    const max = DIMENSION_MAX[cell.dimension];
+  const blocks: PdfModelBlock[] = LEAN_CANVAS_BLOCKS.map((block) => {
+    const answer = resolveAnswer(answers, result, block.source, block.pitchSource);
+    const score = block.dimension ? result.dimensionScores[block.dimension] : undefined;
+    const max = block.dimension ? DIMENSION_MAX[block.dimension] : undefined;
+    const feedback = score !== undefined && max !== undefined ? cellFeedback(score, max).label : null;
+
+    const sub: PdfModelSubBlock | undefined = block.sub
+      ? {
+          title: block.sub.title,
+          helper: block.sub.helper,
+          answer: resolveAnswer(answers, result, block.sub.source, block.sub.pitchSource),
+        }
+      : undefined;
+
     return {
-      title: cell.title,
-      answer: answers[cell.section] ?? "",
-      feedback: cellFeedback(score, max).label,
+      key: block.key,
+      title: block.title,
+      helper: block.helper,
+      gridArea: block.gridArea,
+      answer,
+      feedback,
       score,
       max,
+      sub,
     };
   });
 
@@ -92,7 +128,7 @@ export function buildPdfModel(input: BuildPdfModelInput): PdfModel {
     improvedPitch: result.improvedPitch,
     reflectionQuestion: result.reflectionQuestion,
     score: result.backendScore,
-    cells,
+    blocks,
     dimensions,
   };
 }

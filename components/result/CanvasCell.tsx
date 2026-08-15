@@ -2,69 +2,144 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { DIMENSION_MAX } from "@/lib/readiness";
-import { cellFeedback, type CanvasCell as CanvasCellType } from "@/lib/result-view";
+import { cellFeedback, type CellFeedback } from "@/lib/result-view";
 
-const TONE_CLASSES: Record<"strong" | "growing" | "sharpen", string> = {
+const TONE_CLASSES: Record<CellFeedback["tone"], string> = {
   strong: "bg-green-50 text-green-700 border border-green-200",
   growing: "bg-blue-50 text-blue-700 border border-blue-200",
   sharpen: "bg-amber-50 text-amber-700 border border-amber-200",
 };
 
-function truncate(text: string, max: number): string {
+export function truncate(text: string, max: number): string {
   const trimmed = text.trim();
   if (trimmed.length <= max) return trimmed;
   return `${trimmed.slice(0, max).trimEnd()}…`;
 }
 
-export interface CanvasCellProps {
-  cell: CanvasCellType;
-  answer: string;
-  score: number;
-  isOpen: boolean;
-  onToggle: () => void;
+/** A resolved, render-ready piece of the Lean Canvas (main block or sub-block). */
+export interface ResolvedCanvasPiece {
+  id: string;
+  title: string;
+  helper: string;
+  answer: string | null;
+  score?: number;
+  dimension?: keyof typeof DIMENSION_MAX;
+}
+
+export function resolveFeedback(piece: ResolvedCanvasPiece): CellFeedback | null {
+  if (piece.score === undefined || !piece.dimension) return null;
+  return cellFeedback(piece.score, DIMENSION_MAX[piece.dimension]);
+}
+
+export interface CanvasCellHeaderProps {
+  piece: ResolvedCanvasPiece;
+  sub?: boolean;
+  onOpen: () => void;
+  layoutId?: string;
 }
 
 /**
- * One tile of the interactive lean canvas board. Collapsed, it shows a
- * title + snippet + feedback chip. When `isOpen` (rendered by CanvasBoard
- * as the expanded overlay), it shows the full answer, feedback label, and
- * that dimension's score bar. Shares `layoutId={cell.section}` with its
- * collapsed/expanded counterpart so Framer Motion can morph between them.
+ * The compact, in-grid rendering of one Lean Canvas piece (main block or
+ * sub-block). Populated pieces are tappable and morph (shared layoutId)
+ * into the full-detail overlay. Uncaptured pieces render the authentic
+ * grey italic template helper text and are visually lighter.
  */
-export function CanvasCell({ cell, answer, score, isOpen, onToggle }: CanvasCellProps) {
+export function CanvasCellHeader({ piece, sub, onOpen, layoutId }: CanvasCellHeaderProps) {
   const shouldReduceMotion = useReducedMotion();
-  const max = DIMENSION_MAX[cell.dimension];
-  const feedback = cellFeedback(score, max);
-  const ratio = max > 0 ? Math.min(1, Math.max(0, score / max)) : 0;
-  const layoutId = shouldReduceMotion ? undefined : cell.section;
+  const feedback = resolveFeedback(piece);
+  const captured = piece.answer !== null && piece.answer.trim().length > 0;
 
-  if (isOpen) {
-    return (
-      <motion.div
-        layoutId={layoutId}
-        initial={shouldReduceMotion ? { opacity: 0 } : undefined}
-        animate={shouldReduceMotion ? { opacity: 1 } : undefined}
-        exit={shouldReduceMotion ? { opacity: 0 } : undefined}
-        transition={{ type: "spring", stiffness: 260, damping: 26 }}
-        className="flex w-full max-w-md flex-col gap-4 rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/10"
-        onClick={(e) => e.stopPropagation()}
+  return (
+    <motion.div
+      layoutId={shouldReduceMotion ? undefined : layoutId}
+      onClick={onOpen}
+      whileTap={captured && !shouldReduceMotion ? { scale: 0.97 } : undefined}
+      role={captured ? "button" : undefined}
+      tabIndex={captured ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (!captured) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      className={`flex h-full flex-col gap-0.5 px-1.5 py-1 text-left ${captured ? "cursor-pointer" : "cursor-default"}`}
+    >
+      <h3
+        className={`font-bold uppercase tracking-tight text-black ${sub ? "text-[6px]" : "text-[7px]"}`}
       >
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg font-semibold text-slate-800">{cell.title}</h3>
+        {piece.title}
+      </h3>
+      {captured ? (
+        <>
+          <p
+            className={`flex-1 overflow-hidden leading-snug text-slate-700 ${sub ? "text-[6.5px]" : "text-[7px]"}`}
+          >
+            {truncate(piece.answer!, sub ? 60 : 140)}
+          </p>
+          {feedback ? (
+            <span
+              className={`mt-auto inline-flex w-fit items-center rounded-full px-1.5 py-[1px] text-[6px] font-medium ${TONE_CLASSES[feedback.tone]}`}
+            >
+              {feedback.label}
+            </span>
+          ) : null}
+        </>
+      ) : (
+        <p
+          className={`italic leading-snug text-slate-400 ${sub ? "text-[6px]" : "text-[6.5px]"}`}
+        >
+          {piece.helper}
+        </p>
+      )}
+    </motion.div>
+  );
+}
+
+export interface CanvasOverlayCardProps {
+  piece: ResolvedCanvasPiece;
+  onClose: () => void;
+  layoutId?: string;
+}
+
+/** The expanded, shared-element overlay for a tapped canvas piece. */
+export function CanvasOverlayCard({ piece, onClose, layoutId }: CanvasOverlayCardProps) {
+  const shouldReduceMotion = useReducedMotion();
+  const feedback = resolveFeedback(piece);
+  const max = piece.dimension ? DIMENSION_MAX[piece.dimension] : undefined;
+  const ratio = max && piece.score !== undefined ? Math.min(1, Math.max(0, piece.score / max)) : 0;
+
+  return (
+    <motion.div
+      layoutId={shouldReduceMotion ? undefined : layoutId}
+      initial={shouldReduceMotion ? { opacity: 0 } : undefined}
+      animate={shouldReduceMotion ? { opacity: 1 } : undefined}
+      exit={shouldReduceMotion ? { opacity: 0 } : undefined}
+      transition={{ type: "spring", stiffness: 260, damping: 26 }}
+      className="flex w-full max-w-md flex-col gap-4 rounded-3xl bg-white p-6 shadow-2xl shadow-slate-900/10"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-lg font-semibold uppercase tracking-tight text-slate-800">
+          {piece.title}
+        </h3>
+        {feedback ? (
           <span
             className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${TONE_CLASSES[feedback.tone]}`}
           >
             {feedback.label}
           </span>
-        </div>
+        ) : null}
+      </div>
 
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{answer}</p>
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{piece.answer}</p>
 
+      {max !== undefined && piece.score !== undefined ? (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span>Dimension score</span>
             <span className="tabular-nums">
-              {score}/{max}
+              {piece.score}/{max}
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -80,44 +155,17 @@ export function CanvasCell({ cell, answer, score, isOpen, onToggle }: CanvasCell
             />
           </div>
         </div>
+      ) : null}
 
-        <button
-          type="button"
-          onClick={onToggle}
-          className="mt-1 self-start text-sm font-medium text-slate-400 transition hover:text-slate-600"
-        >
-          Close
-        </button>
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div
-      layoutId={layoutId}
-      onClick={onToggle}
-      whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
-      className="flex cursor-pointer flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm shadow-slate-900/5 transition hover:border-slate-300 hover:shadow-md"
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
-    >
-      <h3 className="text-sm font-semibold text-slate-800">{cell.title}</h3>
-      <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">
-        {truncate(answer, 90)}
-      </p>
-      <span
-        className={`mt-1 inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${TONE_CLASSES[feedback.tone]}`}
+      <button
+        type="button"
+        onClick={onClose}
+        className="mt-1 self-start text-sm font-medium text-slate-400 transition hover:text-slate-600"
       >
-        {feedback.label}
-      </span>
+        Close
+      </button>
     </motion.div>
   );
 }
 
-export default CanvasCell;
+export default CanvasCellHeader;
