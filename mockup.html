@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MVP Readiness Snapshot — Full Flow Mockup</title>
+<style>
+  :root{
+    --bg:#fbf7f2; --ink:#1f2430; --muted:#6b7280; --line:#e9e2d8; --card:#ffffff;
+    --idea:#64748b; --discovery:#3b82f6; --mvp:#8b5cf6; --pilot:#22c55e; --revenue:#d4a017;
+    --accent:#6d5efc; --accent-soft:#efeaff;
+    --shadow:0 10px 30px -12px rgba(31,36,48,.18);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 90px}
+  header.top{position:sticky;top:0;z-index:50;background:rgba(251,247,242,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .inner{max-width:1180px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .brand span{color:var(--accent)}
+  nav.jump{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  nav.jump a{font-size:13px;font-weight:600;text-decoration:none;padding:8px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);transition:transform .15s ease, background .15s}
+  nav.jump a:hover{transform:translateY(-2px);background:var(--accent-soft)}
+  h2.section{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:56px 0 6px}
+  h3.section{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 22px}
+  .lead{color:var(--muted);max-width:640px;margin:-14px 0 26px}
+
+  /* phone frames */
+  .rail{display:flex;gap:22px;overflow-x:auto;padding:8px 2px 22px;scroll-snap-type:x mandatory}
+  .phone{scroll-snap-align:center;flex:0 0 300px;background:#0f1115;border-radius:38px;padding:10px;box-shadow:var(--shadow)}
+  .screen{background:var(--bg);border-radius:30px;height:600px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:110px;height:22px;background:#0f1115;border-radius:0 0 14px 14px;z-index:5}
+  .sc-body{flex:1;overflow:auto;padding:38px 20px 20px}
+  .sc-body::-webkit-scrollbar{width:0}
+  .caption{text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:10px}
+
+  .progress{height:8px;background:#eee5da;border-radius:999px;overflow:hidden;margin-bottom:6px}
+  .progress > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#a78bfa);animation:fill 1.1s .2s both cubic-bezier(.2,.7,.2,1)}
+  @keyframes fill{from{width:0}}
+  .step-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:16px}
+
+  .kicker{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.1em}
+  .h-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:8px 0}
+  .sub{color:var(--muted);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;transition:transform .12s}
+  .chip:hover{transform:scale(1.04)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .field{margin-top:14px}
+  .field label{font-size:12px;font-weight:700;color:var(--muted)}
+  .input,.ta{width:100%;margin-top:6px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:#fff}
+  .ta{min-height:74px;resize:none}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:18px;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:13px;font-weight:700;font-size:15px;cursor:pointer;transition:transform .12s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.soft{background:var(--accent-soft);color:var(--accent)}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .example{background:#f4f0ff;border:1px dashed #d9cffb;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#4c3fb5;margin-top:10px}
+  .coach{margin-top:14px;background:#eefaf2;border:1px solid #cdeede;border-radius:14px;padding:12px}
+  .coach .who{font-size:11px;font-weight:800;color:#1f9d55;text-transform:uppercase;letter-spacing:.08em}
+  .coach .q{font-size:13.5px;margin:6px 0 10px}
+  .coach .row{display:flex;gap:8px}
+  .coach .row .btn{margin:0;padding:9px;font-size:13px}
+  .coach .row .btn.ghost{background:#fff;color:var(--muted);border:1px solid var(--line)}
+  .consent{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:12px;color:var(--muted)}
+  .consent input{margin-top:2px}
+
+  /* stage badge + results */
+  .stage{border-radius:20px;padding:18px;color:#fff;text-align:center;box-shadow:var(--shadow);animation:pop .5s .1s both cubic-bezier(.2,1.2,.3,1)}
+  @keyframes pop{from{transform:scale(.9);opacity:0}}
+  .stage small{opacity:.9;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10.5px}
+  .stage b{display:block;font-size:24px;font-weight:800;margin:4px 0}
+  .stage.pilot{background:linear-gradient(135deg,#22c55e,#16a34a)}
+  .stage.mvp{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
+  .stage.idea{background:linear-gradient(135deg,#64748b,#475569)}
+  .block{margin-top:14px}
+  .block h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px}
+  .li{display:flex;gap:8px;font-size:13px;margin:6px 0}
+  .li::before{content:"✦";color:var(--accent)}
+  .plan{font-size:12.5px;color:#374151}
+  .plan div{padding:5px 0;border-bottom:1px dashed var(--line)}
+  .reveal{opacity:0;transform:translateY(10px);animation:up .6s forwards}
+  .reveal:nth-child(1){animation-delay:.15s}.reveal:nth-child(2){animation-delay:.3s}.reveal:nth-child(3){animation-delay:.45s}.reveal:nth-child(4){animation-delay:.6s}
+  @keyframes up{to{opacity:1;transform:none}}
+
+  /* canvas */
+  .canvas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .cell{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px;cursor:pointer;transition:transform .15s, box-shadow .15s;position:relative;overflow:hidden}
+  .cell:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .cell h5{margin:0 0 5px;font-size:11.5px;letter-spacing:.03em}
+  .cell p{margin:0;font-size:11px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .tag{position:absolute;top:9px;right:9px;font-size:9px;font-weight:800;padding:3px 7px;border-radius:999px}
+  .tag.strong{background:#dcfce7;color:#15803d}.tag.grow{background:#dbeafe;color:#1d4ed8}.tag.sharp{background:#fef3c7;color:#b45309}
+  .zoomnote{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
+
+  .bars .bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:11.5px}
+  .bars .bar span{flex:0 0 96px;color:var(--muted)}
+  .bars .track{flex:1;height:9px;background:#eee5da;border-radius:999px;overflow:hidden}
+  .bars .track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),#a78bfa);animation:fill 1.2s both}
+
+  /* desktop panels */
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+  .stat b{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .stat small{color:var(--muted);font-weight:600;font-size:12px}
+  .dist{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+  .dist .row{display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .dist .row span{flex:0 0 120px;color:var(--muted)}
+  .dist .track{flex:1;height:14px;border-radius:999px;background:#f0ebe3;overflow:hidden}
+  .dist .track i{display:block;height:100%;border-radius:999px;animation:fill 1.3s both}
+  table.subs{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  table.subs th{text-align:left;color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line)}
+  table.subs td{padding:10px;border-bottom:1px solid var(--line)}
+  .pill{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;color:#fff}
+  .qr{width:120px;height:120px;border-radius:14px;background:
+      conic-gradient(#000 0 25%,#fff 0 50%,#000 0 75%,#fff 0) 0 0/16px 16px,
+      linear-gradient(#000,#000);image-rendering:pixelated;border:6px solid #fff;box-shadow:var(--shadow)}
+  .wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:6px 0;color:#374151}
+  .toggle .sw{width:34px;height:20px;border-radius:999px;background:var(--pilot);position:relative}
+  .toggle .sw::after{content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .toggle.off .sw{background:#cfc8bd}
+  .toggle.off .sw::after{right:16px}
+
+  /* projector */
+  .stage-dark{background:#0e1220;border-radius:22px;padding:30px;color:#fff;box-shadow:var(--shadow)}
+  .stage-dark .big{font-size:64px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .stage-dark .lbl{color:#9aa4b2;font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:12px}
+  .cloud{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;margin-top:8px}
+  .cloud span{font-weight:800;color:#c7d2fe;animation:up .6s both}
+  .prog{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:6px}
+  .prog .col{background:#151a2b;border-radius:14px;padding:12px;min-height:120px}
+  .prog .col h6{margin:0 0 8px;font-size:11px;letter-spacing:.05em;color:#9aa4b2;text-transform:uppercase}
+  .prog .col .who{background:#1e263c;border-radius:9px;padding:6px 8px;font-size:12px;margin:5px 0;color:#e5e9f0}
+  .switch{display:flex;gap:8px;margin-bottom:14px}
+  .switch button{font:inherit;font-size:12px;font-weight:700;padding:8px 14px;border-radius:999px;border:1px solid #2a3350;background:#151a2b;color:#c7d2fe;cursor:pointer}
+  .switch button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .view{display:none}.view.on{display:block}
+  .foot{margin-top:20px;padding:14px 18px;background:#151a2b;border-radius:14px;display:flex;align-items:center;justify-content:space-between;color:#c7d2fe;font-weight:700}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+  .legend b{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+  .note{font-size:12.5px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;margin-top:14px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <div class="brand">MVP Readiness <span>Snapshot</span></div>
+    <nav class="jump">
+      <a href="#founder">📱 Founder flow</a>
+      <a href="#results">✨ Results & Canvas</a>
+      <a href="#admin">🎛️ Presenter</a>
+      <a href="#projector">📺 Projector</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="lead" style="margin-top:22px">A visual mockup of the whole experience — the founder's phone journey, the delightful results screen with the tap-to-zoom Lean Canvas, the presenter's live dashboard, and the projector views. Static illustration of the real design; hover the chips, cells, and cards to feel the micro-interactions.</p>
+
+  <!-- FOUNDER FLOW -->
+  <h2 class="section" id="founder">Part 1</h2>
+  <h3 class="section">📱 The founder journey — scan → 6 sections → snapshot</h3>
+  <div class="rail">
+    <!-- Landing / consent -->
+    <div>
+      <div class="phone"><div class="screen"><div class="notch"></div><div class="sc-body">
+        <div style="text-align:center;margin-top:8px">
+          <div class="qr" style="margin:0 auto 16px"></div>
+          <div class="kicker">Scan to start</div>
+          <div class="h-title">MVP Readiness Snapshot</div>
+          <div class="sub">Find your next best MVP move in 5 minutes.</div>
+        </div>
+        <div class="card" style="margin-top:16px;font-size:13px;color:#374151">This is not an exam. The goal is to help you identify what to validate before building too much.</div>
+        <div class="consent"><input type="checkbox" checked><span>I agree my responses generate an AI-assisted readiness snapshot. This is a directional learning tool, not financial or business advice.</span></div>
+        <button class="btn">Start Snapshot →</button>
+      </div></div></div>
+      <div class="caption">1 · Welcome & consent</div>
+    </div>
+
+    <!-- Basics -->
+    <div>
+      <div class="phone"><div class="screen"><div class="notch"></div><div class="sc-body">
+        <div class="kicker">About you</div>
+        <div class="h-title">Tell us about your startup</div>
+        <div class="field"><label>Founder name</label><input class="input" value="Asha Rao"></div>
+        <div class="field"><label>Startup name</label><input class="input" value="KiranaLoop"></div>
+        <div class="field"><label>Current stage</label>
+          <div class="chips"><span class="chip">Idea</span><span class="chip">Prototype</span><span class="chip on">MVP launched</span><span class="chip">Paying</span></div>
+        </div>
+        <div class="field"><label>Product type</label>
+          <div class="chips"><span class="chip on">B2B</span><span class="chip">B2C</span><span class="chip">SaaS</span><span class="chip">Marketplace</span></div>
+        </div>
+        <button class="btn">Continue</button>
+      </div></div></div>
+      <div class="caption">2 · Founder & startup basics</div>
+    </div>
+
+    <!-- Problem section + coach -->
+    <div>
+      <div class="phone"><div class="screen"><div class="sc-body">
+        <div class="progress"><i style="width:17%"></i></div>
+        <div class="step-label">Step 1 of 6 · Problem</div>
+        <div class="h-title" style="font-size:20px">What painful problem are you solving?</div>
+        <textarea class="ta">For small kirana stores, losing repeat customers to quick-commerce apps cuts daily sales and weakens neighbourhood ties.</textarea>
+        <div class="example"><b>Try:</b> For [specific user], [problem] causes [specific pain or loss].</div>
+        <div class="coach">
+          <div class="who">⚡ Quick follow-up from AI Coach</div>
+          <div class="q">Who exactly faces this most urgently — and what do they do about it today?</div>
+          <div class="row"><button class="btn">Answer</button><button class="btn ghost">Skip for now</button></div>
+        </div>
+      </div></div></div>
+      <div class="caption">3 · A section (with AI coach probe)</div>
+    </div>
+
+    <!-- Value section -->
+    <div>
+      <div class="phone"><div class="screen"><div class="sc-body">
+        <div class="progress"><i style="width:50%"></i></div>
+        <div class="step-label">Step 3 of 6 · Value & Payment</div>
+        <div class="h-title" style="font-size:20px">Will someone pay, repeat, renew, or refer?</div>
+        <textarea class="ta">₹299/month. Two shops pre-committed after a 2-week trial. They renew if reorders visibly rise.</textarea>
+        <div class="card" style="margin-top:12px;background:#fff7ed;border-color:#fed7aa;font-size:12.5px;color:#9a3412"><b>Acquisition is applause. Renewal is proof.</b></div>
+        <button class="btn">Next section →</button>
+      </div></div></div>
+      <div class="caption">4 · Sections autosave as you go</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <h2 class="section" id="results">Part 2</h2>
+  <h3 class="section">✨ The payoff — animated results & tap-to-zoom Lean Canvas</h3>
+  <div class="rail">
+    <!-- Result main -->
+    <div>
+      <div class="phone"><div class="screen"><div class="sc-body">
+        <div class="stage pilot"><small>Your MVP readiness stage</small><b>Pilot Ready</b><span style="font-size:12px;opacity:.95">You have early clarity and can run a controlled pilot.</span></div>
+        <div class="block reveal"><div class="sub" style="font-size:13px">Your focus should now shift from building features to measuring adoption, payment, and repeat usage.</div></div>
+        <div class="block reveal"><h4>Top strengths</h4><div class="li">Strong problem & customer clarity</div><div class="li">Early evidence users may adopt</div></div>
+        <div class="block reveal"><h4>Assumptions to validate</h4><div class="li">Whether users return without you pushing</div><div class="li">Whether the payer sees enough value to continue</div></div>
+        <div class="block reveal"><h4>7-day plan</h4><div class="plan"><div>Day 1 · Define pilot success metrics</div><div>Day 2 · Confirm pilot users</div><div>Day 3 · Set up MVP workflow</div><div>Day 4–6 · Run pilot, capture usage</div><div>Day 7 · Review adoption & objections</div></div></div>
+        <button class="btn soft">View detailed breakdown ▾</button>
+      </div></div></div>
+      <div class="caption">5 · Stage-forward result (score hidden)</div>
+    </div>
+
+    <!-- Canvas -->
+    <div>
+      <div class="phone"><div class="screen"><div class="sc-body">
+        <div class="kicker">Your startup, mapped</div>
+        <div class="h-title" style="font-size:19px">Lean Canvas</div>
+        <div class="canvas">
+          <div class="cell"><span class="tag strong">Strong</span><h5>Problem</h5><p>Kirana stores losing repeat customers to apps…</p></div>
+          <div class="cell"><span class="tag grow">Growing</span><h5>Customer Map</h5><p>Shopkeeper uses, owner pays, distributor influences…</p></div>
+          <div class="cell"><span class="tag strong">Strong</span><h5>Value & Payment</h5><p>₹299/mo, two pre-committed shops…</p></div>
+          <div class="cell"><span class="tag grow">Growing</span><h5>MVP</h5><p>WhatsApp concierge reorder nudges…</p></div>
+          <div class="cell"><span class="tag sharp">Sharpen</span><h5>Distribution</h5><p>First 10 from local market visits…</p></div>
+          <div class="cell"><span class="tag strong">Strong</span><h5>Proof</h5><p>12 spoken to, 2 paid pilots, 1 referral…</p></div>
+        </div>
+        <div class="zoomnote">Tap any cell to zoom in → full answer + AI feedback</div>
+      </div></div></div>
+      <div class="caption">6 · Interactive canvas preview</div>
+    </div>
+
+    <!-- Canvas zoomed -->
+    <div>
+      <div class="phone"><div class="screen"><div class="sc-body">
+        <div style="font-size:12px;color:var(--muted)">◂ Back to canvas</div>
+        <div class="card" style="margin-top:10px;animation:pop .4s both">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h5 style="margin:0;font-size:15px">Distribution</h5><span class="tag sharp" style="position:static">Worth sharpening</span></div>
+          <p style="font-size:13px;color:#374151;margin:10px 0">"First 10 users are shops within 2km I visit in person, reached via a distributor who trusts me. First conversion: a free 2-week trial."</p>
+          <div class="bars"><div class="bar"><span>Distribution</span><div class="track"><i style="width:47%"></i></div></div></div>
+          <div class="card" style="margin-top:10px;background:#fff7ed;border-color:#fed7aa;font-size:12px;color:#9a3412">AI makes building easier. It does not make distribution easier — name 3 specific first users and your exact message.</div>
+        </div>
+      </div></div></div>
+      <div class="caption">7 · Tapped cell → shared-element zoom</div>
+    </div>
+
+    <!-- Breakdown -->
+    <div>
+      <div class="phone"><div class="screen"><div class="sc-body">
+        <div class="kicker">Detailed breakdown</div>
+        <div class="h-title" style="font-size:19px">Readiness dimensions</div>
+        <div class="bars">
+          <div class="bar"><span>Problem</span><div class="track"><i style="width:80%"></i></div></div>
+          <div class="bar"><span>Customer</span><div class="track"><i style="width:60%"></i></div></div>
+          <div class="bar"><span>Value & pay</span><div class="track"><i style="width:75%"></i></div></div>
+          <div class="bar"><span>MVP</span><div class="track"><i style="width:66%"></i></div></div>
+          <div class="bar"><span>Distribution</span><div class="track"><i style="width:47%"></i></div></div>
+          <div class="bar"><span>Validation</span><div class="track"><i style="width:70%"></i></div></div>
+          <div class="bar"><span>Team & stage</span><div class="track"><i style="width:60%"></i></div></div>
+          <div class="bar"><span>Cashflow</span><div class="track"><i style="width:40%"></i></div></div>
+        </div>
+        <div class="card" style="margin-top:14px;text-align:center"><small style="color:var(--muted)">Clarity score</small><div style="font-size:34px;font-weight:800">72<span style="font-size:16px;color:var(--muted)">/100</span></div></div>
+        <div class="card" style="margin-top:12px;font-size:12.5px"><b>Reflection:</b> If this pilot works, what's the next repeatable channel to find similar customers?</div>
+      </div></div></div>
+      <div class="caption">8 · Score revealed on demand</div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <h2 class="section" id="admin">Part 3</h2>
+  <h3 class="section">🎛️ Presenter dashboard — create, watch live, export</h3>
+  <div class="panel">
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <div><div class="kicker">Workshops</div><div style="font-size:20px;font-weight:800">Welcome, Presenter</div></div>
+      <button class="btn" style="width:auto;margin:0;padding:10px 16px">+ New workshop</button>
+    </div>
+    <div class="wsgrid" style="margin-top:16px">
+      <div class="card" style="display:flex;gap:14px;align-items:center">
+        <div class="qr" style="width:74px;height:74px;border-width:4px"></div>
+        <div><div style="font-weight:800">Tripura Founder Workshop</div><div style="font-size:12px;color:var(--muted)">Join code · <b>H2D3G9</b></div><span class="pill" style="background:var(--pilot);margin-top:6px;display:inline-block">Live</span></div>
+      </div>
+      <div class="card"><div style="font-weight:800">Demo Day Prep</div><div style="font-size:12px;color:var(--muted)">Join code · KP4M8T</div><span class="pill" style="background:var(--muted);margin-top:6px;display:inline-block">Draft</span></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:18px">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
+      <div style="font-size:18px;font-weight:800">Tripura Founder Workshop · <span style="color:var(--pilot)">live</span></div>
+      <div style="display:flex;gap:8px"><button class="chip">⬇ Export CSV</button><button class="chip on">📺 Present mode</button></div>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="stat"><b>24</b><small>Participants</small></div>
+      <div class="stat"><b>19</b><small>Completed</small></div>
+      <div class="stat"><b>7</b><small>Sectors</small></div>
+    </div>
+    <div style="margin-top:18px"><h4 style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Readiness distribution</h4>
+      <div class="dist">
+        <div class="row"><span>Idea Clarity</span><div class="track"><i style="width:20%;background:var(--idea)"></i></div><b>4</b></div>
+        <div class="row"><span>Discovery Ready</span><div class="track"><i style="width:30%;background:var(--discovery)"></i></div><b>6</b></div>
+        <div class="row"><span>MVP Candidate</span><div class="track"><i style="width:35%;background:var(--mvp)"></i></div><b>7</b></div>
+        <div class="row"><span>Pilot Ready</span><div class="track"><i style="width:22%;background:var(--pilot)"></i></div><b>4</b></div>
+        <div class="row"><span>Revenue Ready</span><div class="track"><i style="width:15%;background:var(--revenue)"></i></div><b>3</b></div>
+      </div>
+    </div>
+    <table class="subs">
+      <thead><tr><th>Founder</th><th>Startup</th><th>Sector</th><th>Stage</th><th>Done</th></tr></thead>
+      <tbody>
+        <tr><td>Asha Rao</td><td>KiranaLoop</td><td>Retail tech</td><td><span class="pill" style="background:var(--pilot)">Pilot Ready</span></td><td>2m ago</td></tr>
+        <tr><td>Vikram N.</td><td>FarmDirect</td><td>Agri</td><td><span class="pill" style="background:var(--mvp)">MVP Candidate</span></td><td>5m ago</td></tr>
+        <tr><td>Meera S.</td><td>TutorNest</td><td>Edtech</td><td><span class="pill" style="background:var(--discovery)">Discovery Ready</span></td><td>8m ago</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;display:flex;gap:24px;flex-wrap:wrap">
+      <div><h4 style="margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Live views</h4>
+        <div class="toggle"><span class="sw"></span>Aggregate dashboard</div>
+        <div class="toggle"><span class="sw"></span>Live word cloud</div>
+        <div class="toggle off"><span class="sw"></span>Progression board</div>
+      </div>
+      <div><h4 style="margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Options</h4>
+        <div class="toggle"><span class="sw"></span>AI coach probes</div>
+        <div class="toggle off"><span class="sw"></span>Show startup names</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTOR -->
+  <h2 class="section" id="projector">Part 4</h2>
+  <h3 class="section">📺 Projector mode — what the room sees</h3>
+  <div class="switch">
+    <button class="on" onclick="showView('agg',this)">Aggregate</button>
+    <button onclick="showView('cloud',this)">Word cloud</button>
+    <button onclick="showView('prog',this)">Progression</button>
+  </div>
+
+  <div id="agg" class="view on">
+    <div class="stage-dark">
+      <div class="lbl">Founders in the room</div>
+      <div class="big" style="color:#fff">24</div>
+      <div style="margin-top:20px">
+        <div class="dist" style="gap:12px">
+          <div class="row" style="color:#c7d2fe"><span style="color:#9aa4b2">Idea Clarity</span><div class="track" style="background:#1e263c"><i style="width:20%;background:var(--idea)"></i></div><b>4</b></div>
+          <div class="row" style="color:#c7d2fe"><span style="color:#9aa4b2">Discovery Ready</span><div class="track" style="background:#1e263c"><i style="width:30%;background:var(--discovery)"></i></div><b>6</b></div>
+          <div class="row" style="color:#c7d2fe"><span style="color:#9aa4b2">MVP Candidate</span><div class="track" style="background:#1e263c"><i style="width:35%;background:var(--mvp)"></i></div><b>7</b></div>
+          <div class="row" style="color:#c7d2fe"><span style="color:#9aa4b2">Pilot Ready</span><div class="track" style="background:#1e263c"><i style="width:22%;background:var(--pilot)"></i></div><b>4</b></div>
+          <div class="row" style="color:#c7d2fe"><span style="color:#9aa4b2">Revenue Ready</span><div class="track" style="background:#1e263c"><i style="width:15%;background:var(--revenue)"></i></div><b>3</b></div>
+        </div>
+      </div>
+      <div class="foot"><span>Scan to join · founderkit.quantana.top/w/H2D3G9</span><span style="font-size:22px">H2D3G9</span></div>
+    </div>
+  </div>
+
+  <div id="cloud" class="view">
+    <div class="stage-dark">
+      <div class="lbl">What founders are solving</div>
+      <div class="cloud">
+        <span style="font-size:52px">customers</span><span style="font-size:30px;color:#a78bfa">reorders</span>
+        <span style="font-size:44px">kirana</span><span style="font-size:26px;color:#93c5fd">farmers</span>
+        <span style="font-size:38px;color:#fcd34d">payment</span><span style="font-size:28px">tutors</span>
+        <span style="font-size:34px;color:#86efac">retention</span><span style="font-size:24px">trust</span>
+        <span style="font-size:40px;color:#c4b5fd">distribution</span><span style="font-size:22px">pilots</span>
+      </div>
+      <div class="foot"><span>Live · updates as founders submit</span><span style="font-size:22px">H2D3G9</span></div>
+    </div>
+  </div>
+
+  <div id="prog" class="view">
+    <div class="stage-dark">
+      <div class="lbl">Readiness progression — every founder is moving forward</div>
+      <div class="prog">
+        <div class="col"><h6>Idea</h6><div class="who">Founder #3</div><div class="who">Founder #11</div></div>
+        <div class="col"><h6>Discovery</h6><div class="who">Founder #2</div><div class="who">Founder #7</div><div class="who">Founder #14</div></div>
+        <div class="col"><h6>MVP</h6><div class="who">Founder #5</div><div class="who">Founder #9</div></div>
+        <div class="col"><h6>Pilot</h6><div class="who">Founder #1</div><div class="who">Founder #18</div></div>
+        <div class="col"><h6>Revenue</h6><div class="who">Founder #6</div></div>
+      </div>
+      <div class="foot"><span>Aliased & positive — never a ranking</span><span style="font-size:22px">H2D3G9</span></div>
+    </div>
+    <div class="legend"><span><b style="background:var(--idea)"></b>Idea</span><span><b style="background:var(--discovery)"></b>Discovery</span><span><b style="background:var(--mvp)"></b>MVP</span><span><b style="background:var(--pilot)"></b>Pilot</span><span><b style="background:var(--revenue)"></b>Revenue</span></div>
+  </div>
+
+  <div class="note">🔎 This is a static design mockup. The real app (built & deployed) has the live AI scoring, autosave, real QR codes, auth, and Framer-Motion animations. Coming next: email OTP login + emailing founders their snapshot (via SendGrid, from noreply@quantana.top).</div>
+</div>
+
+<script>
+  function showView(id,btn){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    document.getElementById(id).classList.add('on');
+    document.querySelectorAll('.switch button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+</script>
+</body>
+</html>
