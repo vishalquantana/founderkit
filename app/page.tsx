@@ -7,7 +7,7 @@ export default function Home() {
       <div className="w-full max-w-md">
         <div className="mb-10 flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/quantana-logo.svg" alt="Quantana" className="h-7 w-auto" />
+          <img src="/quantana-logo.png" alt="Quantana" className="h-7 w-auto" />
         </div>
 
         <div className="rounded-3xl border border-[#e9e2d8] bg-white p-8 shadow-[0_10px_30px_-12px_rgba(31,36,48,.18)]">

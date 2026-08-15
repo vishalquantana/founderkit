@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MVP Snapshot — Design Personalities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@400;600;800&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0f;color:#fff;font-family:'Sora',sans-serif;padding:32px}
+  .head{max-width:1200px;margin:0 auto 28px}
+  .head h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .head p{color:#8b8b9e;margin-top:6px;max-width:620px}
+  .grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+  .card{border-radius:24px;overflow:hidden;position:relative;min-height:520px;display:flex;flex-direction:column}
+  .meta{position:absolute;top:16px;left:16px;z-index:5;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;border-radius:999px;backdrop-filter:blur(8px)}
+  .fontnote{position:absolute;top:16px;right:16px;z-index:5;font-size:10.5px;font-weight:600;opacity:.65}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:56px 34px 34px}
+  .logo{font-weight:800;letter-spacing:-.02em}
+  .kick{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+  .stage{display:inline-flex;align-items:center;gap:8px;font-weight:700;padding:8px 16px;border-radius:999px;margin:14px 0}
+  .h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .sub{margin-top:8px;font-size:14px;line-height:1.5}
+  .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:22px}
+  .mini div{border-radius:12px;padding:10px;font-size:10px;font-weight:600}
+  .btn{margin-top:22px;display:inline-flex;align-items:center;gap:8px;font-weight:700;padding:12px 22px;border-radius:999px;width:fit-content;font-size:14px}
+
+  /* A — AURORA (light, soft-futurism, Sora/Outfit) */
+  .aurora{background:
+     radial-gradient(120% 80% at 0% 0%, #efe9ff 0%, transparent 55%),
+     radial-gradient(120% 80% at 100% 100%, #dff7f4 0%, transparent 55%),
+     #fbfaff;color:#241b3a;font-family:'Outfit',sans-serif}
+  .aurora .meta{background:rgba(255,255,255,.7);color:#6b1f9c}
+  .aurora .fontnote{color:#5b5570}
+  .aurora .logo{color:#6b1f9c}
+  .aurora .kick{color:#8b5cf6}
+  .aurora .stage{background:linear-gradient(135deg,#e9fbf1,#dcf3ff);color:#0f9d58;border:1px solid #bfe9d4}
+  .aurora .h1{background:linear-gradient(90deg,#6b1f9c,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .aurora .sub{color:#5b5570}
+  .aurora .mini div{background:#fff;border:1px solid #ece7f7;color:#6b6480;box-shadow:0 8px 24px -14px rgba(80,40,140,.25)}
+  .aurora .btn{background:linear-gradient(135deg,#6b1f9c,#8b5cf6);color:#fff}
+
+  /* B — NEBULA (dark glass, Space Grotesk, neon) */
+  .nebula{background:
+     radial-gradient(100% 70% at 80% 0%, #2a0f4d 0%, transparent 60%),
+     radial-gradient(90% 60% at 0% 100%, #06283d 0%, transparent 60%),
+     #0a0a14;color:#eef;font-family:'Space Grotesk',sans-serif}
+  .nebula .meta{background:rgba(139,92,246,.15);color:#c4b5fd;border:1px solid rgba(139,92,246,.35)}
+  .nebula .fontnote{color:#8b8bb0}
+  .nebula .logo{color:#c4b5fd}
+  .nebula .kick{color:#22d3ee}
+  .nebula .stage{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3);box-shadow:0 0 24px -6px rgba(74,222,128,.4)}
+  .nebula .h1{color:#fff;text-shadow:0 0 30px rgba(139,92,246,.5)}
+  .nebula .sub{color:#a9a9c9}
+  .nebula .mini div{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#b8b8d8;backdrop-filter:blur(8px)}
+  .nebula .btn{background:linear-gradient(135deg,#8b5cf6,#22d3ee);color:#08121e;box-shadow:0 0 30px -8px rgba(34,211,238,.6)}
+
+  /* C — SIGNAL (white, mono/technical, JetBrains) */
+  .signal{background:#fff;color:#0d0d12;font-family:'JetBrains Mono',monospace}
+  .signal .meta{background:#0d0d12;color:#fff}
+  .signal .fontnote{color:#9a9a9a}
+  .signal .logo{color:#6b1f9c;font-family:'Space Grotesk',sans-serif;font-weight:700}
+  .signal .kick{color:#6b1f9c}
+  .signal .stage{background:#f2fff7;color:#0b8a44;border:1px solid #0b8a44;border-radius:6px}
+  .signal .h1{font-family:'Space Grotesk',sans-serif;color:#0d0d12}
+  .signal .sub{color:#5a5a66}
+  .signal .mini div{background:#fafafa;border:1px solid #e6e6ea;color:#55555f;border-radius:6px}
+  .signal .btn{background:#0d0d12;color:#fff;border-radius:8px}
+  .signal .stage,.signal .meta{letter-spacing:0}
+
+  /* D — PULSE (bold display, Chakra/Orbitron, energetic) */
+  .pulse{background:linear-gradient(160deg,#160a28,#0a0a14);color:#fff;font-family:'Chakra Petch',sans-serif}
+  .pulse .meta{background:rgba(212,160,23,.15);color:#f4c748;border:1px solid rgba(212,160,23,.4)}
+  .pulse .fontnote{color:#9a8bb5}
+  .pulse .logo{font-family:'Orbitron',sans-serif;color:#c4b5fd;letter-spacing:.04em}
+  .pulse .kick{color:#f472b6}
+  .pulse .stage{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(244,114,182,.2));color:#f9a8d4;border:1px solid rgba(244,114,182,.35)}
+  .pulse .h1{font-family:'Orbitron',sans-serif;font-weight:800;background:linear-gradient(90deg,#c4b5fd,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pulse .sub{color:#b6a9cf}
+  .pulse .mini div{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#c9bce0}
+  .pulse .btn{background:linear-gradient(135deg,#8b5cf6,#f472b6);color:#fff;text-transform:uppercase;letter-spacing:.06em}
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>MVP Readiness Snapshot — design personalities</h1>
+    <p>Four futuristic directions for the same results screen. Clean &amp; simple, but each with a distinct font + light/dark feel. Pick one (or mix — e.g. “Aurora light for founders, Nebula dark for the projector”). Quantana purple stays the anchor throughout.</p>
+  </div>
+
+  <div class="grid">
+    <!-- A -->
+    <div class="card aurora">
+      <span class="meta">A · Aurora</span><span class="fontnote">Outfit / Sora · light</span>
+      <div class="body">
+        <div class="logo" style="font-size:20px">quantana</div>
+        <div style="margin-top:20px" class="kick">Your MVP readiness</div>
+        <div class="stage">● Pilot Ready</div>
+        <div class="h1">You’re ready to run a controlled pilot.</div>
+        <div class="sub">Soft aurora gradients, rounded geometric type, airy and optimistic. Feels premium and human.</div>
+        <div class="mini"><div>Problem ✓</div><div>Solution ✓</div><div>Channels ◔</div></div>
+        <div class="btn">Download PDF →</div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="card nebula">
+      <span class="meta">B · Nebula</span><span class="fontnote">Space Grotesk · dark neon</span>
+      <div class="body">
+        <div class="logo" style="font-size:20px">quantana</div>
+        <div style="margin-top:20px" class="kick">Your MVP readiness</div>
+        <div class="stage">◆ Pilot Ready</div>
+        <div class="h1">You’re ready to run a controlled pilot.</div>
+        <div class="sub">Deep-space glassmorphism, neon violet-cyan glow. Sci-fi, focused, great on a projector.</div>
+        <div class="mini"><div>Problem ✓</div><div>Solution ✓</div><div>Channels ◔</div></div>
+        <div class="btn">Download PDF →</div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="card signal">
+      <span class="meta">C · Signal</span><span class="fontnote">JetBrains Mono · technical</span>
+      <div class="body">
+        <div class="logo" style="font-size:20px">quantana</div>
+        <div style="margin-top:20px" class="kick">// your mvp readiness</div>
+        <div class="stage">[ PILOT_READY ]</div>
+        <div class="h1">You’re ready to run a controlled pilot.</div>
+        <div class="sub">Crisp white, monospace data-feel, sharp corners. Precise and analytical — looks like a serious tool.</div>
+        <div class="mini"><div>problem: ok</div><div>solution: ok</div><div>channels: ~</div></div>
+        <div class="btn">download.pdf →</div>
+      </div>
+    </div>
+
+    <!-- D -->
+    <div class="card pulse">
+      <span class="meta">D · Pulse</span><span class="fontnote">Orbitron / Chakra · bold</span>
+      <div class="body">
+        <div class="logo" style="font-size:20px">QUANTANA</div>
+        <div style="margin-top:20px" class="kick">Your MVP readiness</div>
+        <div class="stage">▲ Pilot Ready</div>
+        <div class="h1">PILOT READY.</div>
+        <div class="sub">High-energy display type, gradient headlines. Bold and memorable — great for a live-event stage moment.</div>
+        <div class="mini"><div>Problem ✓</div><div>Solution ✓</div><div>Channels ◔</div></div>
+        <div class="btn">Download PDF →</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="head" style="margin-top:28px">
+    <p style="color:#6b6b80;font-size:12.5px">My pick for “clean, simple, futuristic”: <b style="color:#c4b5fd">A · Aurora</b> for the founder-facing screens (approachable + premium) with <b style="color:#c4b5fd">B · Nebula</b> as the projector/present-mode theme (the dark room wants the glow). Tell me which and I’ll reskin the live app to match — fonts, colors, and motion.</p>
+  </div>
+</body>
+</html>
