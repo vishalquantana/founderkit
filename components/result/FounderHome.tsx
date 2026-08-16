@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { gaugePercent } from "@/lib/gauge";
@@ -9,6 +11,7 @@ import {
   CanvasMiniMapLegend,
   resolveMiniMapCells,
 } from "@/components/result/CanvasMiniMap";
+import { ProfileEditForm } from "@/components/participant/ProfileEditForm";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey } from "@/db/schema";
 
@@ -129,6 +132,25 @@ function LockIcon() {
   );
 }
 
+function PencilIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-3.5 w-3.5"
+      aria-hidden="true"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
 export function FounderHome({
   participant,
   result,
@@ -138,7 +160,9 @@ export function FounderHome({
   code,
   pid,
 }: FounderHomeProps) {
+  const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const initial = participant.founderName.trim().charAt(0).toUpperCase() || "?";
 
   const tags = [
@@ -254,33 +278,67 @@ export function FounderHome({
 
       {/* Profile card */}
       <motion.div {...cardMotionProps} className="pulse-card p-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-extrabold text-white"
-            style={{ background: "var(--pulse-gradient)" }}
+        {isEditingProfile ? (
+          <ProfileEditForm
+            pid={pid}
+            initial={{
+              founderName: participant.founderName,
+              startupName: participant.startupName,
+              sector: participant.sector ?? "",
+              stage: participant.stage ?? "",
+              teamSize: participant.teamSize ?? "",
+              productType: participant.productType ?? "",
+              businessModel: participant.businessModel ?? "",
+            }}
+            onSaved={() => {
+              setIsEditingProfile(false);
+              router.refresh();
+            }}
+            onCancel={() => setIsEditingProfile(false)}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsEditingProfile(true)}
+            className="flex w-full flex-col text-left"
+            aria-label="Edit your profile"
           >
-            {initial}
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--pulse-text)" }}>
-              {participant.founderName}
-            </p>
-            <p className="text-xs text-muted">{participant.startupName} · Founder</p>
-          </div>
-        </div>
-        {tags.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {tags.map((tag) => (
+            <div className="flex items-center gap-3">
+              <div
+                className="font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-extrabold text-white"
+                style={{ background: "var(--pulse-gradient)" }}
+              >
+                {initial}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold" style={{ color: "var(--pulse-text)" }}>
+                  {participant.founderName}
+                </p>
+                <p className="text-xs text-muted">{participant.startupName} · Founder</p>
+              </div>
               <span
-                key={tag}
-                className="rounded-full border px-2.5 py-1 text-[11px] text-muted"
+                className="flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] text-muted"
                 style={{ borderColor: "var(--pulse-border-strong)" }}
               >
-                {tag}
+                <PencilIcon />
+                Edit
               </span>
-            ))}
-          </div>
-        ) : null}
+            </div>
+            {tags.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border px-2.5 py-1 text-[11px] text-muted"
+                    style={{ borderColor: "var(--pulse-border-strong)" }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </button>
+        )}
       </motion.div>
 
       {showResult ? (

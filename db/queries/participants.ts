@@ -21,6 +21,13 @@ export async function getParticipant(id: string): Promise<Participant | undefine
   return db.query.participants.findFirst({ where: eq(participants.id, id) });
 }
 
+export async function updateParticipant(
+  id: string,
+  fields: Partial<Pick<Participant, "founderName" | "startupName" | "sector" | "stage" | "teamSize" | "productType" | "businessModel">>,
+): Promise<void> {
+  await db.update(participants).set(fields).where(eq(participants.id, id));
+}
+
 export async function completeParticipant(id: string): Promise<void> {
   await db.update(participants).set({ completedAt: new Date() }).where(eq(participants.id, id));
 }

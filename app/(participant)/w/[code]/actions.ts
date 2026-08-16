@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
-import { createParticipant, completeParticipant } from "@/db/queries/participants";
+import { createParticipant, completeParticipant, updateParticipant } from "@/db/queries/participants";
 import { saveResponse } from "@/db/queries/responses";
 import { getWorkshopById } from "@/db/queries/workshops";
 import { maybeEmailResult } from "@/email/send-result";
@@ -99,4 +99,28 @@ export async function finishParticipant(participantId: string): Promise<void> {
 export async function reevaluateParticipant(participantId: string): Promise<void> {
   await assertOwnsParticipant(participantId);
   await evaluateParticipant(participantId); // re-reads responses, regenerates result, upserts via saveResult
+}
+
+export async function updateParticipantProfile(input: {
+  participantId: string;
+  founderName: string;
+  startupName: string;
+  sector?: string;
+  stage?: string;
+  teamSize?: string;
+  productType?: string;
+  businessModel?: string;
+}): Promise<void> {
+  await assertOwnsParticipant(input.participantId);
+  const founderName = requireNonEmpty(input.founderName, "founderName");
+  const startupName = requireNonEmpty(input.startupName, "startupName");
+  await updateParticipant(input.participantId, {
+    founderName,
+    startupName,
+    sector: input.sector?.trim() || null,
+    stage: input.stage?.trim() || null,
+    teamSize: input.teamSize?.trim() || null,
+    productType: input.productType?.trim() || null,
+    businessModel: input.businessModel?.trim() || null,
+  });
 }
