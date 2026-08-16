@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { hasVoted } from "@/lib/voting";
+import { hasVoted, recordChoice, getChoice } from "@/lib/voting";
 import { optionColor } from "@/lib/poll-colors";
 
 export interface FounderPollsProps {
@@ -88,34 +88,50 @@ function ResultsView({
 }) {
   const counts = optimistic ? optimistic.counts : poll.counts;
   const total = optimistic ? optimistic.total : poll.total;
+  const myChoice = optimistic ? optimistic.index : getChoice(poll.id);
 
   return (
-    <div className="mt-4 flex flex-col gap-2">
+    <div className="mt-4 flex flex-col gap-2.5">
       {poll.options.map((option, i) => {
         const count = counts[i] ?? 0;
         const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-        const isChosen = optimistic?.index === i;
+        const isChosen = myChoice === i;
+        const color = optionColor(i);
         return (
-          <div key={i} className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs">
-              <span
-                className="font-semibold"
-                style={{ color: isChosen ? optionColor(i) : "var(--pulse-text)" }}
-              >
-                {OPTION_LABELS[i] ?? i + 1}. {option}
-                {isChosen ? " ✓" : ""}
+          <div
+            key={i}
+            className="flex flex-col gap-1.5 rounded-xl p-1.5"
+            style={isChosen ? { boxShadow: `0 0 0 2px ${color}` } : undefined}
+          >
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="flex items-center gap-2 font-semibold" style={{ color: "var(--pulse-text)" }}>
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+                  style={{ background: color, color: "#0a0a14" }}
+                >
+                  {OPTION_LABELS[i] ?? i + 1}
+                </span>
+                {option}
+                {isChosen ? (
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                    style={{ background: color, color: "#0a0a14" }}
+                  >
+                    ✓ You
+                  </span>
+                ) : null}
               </span>
-              <span className="tabular-nums text-muted">
+              <span className="shrink-0 tabular-nums text-muted">
                 {count} · {pct}%
               </span>
             </div>
             <div
-              className="h-2 w-full overflow-hidden rounded-full"
+              className="h-2.5 w-full overflow-hidden rounded-full"
               style={{ background: "var(--pulse-track)" }}
             >
               <div
                 className="h-full rounded-full transition-[width] duration-300"
-                style={{ width: `${pct}%`, background: optionColor(i) }}
+                style={{ width: `${pct}%`, background: color }}
               />
             </div>
           </div>
@@ -203,6 +219,7 @@ function PollCard({
     setReAnswering(false);
     setError(false);
     markVoted(poll.id);
+    recordChoice(poll.id, index);
     onVoted(poll.id);
 
     fetch(`/api/polls/${poll.id}/vote`, {
@@ -245,23 +262,26 @@ function PollCard({
         </>
       ) : (
         <div className="mt-4 flex flex-col gap-2.5">
-          {poll.options.map((option, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => handleVote(i)}
-              className="pulse-chip flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-semibold tracking-tight"
-              style={{ borderRadius: "1rem" }}
-            >
-              <span
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                style={{ background: "var(--pulse-surface)", color: "var(--pulse-text)" }}
+          {poll.options.map((option, i) => {
+            const color = optionColor(i);
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleVote(i)}
+                className="pulse-chip flex w-full items-center gap-3 border-l-4 px-4 py-3.5 text-left text-sm font-semibold tracking-tight"
+                style={{ borderRadius: "1rem", borderLeftColor: color }}
               >
-                {OPTION_LABELS[i] ?? i + 1}
-              </span>
-              <span>{option}</span>
-            </button>
-          ))}
+                <span
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                  style={{ background: color, color: "#0a0a14" }}
+                >
+                  {OPTION_LABELS[i] ?? i + 1}
+                </span>
+                <span>{option}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -303,7 +323,7 @@ export function FounderPolls({ code, participantId }: FounderPollsProps) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 pb-20 pt-2">
+    <div className="flex flex-1 flex-col gap-4 pb-28 pt-2">
       <div>
         <p className="pulse-kicker">Polls</p>
         <h1 className="font-display mt-1 text-xl font-bold" style={{ color: "var(--pulse-text)" }}>

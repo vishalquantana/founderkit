@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { motion, useReducedMotion, AnimatePresence } from "motion/react";
-import { hasVoted } from "@/lib/voting";
+import { hasVoted, recordChoice, getChoice } from "@/lib/voting";
 import { optionColor } from "@/lib/poll-colors";
 
 export interface PollTakeoverProps {
@@ -127,7 +127,7 @@ export function PollTakeover({ code }: PollTakeoverProps) {
     activePollId.current = poll.id;
     const answered = hasVoted(votedIds, poll.id);
     setPhase(answered ? "results" : "answering");
-    setChoiceIndex(null);
+    setChoiceIndex(answered ? getChoice(poll.id) : null);
     setOptimistic(null);
     setVoteError(false);
     setDismissed(false);
@@ -163,6 +163,7 @@ export function PollTakeover({ code }: PollTakeoverProps) {
     setPhase("results");
     setVoteError(false);
     markVoted(poll.id);
+    recordChoice(poll.id, index);
     setVotedIds(readVotedIds());
 
     fetch(`/api/polls/${poll.id}/vote`, {
@@ -283,19 +284,26 @@ export function PollTakeover({ code }: PollTakeoverProps) {
               {poll.question}
             </h2>
             <div className="flex w-full flex-col gap-3">
-              {poll.options.map((option, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleVote(i)}
-                  className="pulse-btn-secondary flex w-full items-center gap-4 rounded-2xl border border-[var(--pulse-border)] px-6 py-5 text-left text-lg font-semibold tracking-tight transition-colors duration-150"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold">
-                    {OPTION_LABELS[i] ?? i + 1}
-                  </span>
-                  <span>{option}</span>
-                </button>
-              ))}
+              {poll.options.map((option, i) => {
+                const color = optionColor(i);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleVote(i)}
+                    className="pulse-btn-secondary flex w-full items-center gap-4 rounded-2xl border-2 px-6 py-5 text-left text-lg font-semibold tracking-tight transition-colors duration-150"
+                    style={{ borderColor: color }}
+                  >
+                    <span
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                      style={{ background: color, color: "#0a0a14" }}
+                    >
+                      {OPTION_LABELS[i] ?? i + 1}
+                    </span>
+                    <span>{option}</span>
+                  </button>
+                );
+              })}
             </div>
             <button
               type="button"
