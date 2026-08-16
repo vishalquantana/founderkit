@@ -145,10 +145,8 @@ function ResultsView({
 }
 
 function LockedPollCard({ poll }: { poll: PollListItem }) {
-  const label =
-    poll.status === "draft"
-      ? "Opens when the presenter starts this question"
-      : "Closed";
+  const isUpcoming = poll.status === "draft";
+  const label = isUpcoming ? "Opens when the presenter starts this question" : "Closed";
   return (
     <div className="pulse-card p-4 opacity-60">
       <div className="flex items-start gap-3">
@@ -159,7 +157,13 @@ function LockedPollCard({ poll }: { poll: PollListItem }) {
           <LockIcon />
         </div>
         <div>
-          <h2 className="font-display text-base font-bold leading-snug" style={{ color: "var(--pulse-text)" }}>
+          {/* Blur upcoming questions so founders can't read them ahead of time. */}
+          <h2
+            className={`font-display text-base font-bold leading-snug ${
+              isUpcoming ? "select-none blur-[7px]" : ""
+            }`}
+            style={{ color: "var(--pulse-text)" }}
+          >
             {poll.question}
           </h2>
           <p className="mt-1 text-xs text-muted">{label}</p>
