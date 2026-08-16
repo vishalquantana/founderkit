@@ -60,6 +60,12 @@ export async function deleteAllPollVotes(workshopId: string): Promise<void> {
   );
 }
 
+/** Disable every poll in a workshop (set them all back to draft, so none is
+ * live). Used by the presenter's "reset all" to return to a clean slate. */
+export async function disableAllPolls(workshopId: string): Promise<void> {
+  await db.update(polls).set({ status: "draft" }).where(eq(polls.workshopId, workshopId));
+}
+
 export async function getPoll(pollId: string): Promise<Poll | undefined> {
   return db.query.polls.findFirst({ where: eq(polls.id, pollId) });
 }

@@ -12,6 +12,7 @@ import {
   listPolls,
   deletePollVotes,
   deleteAllPollVotes,
+  disableAllPolls,
 } from "@/db/queries/polls";
 import { assertOwnership } from "./ownership";
 
@@ -84,5 +85,6 @@ export async function resetAllPollsAction(id: string): Promise<void> {
   await assertWorkshopAccess(id);
 
   await deleteAllPollVotes(id);
+  await disableAllPolls(id);
   revalidatePath(`/workshops/${id}`);
 }
