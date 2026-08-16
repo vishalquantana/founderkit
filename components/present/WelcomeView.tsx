@@ -44,15 +44,17 @@ export function WelcomeView({ workshopName, joinCode, joinUrl }: WelcomeViewProp
           </h1>
         </div>
 
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex w-full max-w-full flex-col items-center gap-3">
           <p className="pulse-kicker text-sm tracking-[0.4em] sm:text-base">Join the room</p>
           <div className="rounded-lg bg-white p-2">
             <QRCodeSVG value={joinUrl} size={160} level="M" />
           </div>
-          <span className="font-display text-gradient text-[5.5rem] font-black leading-none tracking-[0.28em] sm:text-[8rem]">
+          <span className="font-display text-gradient block max-w-full text-[clamp(2rem,6vw,5rem)] font-black leading-none tracking-[0.1em]">
             {joinCode}
           </span>
-          <p className="text-2xl font-medium text-[var(--pulse-text-muted)] sm:text-3xl">{joinUrl}</p>
+          <p className="max-w-full break-all text-base font-medium text-[var(--pulse-text-muted)] sm:text-lg">
+            {joinUrl}
+          </p>
         </div>
       </div>
     </div>

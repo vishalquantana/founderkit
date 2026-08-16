@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { HomeCodeEntry } from "@/components/HomeCodeEntry";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-16 text-foreground">
       <div className="w-full max-w-md">
@@ -29,10 +32,21 @@ export default function Home() {
         </div>
 
         <div className="mt-6 text-center text-sm text-muted">
-          Presenter?{" "}
-          <Link href="/login" className="font-semibold text-[#f472b6] hover:underline">
-            Sign in →
-          </Link>
+          {session?.user ? (
+            <Link
+              href="/dashboard"
+              className="pulse-btn inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold"
+            >
+              <span>Go to Presenter Dashboard →</span>
+            </Link>
+          ) : (
+            <>
+              Presenter?{" "}
+              <Link href="/login" className="font-semibold text-[#f472b6] hover:underline">
+                Sign in →
+              </Link>
+            </>
+          )}
         </div>
 
         <p className="mt-10 text-center text-xs text-[#7a7a99]">
