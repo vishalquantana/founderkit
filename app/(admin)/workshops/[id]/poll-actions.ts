@@ -10,6 +10,7 @@ import {
   activatePoll,
   closePoll,
   listPolls,
+  deletePollVotes,
 } from "@/db/queries/polls";
 import { assertOwnership } from "./ownership";
 
@@ -68,5 +69,12 @@ export async function closePollAction(id: string, pollId: string): Promise<void>
   await assertWorkshopAccess(id);
 
   await closePoll(pollId);
+  revalidatePath(`/workshops/${id}`);
+}
+
+export async function resetPollVotesAction(id: string, pollId: string): Promise<void> {
+  await assertWorkshopAccess(id);
+
+  await deletePollVotes(pollId);
   revalidatePath(`/workshops/${id}`);
 }

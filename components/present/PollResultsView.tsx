@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
+import { optionColor } from "@/lib/poll-colors";
 
 export interface PollResultsViewProps {
   question: string;
@@ -46,9 +47,13 @@ export function PollResultsView({ question, options, counts, total, joinUrl }: P
           const count = counts[i] ?? 0;
           const pct = percentFor(count, total);
           const label = String.fromCharCode(65 + i);
+          const color = optionColor(i);
           return (
             <div key={i} className="flex items-center gap-4">
-              <span className="font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-strong text-lg font-bold text-[var(--pulse-text)]">
+              <span
+                className="font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 bg-surface-strong text-lg font-bold text-[var(--pulse-text)]"
+                style={{ borderColor: color }}
+              >
                 {label}
               </span>
               <div className="flex-1">
@@ -63,7 +68,7 @@ export function PollResultsView({ question, options, counts, total, joinUrl }: P
                 <div className="h-8 w-full overflow-hidden rounded-full bg-surface-strong">
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: "var(--pulse-gradient)" }}
+                    style={{ background: color }}
                     initial={shouldReduceMotion ? { width: `${pct}%` } : { width: 0 }}
                     animate={{ width: `${pct}%` }}
                     transition={

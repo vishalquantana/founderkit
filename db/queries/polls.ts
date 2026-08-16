@@ -42,6 +42,11 @@ export async function deletePoll(pollId: string): Promise<void> {
   await db.delete(polls).where(eq(polls.id, pollId));
 }
 
+/** Delete all votes for a poll, resetting its tally to zero without deleting the poll itself. */
+export async function deletePollVotes(pollId: string): Promise<void> {
+  await db.delete(pollVotes).where(eq(pollVotes.pollId, pollId));
+}
+
 export async function getPoll(pollId: string): Promise<Poll | undefined> {
   return db.query.polls.findFirst({ where: eq(polls.id, pollId) });
 }
