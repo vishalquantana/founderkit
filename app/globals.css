@@ -127,6 +127,39 @@ body::before {
   body::before { animation: none; }
 }
 
+/* Shimmer utility for loading skeletons. */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--pulse-text) 8%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { animation: none; }
+}
+
+/* Universal press-down feedback so every tap feels tactile. Scoped to
+   no-preference so we respect reduced-motion; `.pulse-btn`/`.pulse-btn-secondary`
+   already define their own active-state scale (same direction, so no conflict)
+   and simply take precedence via specificity/source order below. */
+@media (prefers-reduced-motion: no-preference) {
+  a:active,
+  button:active:not(:disabled),
+  [role="button"]:active {
+    transform: scale(0.97);
+  }
+}
+
 /* The Quantana wordmark is purple (good on the light canvas); on dark surfaces
    render it white for contrast. */
 [data-theme="dark"] .nav-logo {
