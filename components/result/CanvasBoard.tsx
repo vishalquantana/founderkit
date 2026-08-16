@@ -124,21 +124,31 @@ export function CanvasBoard({ result, answers, suggestions, className }: CanvasB
             }}
             className="relative"
           >
-            <div
+            <motion.div
               className="grid h-full w-full border border-black bg-white"
               style={{
                 gridTemplateColumns: "repeat(10, minmax(0, 1fr))",
                 gridTemplateRows: "repeat(3, minmax(0, 1fr))",
               }}
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: shouldReduceMotion ? 0 : 0.05 } },
+              }}
+              initial="hidden"
+              animate="show"
             >
               {LEAN_CANVAS_BLOCKS.map((block) => {
                 const main = pieces.get(block.key)!;
                 const subPiece = block.sub ? pieces.get(`${block.key}:${block.sub.key}`) : null;
                 return (
-                  <div
+                  <motion.div
                     key={block.key}
                     style={{ gridArea: block.gridArea }}
                     className="flex flex-col divide-y divide-black border border-black overflow-hidden"
+                    variants={{
+                      hidden: shouldReduceMotion ? {} : { opacity: 0, scale: 0.94 },
+                      show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 26 } },
+                    }}
                   >
                     <div className="flex-1 overflow-hidden">
                       <CanvasCellHeader
@@ -157,10 +167,10 @@ export function CanvasBoard({ result, answers, suggestions, className }: CanvasB
                         />
                       </div>
                     ) : null}
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
 
             {/* Brand footer, echoing the template's wordmark corner */}
             <div className="pointer-events-none absolute bottom-1 right-1.5 flex items-center gap-1.5 opacity-80">

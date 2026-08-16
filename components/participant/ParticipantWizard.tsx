@@ -142,7 +142,7 @@ export function ParticipantWizard({ workshop }: ParticipantWizardProps) {
   return (
     <div className="flex flex-1 flex-col gap-6">
       <ProgressBar current={section.step} total={SECTIONS.length} />
-      <StepTransition stepKey={section.key} className="flex flex-1 flex-col">
+      <StepTransition stepKey={section.key} direction="forward" className="flex flex-1 flex-col">
         <SectionStep
           section={section}
           initialValue={answers[section.key]}

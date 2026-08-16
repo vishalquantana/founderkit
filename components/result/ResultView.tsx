@@ -157,7 +157,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
             {result.sevenDayPlan.map((day, index) => (
               <li
                 key={`${day.day}-${index}`}
-                className="pulse-card flex gap-3 px-4 py-3 text-sm leading-relaxed text-[#ECEAF6]"
+                className="pulse-card pulse-hover-lift flex gap-3 px-4 py-3 text-sm leading-relaxed text-[#ECEAF6]"
               >
                 <span className="font-display shrink-0 font-semibold text-[#A9A9C9]">{day.day}</span>
                 <span>{day.text}</span>
