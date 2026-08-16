@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { MotionConfig } from "@/components/motion/MotionConfig";
-import { FontSizeControl } from "@/components/FontSizeControl";
 
 export default function ParticipantLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,7 +11,6 @@ export default function ParticipantLayout({ children }: { children: ReactNode })
         >
           {children}
         </div>
-        <FontSizeControl />
       </div>
     </MotionConfig>
   );

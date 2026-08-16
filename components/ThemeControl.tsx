@@ -42,7 +42,7 @@ export function ThemeControl() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-50 flex items-center rounded-full border px-1 py-1"
+      className="flex items-center rounded-full border px-1 py-1"
       style={{
         background: "var(--pulse-surface-strong)",
         borderColor: "var(--pulse-border-strong)",

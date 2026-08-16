@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FontSizeControl } from "@/components/FontSizeControl";
+import { ThemeControl } from "@/components/ThemeControl";
 
 /**
  * Persistent top bar: Quantana wordmark + product name. Theme-aware
@@ -30,6 +32,10 @@ export function AppNav() {
           AI Cofounder
         </span>
       </Link>
+      <div className="flex items-center gap-2">
+        <FontSizeControl />
+        <ThemeControl />
+      </div>
     </header>
   );
 }

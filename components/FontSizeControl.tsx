@@ -34,7 +34,7 @@ export function FontSizeControl() {
 
   return (
     <div
-      className="fixed bottom-4 left-4 z-50 flex items-center gap-1 rounded-full border px-1.5 py-1"
+      className="flex items-center gap-1 rounded-full border px-1.5 py-1"
       style={{
         background: "var(--pulse-surface-strong)",
         borderColor: "var(--pulse-border-strong)",
