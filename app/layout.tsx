@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Orbitron, Chakra_Petch } from "next/font/google";
 import "./globals.css";
 import { AppNav } from "@/components/AppNav";
+import { ClientErrorListener } from "@/components/ClientErrorListener";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <ClientErrorListener />
         <AppNav />
         {children}
       </body>
