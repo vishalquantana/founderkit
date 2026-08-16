@@ -45,7 +45,7 @@ export default async function WorkshopDetailPage({
   );
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 p-6 sm:p-10">
+    <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-8 p-6 sm:p-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link href="/dashboard" className="text-sm text-muted transition-colors hover:text-foreground">
@@ -69,7 +69,8 @@ export default async function WorkshopDetailPage({
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+        {/* Main: stats + submissions */}
         <div className="flex flex-col gap-8">
           <StatsPanel workshopId={id} initialStats={stats} />
 
@@ -81,22 +82,25 @@ export default async function WorkshopDetailPage({
           </div>
         </div>
 
-        <div className="pulse-card p-5">
-          <WorkshopControls
-            workshopId={id}
-            status={workshop!.status as WorkshopStatus}
-            settings={workshop!.settings as WorkshopSettings}
-            onUpdateStatus={updateStatus}
-            onUpdateSettings={updateSettings}
-          />
-        </div>
-      </div>
+        {/* Sidebar: live polls (questions) + controls, sticky */}
+        <aside className="flex flex-col gap-6 lg:sticky lg:top-20">
+          <div>
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+              Live polls
+            </h2>
+            <PollManager workshopId={id} polls={polls} />
+          </div>
 
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
-          Live polls
-        </h2>
-        <PollManager workshopId={id} polls={polls} />
+          <div className="pulse-card p-5">
+            <WorkshopControls
+              workshopId={id}
+              status={workshop!.status as WorkshopStatus}
+              settings={workshop!.settings as WorkshopSettings}
+              onUpdateStatus={updateStatus}
+              onUpdateSettings={updateSettings}
+            />
+          </div>
+        </aside>
       </div>
     </main>
   );
