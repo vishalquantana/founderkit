@@ -53,11 +53,13 @@ export function LiveQuizChallenge({
   }, [questions.length]);
 
   function startQuiz() {
-    setPhase("playing");
+    const qList = buildQuizQuestions();
+    setQuestions(qList);
     setCurrentIndex(0);
     setAnswers([]);
     setTimeLeft(60);
     setSelectedOption(null);
+    setPhase("playing");
     startTimeRef.current = Date.now();
 
     if (timerRef.current) clearInterval(timerRef.current);
@@ -65,7 +67,7 @@ export function LiveQuizChallenge({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          finishQuiz();
+          finishQuiz(qList, []);
           return 0;
         }
         return prev - 1;
@@ -73,12 +75,13 @@ export function LiveQuizChallenge({
     }, 1000);
   }
 
-  async function finishQuiz(currentAnswers = answers) {
+  async function finishQuiz(qList = questions, currentAnswers = answers) {
     if (timerRef.current) clearInterval(timerRef.current);
     setPhase("submitting");
 
     const timeSpent = Math.min(60, Math.round((Date.now() - startTimeRef.current) / 1000));
-    const calculated = calculateQuizScore(questions, currentAnswers);
+    const activeQuestions = qList.length > 0 ? qList : questions;
+    const calculated = calculateQuizScore(activeQuestions, currentAnswers);
     const badge = personalityForScore(calculated);
 
     setFinalScore(calculated);
@@ -95,9 +98,9 @@ export function LiveQuizChallenge({
           badgeKey: badge.key,
           timeTakenSeconds: timeSpent,
           responses: currentAnswers.map((picked, i) => ({
-            qId: questions[i]?.id ?? i,
+            qId: activeQuestions[i]?.id ?? i,
             picked,
-            correct: picked === questions[i]?.answer,
+            correct: picked === activeQuestions[i]?.answer,
           })),
         }),
       });
@@ -124,7 +127,7 @@ export function LiveQuizChallenge({
         setCurrentIndex((i) => i + 1);
         setSelectedOption(null);
       } else {
-        finishQuiz(updatedAnswers);
+        finishQuiz(questions, updatedAnswers);
       }
     }, 450);
   }
