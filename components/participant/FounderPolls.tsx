@@ -175,18 +175,32 @@ function PollCard({
 }) {
   const [optimistic, setOptimistic] = useState<OptimisticVote | null>(null);
   const [error, setError] = useState(false);
+  const [reAnswering, setReAnswering] = useState(false);
 
   const answered = initiallyAnswered || optimistic !== null;
 
   function handleVote(index: number) {
-    if (optimistic) return;
+    if (optimistic && !reAnswering) return;
 
     // Optimistic: flip to results instantly, mark voted immediately, and
-    // fire the network request in the background without awaiting it.
-    const nextCounts = poll.counts.slice();
-    nextCounts[index] = (nextCounts[index] ?? 0) + 1;
-    const snapshot: OptimisticVote = { index, counts: nextCounts, total: poll.total + 1 };
+    // fire the network request in the background without awaiting it. On a
+    // re-vote (reAnswering), this replaces the prior choice rather than
+    // adding a new voter — the vote endpoint upserts by (pollId, voterId).
+    const baseCounts = (optimistic ? optimistic.counts : poll.counts).slice();
+    const baseTotal = optimistic ? optimistic.total : poll.total;
+    const prevIndex = reAnswering ? optimistic?.index : undefined;
+
+    if (prevIndex !== undefined && prevIndex !== index) {
+      baseCounts[prevIndex] = Math.max(0, (baseCounts[prevIndex] ?? 0) - 1);
+    }
+    if (prevIndex !== index) {
+      baseCounts[index] = (baseCounts[index] ?? 0) + 1;
+    }
+    const nextTotal = reAnswering ? baseTotal : baseTotal + 1;
+
+    const snapshot: OptimisticVote = { index, counts: baseCounts, total: nextTotal };
     setOptimistic(snapshot);
+    setReAnswering(false);
     setError(false);
     markVoted(poll.id);
     onVoted(poll.id);
@@ -215,8 +229,20 @@ function PollCard({
         {poll.question}
       </h2>
 
-      {answered ? (
-        <ResultsView poll={poll} optimistic={optimistic} />
+      {answered && !reAnswering ? (
+        <>
+          <ResultsView poll={poll} optimistic={optimistic} />
+          {isActive ? (
+            <button
+              type="button"
+              onClick={() => setReAnswering(true)}
+              className="mt-3 text-left text-xs font-semibold underline underline-offset-2"
+              style={{ color: "var(--pulse-violet)" }}
+            >
+              Change my answer
+            </button>
+          ) : null}
+        </>
       ) : (
         <div className="mt-4 flex flex-col gap-2.5">
           {poll.options.map((option, i) => (

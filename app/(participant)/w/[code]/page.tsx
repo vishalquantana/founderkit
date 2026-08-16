@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getWorkshopByJoinCode, type WorkshopSettings } from "@/db/queries/workshops";
 import { getParticipant } from "@/db/queries/participants";
+import { getActivePoll } from "@/db/queries/polls";
 import { ParticipantWizard } from "@/components/participant/ParticipantWizard";
 import { workshopJoinState } from "./join-state";
 import { NotLive } from "./not-live";
@@ -26,6 +27,10 @@ export default async function WorkshopJoinPage({
   if (pid) {
     const participant = await getParticipant(pid);
     if (participant && participant.workshopId === workshop!.id) {
+      const activePoll = await getActivePoll(workshop!.id);
+      if (activePoll) {
+        redirect(`/w/${code}/polls/${pid}`);
+      }
       redirect(`/w/${code}/home/${pid}`);
     }
   }
