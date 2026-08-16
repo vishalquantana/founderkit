@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { hasVoted, recordChoice, getChoice } from "@/lib/voting";
+import { hasVoted, recordChoice, getChoice, unmarkVoted, clearChoice } from "@/lib/voting";
 import { optionColor } from "@/lib/poll-colors";
 
 export interface FounderPollsProps {
@@ -315,6 +315,24 @@ export function FounderPolls({ code, participantId }: FounderPollsProps) {
 
   const polls = data?.polls ?? [];
   const activePollId = data?.activePollId ?? null;
+
+  // Reconcile local vote state with the server. When a presenter resets a
+  // question it flips back to `status: "draft"` and its votes are cleared,
+  // but this device may still have it marked "voted" in localStorage. Clear
+  // that stale mark so the card renders LOCKED/upcoming (not a stale
+  // "answered · 0 responses"), and it becomes answerable fresh on re-activation.
+  // Keyed on the fetched polls, so a reset reconciles within one 5s refresh.
+  useEffect(() => {
+    const draftIds = polls.filter((p) => p.status === "draft").map((p) => p.id);
+    if (draftIds.length === 0) return;
+    const stale = draftIds.filter((id) => votedIds.includes(id));
+    if (stale.length === 0) return;
+    for (const id of stale) {
+      unmarkVoted(id);
+      clearChoice(id);
+    }
+    setVotedIds(readVotedIds());
+  }, [polls, votedIds]);
 
   function handleVoted(_pollId: string) {
     // markVoted() already persisted to localStorage synchronously; re-read

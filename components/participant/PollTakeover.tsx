@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { motion, useReducedMotion, AnimatePresence } from "motion/react";
-import { hasVoted, recordChoice, getChoice } from "@/lib/voting";
+import { hasVoted, recordChoice, getChoice, unmarkVoted, clearChoice } from "@/lib/voting";
 import { optionColor } from "@/lib/poll-colors";
 
 export interface PollTakeoverProps {
@@ -109,6 +109,10 @@ export function PollTakeover({ code }: PollTakeoverProps) {
   const [voteError, setVoteError] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const activePollId = useRef<string | null>(null);
+  // Poll ids this founder answered or skipped THIS session — so a stale mark
+  // left over from a previous session (a poll that has since been reset) can be
+  // told apart from a fresh action here.
+  const sessionActed = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setVotedIds(readVotedIds());
@@ -132,6 +136,25 @@ export function PollTakeover({ code }: PollTakeoverProps) {
     setVoteError(false);
     setDismissed(false);
   }, [poll, votedIds]);
+
+  // Stale-reset parity: the takeover only ever shows the ACTIVE poll, so the
+  // risk is a resurrected old vote after a presenter reset+reactivate — this
+  // device still marks the poll "voted" but the server tally is back to 0.
+  // When that happens (and we haven't voted it THIS session), forget the stale
+  // local vote so the founder answers fresh instead of seeing stale results.
+  useEffect(() => {
+    if (!poll || !listPoll) return;
+    if (sessionActed.current.has(poll.id)) return;
+    if (!hasVoted(votedIds, poll.id)) return;
+    if (listPoll.total !== 0) return;
+    unmarkVoted(poll.id);
+    clearChoice(poll.id);
+    setVotedIds(readVotedIds());
+    setPhase("answering");
+    setChoiceIndex(null);
+    setOptimistic(null);
+    setDismissed(false);
+  }, [poll, listPoll, votedIds]);
 
   // Once the live tally catches up to (or passes) our optimistic bump,
   // drop the optimistic overlay in favour of the real server counts.
@@ -162,6 +185,7 @@ export function PollTakeover({ code }: PollTakeoverProps) {
     setOptimistic({ index, counts: nextCounts, total: baseTotal + 1 });
     setPhase("results");
     setVoteError(false);
+    sessionActed.current.add(poll.id);
     markVoted(poll.id);
     recordChoice(poll.id, index);
     setVotedIds(readVotedIds());
@@ -181,6 +205,7 @@ export function PollTakeover({ code }: PollTakeoverProps) {
 
   function handleSkip() {
     if (!poll) return;
+    sessionActed.current.add(poll.id);
     markVoted(poll.id);
     setVotedIds(readVotedIds());
     setDismissed(true);

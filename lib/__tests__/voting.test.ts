@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hasVoted, recordChoice, getChoice } from "@/lib/voting";
+import { hasVoted, recordChoice, getChoice, unmarkVoted, clearChoice } from "@/lib/voting";
 
 describe("hasVoted", () => {
   it("returns false for an empty list", () => {
@@ -23,5 +23,12 @@ describe("recordChoice / getChoice", () => {
 
   it("returns null for a poll with no recorded choice", () => {
     expect(getChoice("poll-never-answered")).toBeNull();
+  });
+});
+
+describe("unmarkVoted / clearChoice", () => {
+  it("is SSR-safe: never throws without a DOM/localStorage", () => {
+    expect(() => unmarkVoted("poll-1")).not.toThrow();
+    expect(() => clearChoice("poll-1")).not.toThrow();
   });
 });
