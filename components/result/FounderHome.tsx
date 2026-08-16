@@ -374,9 +374,31 @@ export function FounderHome({
             <CanvasMiniMapLegend className="mt-2.5" />
             <Link
               href={`/w/${code}/result/${pid}`}
-              className="pulse-btn-secondary mt-3 flex w-full items-center justify-center px-4 py-2.5 text-xs font-medium"
+              className="pulse-btn-secondary mt-3 flex w-full items-center justify-center px-4 py-2.5 text-xs font-semibold"
             >
-              Open your Lean Canvas
+              Open your Lean Canvas →
+            </Link>
+          </motion.div>
+
+          {/* 60-Second AI Challenge Card (Prominent after canvas completion) */}
+          <motion.div {...cardMotionProps} className="pulse-card relative overflow-hidden p-4 border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-transparent">
+            <div className="flex items-center justify-between">
+              <CardLabel>Live Activity</CardLabel>
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-500 dark:text-amber-300">
+                60s Challenge ⚡
+              </span>
+            </div>
+            <p className="mt-1 text-sm font-bold text-foreground">
+              AI & Startup Showdown
+            </p>
+            <p className="mt-1 text-xs text-muted leading-relaxed">
+              Test your prompt engineering, LLM instincts, and MVP validation skills in 60 seconds. Climb the live room leaderboard!
+            </p>
+            <Link
+              href={`/w/${code}/quiz/${pid}`}
+              className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#f59e0b,#ea580c)] px-4 py-2.5 text-xs font-black text-white shadow-md transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>⚡ Play 60s AI Challenge →</span>
             </Link>
           </motion.div>
 
@@ -431,64 +453,66 @@ export function FounderHome({
           ) : null}
         </>
       ) : (
-        <motion.div {...cardMotionProps} id="canvas-card" className="pulse-card p-4">
-          <CardLabel>Your Lean Canvas</CardLabel>
-          {liveUnlocked ? (
-            <>
-              <p className="text-sm leading-relaxed text-foreground">
-                Ready when you are — six short questions to map your startup.
-              </p>
-              <Link
-                href={`/w/${code}/canvas/${pid}`}
-                className="pulse-btn mt-3 flex w-full items-center justify-center px-4 py-2.5 text-sm"
-              >
-                Start your Lean Canvas
-              </Link>
-            </>
-          ) : (
-            <div className="flex items-start gap-3">
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: "var(--pulse-surface-strong)", color: "var(--pulse-kicker)" }}
-              >
-                <LockIcon />
-              </div>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--pulse-text)" }}>
-                  Your Lean Canvas unlocks soon
+        <>
+          <motion.div {...cardMotionProps} id="canvas-card" className="pulse-card p-4">
+            <CardLabel>Your Lean Canvas</CardLabel>
+            {liveUnlocked ? (
+              <>
+                <p className="text-sm leading-relaxed text-foreground">
+                  Ready when you are — six short questions to map your startup.
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Answer the live polls meanwhile.
-                </p>
+                <Link
+                  href={`/w/${code}/canvas/${pid}`}
+                  className="pulse-btn mt-3 flex w-full items-center justify-center px-4 py-2.5 text-sm font-bold shadow-md"
+                >
+                  Start your Lean Canvas →
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-start gap-3">
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                  style={{ background: "var(--pulse-surface-strong)", color: "var(--pulse-kicker)" }}
+                >
+                  <LockIcon />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "var(--pulse-text)" }}>
+                    Your Lean Canvas unlocks soon
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">
+                    Answer the live polls meanwhile.
+                  </p>
+                </div>
               </div>
+            )}
+          </motion.div>
+
+          {/* 60-Second AI Challenge Card (Closer to top right under Lean Canvas) */}
+          <motion.div {...cardMotionProps} className="pulse-card relative overflow-hidden p-4 border-amber-500/30 bg-gradient-to-b from-amber-500/5 to-transparent">
+            <div className="flex items-center justify-between">
+              <CardLabel>Live Activity</CardLabel>
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-500 dark:text-amber-300">
+                60s Challenge ⚡
+              </span>
             </div>
-          )}
-        </motion.div>
+            <p className="mt-1 text-sm font-bold text-foreground">
+              AI & Startup Showdown
+            </p>
+            <p className="mt-1 text-xs text-muted leading-relaxed">
+              Test your prompt engineering, LLM instincts, and MVP validation skills in 60 seconds. Climb the live room leaderboard!
+            </p>
+            <Link
+              href={`/w/${code}/quiz/${pid}`}
+              className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#f59e0b,#ea580c)] px-4 py-2.5 text-xs font-black text-white shadow-md transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span>⚡ Play 60s AI Challenge →</span>
+            </Link>
+          </motion.div>
+        </>
       )}
 
-      {/* 60-Second AI Challenge Card */}
-      <motion.div {...cardMotionProps} className="pulse-card relative overflow-hidden p-4">
-        <div className="flex items-center justify-between">
-          <CardLabel>Live Activity</CardLabel>
-          <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-bold text-purple-300">
-            60s Challenge ⚡
-          </span>
-        </div>
-        <p className="mt-1 text-sm font-semibold text-foreground">
-          AI & Startup Showdown
-        </p>
-        <p className="mt-1 text-xs text-muted leading-relaxed">
-          Test your prompt engineering, LLM instincts, and MVP validation skills in 60 seconds. Earn your badge and climb the live room leaderboard!
-        </p>
-        <Link
-          href={`/w/${code}/quiz/${pid}`}
-          className="pulse-btn mt-3 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold shadow-sm"
-        >
-          <span>Play 60s AI Challenge →</span>
-        </Link>
-      </motion.div>
-
-      {/* Workshop Feedback Button */}
+      {/* Workshop Feedback Button (Clean secondary styling) */}
       <motion.div {...cardMotionProps} className="pulse-card p-4">
         <CardLabel>Session Feedback</CardLabel>
         <p className="text-xs text-muted leading-relaxed">
@@ -496,21 +520,21 @@ export function FounderHome({
         </p>
         <Link
           href={`/w/${code}/feedback/${pid}`}
-          className="pulse-btn mt-3 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold shadow-sm"
+          className="pulse-btn-secondary mt-3 flex w-full items-center justify-center gap-2 px-4 py-2 text-xs font-bold transition-colors hover:border-[var(--pulse-border-strong)] hover:text-foreground"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            viewBox="0 0 20 20"
+            fill="currentColor"
             className="h-4 w-4"
           >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            <path
+              fillRule="evenodd"
+              d="M10 2c-2.236 0-4.43.18-6.57.532a2.236 2.236 0 0 0-1.88 2.208V11a2.25 2.25 0 0 0 2.25 2.25h.375v2.875a.75.75 0 0 0 1.28.53l3.414-3.405H10A6.75 6.75 0 0 0 16.75 6.5v-.5A6.75 6.75 0 0 0 10 2Zm-1.5 5.25a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5h-3Zm0 3a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H8.5Z"
+              clipRule="evenodd"
+            />
           </svg>
-          Submit Feedback
+          <span>Share Feedback</span>
         </Link>
       </motion.div>
 
