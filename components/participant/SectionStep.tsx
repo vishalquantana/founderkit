@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Chip } from "@/components/motion/Chip";
 import type { Section } from "@/lib/sections";
 import { saveSectionAnswer, probeSectionAction } from "@/app/(participant)/w/[code]/actions";
+import { composeSectionAnswer } from "@/lib/section-answer";
 
 const SUGGESTED_LENGTH = 40; // words — a gentle nudge, not a hard rule
 
@@ -43,16 +44,19 @@ export function SectionStep({
   const [probeResolved, setProbeResolved] = useState(false);
   const [probeAnswerValue, setProbeAnswerValue] = useState("");
   const [probeSaving, setProbeSaving] = useState(false);
+  const [selectedChip, setSelectedChip] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  const isValid = value.trim().length > 0;
+  const composed = composeSectionAnswer(selectedChip, value);
+
+  const isValid = selectedChip !== null || value.trim().length > 0;
   const wordCount = value.trim().length === 0 ? 0 : value.trim().split(/\s+/).length;
 
   function handleBlur() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      if (value.trim().length > 0) onAutosave(value);
+      if (composed.trim().length > 0) onAutosave(composed);
     }, 400);
   }
 
@@ -62,16 +66,16 @@ export function SectionStep({
 
     setSaving(true);
     try {
-      await saveSectionAnswer({ participantId, section: section.key, mainAnswer: value });
+      await saveSectionAnswer({ participantId, section: section.key, mainAnswer: composed });
 
       if (probeResolved || !probeEnabled) {
-        onAdvance(value);
+        onAdvance(composed);
         return;
       }
 
       const { question } = await probeSectionAction({
         section: section.key,
-        mainAnswer: value,
+        mainAnswer: composed,
         probeEnabled,
       });
 
@@ -81,7 +85,7 @@ export function SectionStep({
       }
 
       setProbeResolved(true);
-      onAdvance(value);
+      onAdvance(composed);
     } finally {
       setSaving(false);
     }
@@ -94,12 +98,12 @@ export function SectionStep({
       await saveSectionAnswer({
         participantId,
         section: section.key,
-        mainAnswer: value,
+        mainAnswer: composed,
         probeQuestion,
         probeAnswer: probeAnswerValue.trim() || undefined,
       });
       setProbeResolved(true);
-      onAdvance(value);
+      onAdvance(composed);
     } finally {
       setProbeSaving(false);
     }
@@ -112,14 +116,14 @@ export function SectionStep({
       await saveSectionAnswer({
         participantId,
         section: section.key,
-        mainAnswer: value,
+        mainAnswer: composed,
         probeQuestion,
       });
     } finally {
       // Skipping never blocks progress, even if the save is slow or fails.
       setProbeSaving(false);
       setProbeResolved(true);
-      onAdvance(value);
+      onAdvance(composed);
     }
   }
 
@@ -149,7 +153,13 @@ export function SectionStep({
       {section.chips && section.chips.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {section.chips.map((chip) => (
-            <Chip key={chip.value} className="pointer-events-none opacity-70">
+            <Chip
+              key={chip.value}
+              selected={selectedChip === chip.label}
+              onClick={() =>
+                setSelectedChip((prev) => (prev === chip.label ? null : chip.label))
+              }
+            >
               {chip.label}
             </Chip>
           ))}
@@ -163,7 +173,7 @@ export function SectionStep({
           onBlur={handleBlur}
           rows={6}
           disabled={probeQuestion !== null}
-          placeholder="Type your answer here…"
+          placeholder={selectedChip ? "Add any detail (optional)…" : "Type your answer here…"}
           className="pulse-input w-full resize-none p-4 text-sm leading-relaxed outline-none disabled:opacity-60"
         />
         <div className="flex items-center justify-between text-xs text-muted">
