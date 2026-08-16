@@ -16,6 +16,7 @@ import { ProgressionView } from "@/components/present/ProgressionView";
 import { PollResultsView } from "@/components/present/PollResultsView";
 import { ThemeControl } from "@/components/ThemeControl";
 import { activatePollAction, closePollAction } from "@/app/(admin)/workshops/[id]/poll-actions";
+import { updateSettings } from "@/app/(admin)/workshops/[id]/actions";
 
 interface PollOverviewItem {
   id: string;
@@ -206,6 +207,28 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
       <div className="flex flex-1 gap-6 px-6 py-8 sm:px-10">
         <aside className="flex w-[260px] shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-surface p-4">
+          <div>
+            <p className="pulse-kicker mb-2 px-2 text-xs">Lean Canvas</p>
+            <button
+              type="button"
+              disabled={isPollActionPending}
+              onClick={() =>
+                startPollActionTransition(() =>
+                  updateSettings(workshopId, {
+                    ...effectiveSettings,
+                    canvasUnlocked: !effectiveSettings.canvasUnlocked,
+                  }),
+                )
+              }
+              className={[
+                "w-full rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors duration-150 active:scale-95",
+                effectiveSettings.canvasUnlocked ? "pulse-btn" : "pulse-btn-secondary",
+              ].join(" ")}
+            >
+              {effectiveSettings.canvasUnlocked ? "Canvas unlocked ✓ — tap to lock" : "Unlock Lean Canvas"}
+            </button>
+          </div>
+
           <div>
             <p className="pulse-kicker mb-2 px-2 text-xs">Views</p>
             <nav className="flex flex-col gap-1" aria-label="View switcher">
