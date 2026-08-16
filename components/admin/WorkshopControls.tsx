@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import type { WorkshopStatus } from "@/db/schema";
 import type { WorkshopSettings } from "@/db/queries/workshops";
+import { ActionButton } from "@/components/ui/ActionButton";
 import { resetAllPollsAction } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 export interface WorkshopControlsProps {
@@ -24,11 +25,14 @@ const STATUS_LABELS: Record<WorkshopStatus, string> = {
 interface ToggleRowProps {
   label: string;
   checked: boolean;
-  onChange: (next: boolean) => void;
+  onChange: (next: boolean) => Promise<unknown> | unknown;
   disabled?: boolean;
 }
 
 function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
+  // Disables itself the instant it's tapped (before the async settings
+  // update resolves) so rapid toggling can't queue conflicting writes.
+  const [pending, setPending] = useState(false);
   return (
     <label className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm">
       <span className="font-medium text-foreground">{label}</span>
@@ -36,8 +40,17 @@ function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
         type="button"
         role="switch"
         aria-checked={checked}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
+        aria-busy={pending || undefined}
+        disabled={disabled || pending}
+        onClick={async () => {
+          if (pending) return;
+          setPending(true);
+          try {
+            await onChange(!checked);
+          } finally {
+            setPending(false);
+          }
+        }}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
           checked ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)]" : "bg-surface-strong"
         }`}
@@ -69,33 +82,25 @@ export function WorkshopControls({
 }: WorkshopControlsProps) {
   const [currentStatus, setCurrentStatus] = useState(status);
   const [currentSettings, setCurrentSettings] = useState(settings);
-  const [isPending, startTransition] = useTransition();
   const [confirmResetAll, setConfirmResetAll] = useState(false);
-  const [isResettingAll, startResetAllTransition] = useTransition();
 
-  function changeStatus(next: WorkshopStatus) {
+  async function changeStatus(next: WorkshopStatus) {
     setCurrentStatus(next);
-    startTransition(async () => {
-      await onUpdateStatus(workshopId, next);
-    });
+    await onUpdateStatus(workshopId, next);
   }
 
-  function changeSettings(next: WorkshopSettings) {
+  async function changeSettings(next: WorkshopSettings) {
     setCurrentSettings(next);
-    startTransition(async () => {
-      await onUpdateSettings(workshopId, next);
-    });
+    await onUpdateSettings(workshopId, next);
   }
 
-  function handleResetAllClick() {
+  async function handleResetAllClick() {
     if (!confirmResetAll) {
       setConfirmResetAll(true);
       return;
     }
-    startResetAllTransition(async () => {
-      await resetAllPollsAction(workshopId);
-      setConfirmResetAll(false);
-    });
+    await resetAllPollsAction(workshopId);
+    setConfirmResetAll(false);
   }
 
   return (
@@ -106,23 +111,23 @@ export function WorkshopControls({
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           {currentStatus !== "live" ? (
-            <button
+            <ActionButton
               type="button"
-              disabled={isPending}
-              onClick={() => changeStatus("live")}
+              onAction={() => changeStatus("live")}
+              pendingChildren="Opening…"
               className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(16,185,129,0.6)] transition-colors hover:bg-emerald-400 disabled:opacity-50"
             >
               Open workshop
-            </button>
+            </ActionButton>
           ) : (
-            <button
+            <ActionButton
               type="button"
-              disabled={isPending}
-              onClick={() => changeStatus("closed")}
+              onAction={() => changeStatus("closed")}
+              pendingChildren="Closing…"
               className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(239,68,68,0.6)] transition-colors hover:bg-red-400 disabled:opacity-50"
             >
               Close workshop
-            </button>
+            </ActionButton>
           )}
           <span className="text-sm text-muted">
             Current status:{" "}
@@ -139,13 +144,11 @@ export function WorkshopControls({
           <ToggleRow
             label="Unlock Lean Canvas"
             checked={currentSettings.canvasUnlocked}
-            disabled={isPending}
             onChange={(next) => changeSettings({ ...currentSettings, canvasUnlocked: next })}
           />
           <ToggleRow
             label="AI Follow-up Questions"
             checked={currentSettings.probeEnabled}
-            disabled={isPending}
             onChange={(next) => changeSettings({ ...currentSettings, probeEnabled: next })}
           />
         </div>
@@ -159,7 +162,6 @@ export function WorkshopControls({
           <ToggleRow
             label="Dashboard"
             checked={currentSettings.liveViews.dashboard}
-            disabled={isPending}
             onChange={(next) =>
               changeSettings({
                 ...currentSettings,
@@ -170,7 +172,6 @@ export function WorkshopControls({
           <ToggleRow
             label="Word cloud"
             checked={currentSettings.liveViews.wordCloud}
-            disabled={isPending}
             onChange={(next) =>
               changeSettings({
                 ...currentSettings,
@@ -181,7 +182,6 @@ export function WorkshopControls({
           <ToggleRow
             label="Progression"
             checked={currentSettings.liveViews.progression}
-            disabled={isPending}
             onChange={(next) =>
               changeSettings({
                 ...currentSettings,
@@ -192,7 +192,6 @@ export function WorkshopControls({
           <ToggleRow
             label="Leaderboard"
             checked={currentSettings.leaderboard}
-            disabled={isPending}
             onChange={(next) => changeSettings({ ...currentSettings, leaderboard: next })}
           />
         </div>
@@ -201,22 +200,18 @@ export function WorkshopControls({
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Polls</h2>
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-3">
-          <button
+          <ActionButton
             type="button"
-            disabled={isResettingAll}
-            onClick={handleResetAllClick}
+            onAction={handleResetAllClick}
+            pendingChildren="Resetting…"
             className={`self-start rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
               confirmResetAll
                 ? "bg-amber-500 text-white hover:bg-amber-400"
                 : "pulse-btn-secondary"
             }`}
           >
-            {isResettingAll
-              ? "Resetting…"
-              : confirmResetAll
-                ? "Confirm reset all?"
-                : "Reset all poll responses"}
-          </button>
+            {confirmResetAll ? "Confirm reset all?" : "Reset all poll responses"}
+          </ActionButton>
           <p className="text-xs text-muted">
             Clears every vote across all questions so you can re-run them.
           </p>

@@ -15,6 +15,7 @@ import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
 import { PollResultsView } from "@/components/present/PollResultsView";
 import { ThemeControl } from "@/components/ThemeControl";
+import { ActionButton } from "@/components/ui/ActionButton";
 import { activatePollAction, closePollAction } from "@/app/(admin)/workshops/[id]/poll-actions";
 import { updateSettings } from "@/app/(admin)/workshops/[id]/actions";
 
@@ -68,8 +69,8 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
     { refreshInterval: 4000, revalidateOnFocus: false },
   );
 
-  const [isPollActionPending, startPollActionTransition] = useTransition();
-  const [pendingPollId, setPendingPollId] = useState<string | null>(null);
+  // Still used by the canvas-unlock toggle below (already optimistic).
+  const [, startPollActionTransition] = useTransition();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [joinOpen, setJoinOpen] = useState(true);
   // Optimistic canvas-unlock: flip the toggle instantly on tap, reconcile
@@ -136,28 +137,14 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
   const joinUrl = getJoinUrl(joinCode);
 
-  function handleGoLive(pollId: string) {
-    setPendingPollId(pollId);
-    startPollActionTransition(async () => {
-      try {
-        await activatePollAction(workshopId, pollId);
-        await mutatePollsOverview();
-      } finally {
-        setPendingPollId(null);
-      }
-    });
+  async function handleGoLive(pollId: string) {
+    await activatePollAction(workshopId, pollId);
+    await mutatePollsOverview();
   }
 
-  function handleDisable(pollId: string) {
-    setPendingPollId(pollId);
-    startPollActionTransition(async () => {
-      try {
-        await closePollAction(workshopId, pollId);
-        await mutatePollsOverview();
-      } finally {
-        setPendingPollId(null);
-      }
-    });
+  async function handleDisable(pollId: string) {
+    await closePollAction(workshopId, pollId);
+    await mutatePollsOverview();
   }
 
   return (
@@ -318,7 +305,6 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 {polls.map((poll) => {
                   const isSelected = selection.kind === "poll" && selection.pollId === poll.id;
                   const isLive = poll.id === activePollId;
-                  const isRowPending = isPollActionPending && pendingPollId === poll.id;
                   return (
                     <div
                       key={poll.id}
@@ -342,25 +328,25 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                         )}
                       </button>
                       {isLive ? (
-                        <button
+                        <ActionButton
                           type="button"
-                          onClick={() => handleDisable(poll.id)}
-                          disabled={isRowPending}
+                          onAction={() => handleDisable(poll.id)}
+                          pendingChildren="…"
                           className="shrink-0 rounded-full border border-[var(--pulse-border-strong)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--pulse-text)] transition-opacity disabled:opacity-50"
                           title="Stop founders from answering this poll"
                         >
-                          {isRowPending ? "…" : "Disable"}
-                        </button>
+                          Disable
+                        </ActionButton>
                       ) : (
-                        <button
+                        <ActionButton
                           type="button"
-                          onClick={() => handleGoLive(poll.id)}
-                          disabled={isRowPending}
+                          onAction={() => handleGoLive(poll.id)}
+                          pendingChildren="…"
                           className="shrink-0 rounded-full bg-[var(--pulse-gold)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black transition-opacity disabled:opacity-50"
                           title="Let founders answer this poll"
                         >
-                          {isRowPending ? "…" : "Go live"}
-                        </button>
+                          Go live
+                        </ActionButton>
                       )}
                     </div>
                   );

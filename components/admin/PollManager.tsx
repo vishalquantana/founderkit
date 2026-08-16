@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import { motion, useReducedMotion } from "motion/react";
 import type { Poll } from "@/db/queries/polls";
 import { optionColor } from "@/lib/poll-colors";
+import { ActionButton } from "@/components/ui/ActionButton";
 import {
   createPollAction,
   updatePollAction,
@@ -104,7 +105,7 @@ interface PollEditorProps {
   editor: EditorState;
   isPending: boolean;
   onChange: (next: EditorState) => void;
-  onSave: () => void;
+  onSave: () => Promise<void>;
   onCancel: () => void;
 }
 
@@ -176,14 +177,15 @@ function PollEditor({ editor, isPending, onChange, onSave, onCancel }: PollEdito
       </div>
 
       <div className="flex items-center gap-2 pt-1">
-        <button
+        <ActionButton
           type="button"
           disabled={isPending || !editor.question.trim() || editor.options.some((o) => !o.trim())}
-          onClick={onSave}
+          onAction={onSave}
+          pendingChildren="Saving…"
           className="pulse-btn px-4 py-1.5 text-sm"
         >
           Save
-        </button>
+        </ActionButton>
         <button
           type="button"
           disabled={isPending}
@@ -204,11 +206,10 @@ function PollEditor({ editor, isPending, onChange, onSave, onCancel }: PollEdito
  */
 export function PollManager({ workshopId, polls, className }: PollManagerProps) {
   // Editor save/cancel (create + update) has its own pending flag — it's a
-  // single form, never more than one in flight at a time.
-  const [editorPending, startEditorTransition] = useTransition();
-  // Row-level actions (activate/close/delete) are keyed to the specific poll
-  // id so clicking one row's button doesn't visually disable every other row.
-  const [pendingId, setPendingId] = useState<string | null>(null);
+  // single form, never more than one in flight at a time. The Save button
+  // itself is an ActionButton (instant disable on click); this flag also
+  // disables the Cancel button and the field-validity check while saving.
+  const [editorPending, setEditorPending] = useState(false);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null);
@@ -241,50 +242,38 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
     setEditor(null);
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editor) return;
     const question = editor.question.trim();
     const options = editor.options.map((o) => o.trim()).filter((o) => o.length > 0);
     if (!question || options.length === 0) return;
 
     const pollId = editor.pollId;
-    startEditorTransition(async () => {
+    setEditorPending(true);
+    try {
       if (pollId) {
         await updatePollAction(workshopId, pollId, question, options);
       } else {
         await createPollAction(workshopId, question, options);
       }
       setEditor(null);
-    });
+    } finally {
+      setEditorPending(false);
+    }
   }
 
   async function handleActivate(pollId: string) {
-    setPendingId(pollId);
-    try {
-      await activatePollAction(workshopId, pollId);
-    } finally {
-      setPendingId(null);
-    }
+    await activatePollAction(workshopId, pollId);
   }
 
   async function handleClose(pollId: string) {
-    setPendingId(pollId);
-    try {
-      await closePollAction(workshopId, pollId);
-    } finally {
-      setPendingId(null);
-    }
+    await closePollAction(workshopId, pollId);
   }
 
   async function handleResetClick(pollId: string) {
     if (confirmResetId === pollId) {
-      setPendingId(pollId);
-      try {
-        await resetPollVotesAction(workshopId, pollId);
-        setConfirmResetId(null);
-      } finally {
-        setPendingId(null);
-      }
+      await resetPollVotesAction(workshopId, pollId);
+      setConfirmResetId(null);
     } else {
       setConfirmDeleteId(null);
       setConfirmResetId(pollId);
@@ -293,13 +282,8 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
 
   async function handleDeleteClick(pollId: string) {
     if (confirmDeleteId === pollId) {
-      setPendingId(pollId);
-      try {
-        await deletePollAction(workshopId, pollId);
-        setConfirmDeleteId(null);
-      } finally {
-        setPendingId(null);
-      }
+      await deletePollAction(workshopId, pollId);
+      setConfirmDeleteId(null);
     } else {
       setConfirmResetId(null);
       setConfirmDeleteId(pollId);
@@ -331,7 +315,6 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
           );
         }
 
-        const rowPending = pendingId === poll.id;
         const showTally = isActive && pollResults?.poll?.id === poll.id;
 
         return (
@@ -368,29 +351,29 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
 
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 {isActive ? (
-                  <button
+                  <ActionButton
                     type="button"
-                    disabled={rowPending}
-                    onClick={() => handleClose(poll.id)}
+                    onAction={() => handleClose(poll.id)}
+                    pendingChildren="Disabling…"
                     className="pulse-btn-secondary px-3 py-1.5 text-xs"
                     title="Stop projecting this poll to founders"
                   >
                     Disable (stop projecting)
-                  </button>
+                  </ActionButton>
                 ) : (
-                  <button
+                  <ActionButton
                     type="button"
-                    disabled={rowPending}
-                    onClick={() => handleActivate(poll.id)}
+                    onAction={() => handleActivate(poll.id)}
+                    pendingChildren="Activating…"
                     className="pulse-btn px-3 py-1.5 text-xs"
                   >
                     Activate
-                  </button>
+                  </ActionButton>
                 )}
-                <button
+                <ActionButton
                   type="button"
-                  disabled={rowPending}
-                  onClick={() => handleResetClick(poll.id)}
+                  onAction={() => handleResetClick(poll.id)}
+                  pendingChildren={confirmResetId === poll.id ? "Resetting…" : undefined}
                   className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                     confirmResetId === poll.id
                       ? "rounded-full bg-amber-500 text-white hover:bg-amber-400"
@@ -398,19 +381,18 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                   }`}
                 >
                   {confirmResetId === poll.id ? "Confirm reset?" : "Reset responses"}
-                </button>
+                </ActionButton>
                 <button
                   type="button"
-                  disabled={rowPending}
                   onClick={() => startEdit(poll)}
                   className="pulse-btn-secondary px-3 py-1.5 text-xs"
                 >
                   Edit
                 </button>
-                <button
+                <ActionButton
                   type="button"
-                  disabled={rowPending}
-                  onClick={() => handleDeleteClick(poll.id)}
+                  onAction={() => handleDeleteClick(poll.id)}
+                  pendingChildren={confirmDeleteId === poll.id ? "Deleting…" : undefined}
                   className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                     confirmDeleteId === poll.id
                       ? "rounded-full bg-red-500 text-white hover:bg-red-400"
@@ -418,7 +400,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                   }`}
                 >
                   {confirmDeleteId === poll.id ? "Confirm delete?" : "Delete"}
-                </button>
+                </ActionButton>
               </div>
             </div>
           </div>
