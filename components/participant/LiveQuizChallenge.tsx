@@ -8,6 +8,8 @@ import {
   buildQuizQuestions,
   calculateQuizScore,
   personalityForScore,
+  personalityForBadge,
+  QUESTION_POOL,
   type Question,
   type Personality,
 } from "@/lib/quiz";
@@ -28,28 +30,24 @@ export function LiveQuizChallenge({
   initialQuestions?: Question[];
   initialSubmission?: { score: number; badgeTitle: string; badgeKey: string } | null;
 }) {
-  const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<"intro" | "playing" | "submitting" | "result">(
     initialSubmission ? "result" : "intro",
   );
-  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
+  const [questions, setQuestions] = useState<Question[]>(() =>
+    initialQuestions && initialQuestions.length > 0
+      ? initialQuestions
+      : QUESTION_POOL.slice(0, 10),
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [finalScore, setFinalScore] = useState(initialSubmission?.score ?? 0);
   const [personality, setPersonality] = useState<Personality | null>(
-    initialSubmission ? personalityForScore(initialSubmission.score) : null,
+    initialSubmission ? personalityForBadge(initialSubmission.badgeKey || initialSubmission.badgeTitle) : null,
   );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
-
-  useEffect(() => {
-    setMounted(true);
-    if (questions.length === 0) {
-      setQuestions(buildQuizQuestions());
-    }
-  }, [questions.length]);
 
   function startQuiz() {
     const qList = buildQuizQuestions();
