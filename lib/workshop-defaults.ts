@@ -5,6 +5,7 @@ export const DEFAULT_SETTINGS: WorkshopSettings = {
   leaderboard: false,
   probeEnabled: true,
   canvasUnlocked: false,
+  feedbackPrompted: false,
 };
 
 export const DEFAULT_CONSENT_TEXT =

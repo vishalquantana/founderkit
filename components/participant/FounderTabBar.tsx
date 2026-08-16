@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { Home, LayoutDashboard, BarChart3 } from "lucide-react";
+import { Home, LayoutDashboard, TrendingUp, BarChart3 } from "lucide-react";
 
 export interface FounderTabBarProps {
   code: string;
   pid: string;
-  active: "home" | "canvas" | "polls";
+  active: "home" | "canvas" | "growth" | "polls";
   canvasUnlocked?: boolean;
   hasResult?: boolean;
 }
@@ -102,6 +102,14 @@ export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: 
         isActive={active === "canvas"}
         condensed={condensed}
         href={canvasHref}
+        disabled={!canvasHref}
+      />
+      <Tab
+        icon={<TrendingUp className="h-full w-full" />}
+        label="Growth"
+        isActive={active === "growth"}
+        condensed={condensed}
+        href={canvasHref ? `/w/${code}/growth/${pid}` : undefined}
         disabled={!canvasHref}
       />
       <Tab

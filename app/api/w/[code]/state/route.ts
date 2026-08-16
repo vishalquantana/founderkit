@@ -2,15 +2,15 @@ import { getWorkshopByJoinCode, type WorkshopSettings } from "@/db/queries/works
 
 export interface WorkshopStateResponse {
   canvasUnlocked: boolean;
+  feedbackPrompted: boolean;
 }
 
 const CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=5, stale-while-revalidate=10",
 };
 
-// Non-sensitive (just the unlock flag, no auth) so founders' clients can
-// poll it every few seconds to pick up the presenter's "Unlock Lean Canvas"
-// toggle without a manual refresh.
+// Non-sensitive (just flags, no auth) so founders' clients can
+// poll it every few seconds to pick up presenter toggles without a manual refresh.
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ code: string }> },
@@ -22,6 +22,7 @@ export async function GET(
 
   const data: WorkshopStateResponse = {
     canvasUnlocked: Boolean(settings?.canvasUnlocked),
+    feedbackPrompted: Boolean(settings?.feedbackPrompted),
   };
 
   return Response.json(data, { headers: CACHE_HEADERS });

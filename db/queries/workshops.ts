@@ -9,6 +9,7 @@ export type WorkshopSettings = {
   leaderboard: boolean;
   probeEnabled: boolean;
   canvasUnlocked: boolean;
+  feedbackPrompted?: boolean;
 };
 
 export type Workshop = typeof workshops.$inferSelect;

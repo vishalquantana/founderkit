@@ -174,7 +174,7 @@ export function FounderHome({
 
   const { data: stateData } = useSWR<WorkshopStateResponse>(`/api/w/${code}/state`, fetcher, {
     refreshInterval: 5000,
-    fallbackData: { canvasUnlocked },
+    fallbackData: { canvasUnlocked, feedbackPrompted: false },
   });
   const liveUnlocked = stateData?.canvasUnlocked ?? canvasUnlocked;
 
@@ -457,6 +457,32 @@ export function FounderHome({
           )}
         </motion.div>
       )}
+
+      {/* Workshop Feedback Button */}
+      <motion.div {...cardMotionProps} className="pulse-card p-4">
+        <CardLabel>Session Feedback</CardLabel>
+        <p className="text-xs text-muted leading-relaxed">
+          How was today&apos;s workshop? Take 1 minute to share your feedback with the facilitator.
+        </p>
+        <Link
+          href={`/w/${code}/feedback/${pid}`}
+          className="pulse-btn mt-3 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold shadow-sm"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          Submit Feedback
+        </Link>
+      </motion.div>
 
       {/* Bottom tab bar */}
       <FounderTabBar code={code} pid={pid} active="home" canvasUnlocked={liveUnlocked} hasResult={showResult} />

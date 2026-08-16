@@ -147,6 +147,11 @@ export function WorkshopControls({
             onChange={(next) => changeSettings({ ...currentSettings, canvasUnlocked: next })}
           />
           <ToggleRow
+            label="Prompt Session Feedback (Banner & Alert)"
+            checked={Boolean(currentSettings.feedbackPrompted)}
+            onChange={(next) => changeSettings({ ...currentSettings, feedbackPrompted: next })}
+          />
+          <ToggleRow
             label="AI Follow-up Questions"
             checked={currentSettings.probeEnabled}
             onChange={(next) => changeSettings({ ...currentSettings, probeEnabled: next })}

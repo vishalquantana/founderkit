@@ -436,6 +436,25 @@ export function ResultView({
             {rescoreError ? <p className="text-xs text-red-500">{rescoreError}</p> : null}
           </>
         ) : null}
+        <Link
+          href={`/w/${code}/growth/${pid}`}
+          className="pulse-btn inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold shadow-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+            <polyline points="16 7 22 7 22 13" />
+          </svg>
+          Generate Growth Plan
+        </Link>
         <a
           href={`/w/${code}/result/${pid}/pdf`}
           className="pulse-btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm"
