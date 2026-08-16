@@ -13,6 +13,7 @@ import { AggregateView } from "@/components/present/AggregateView";
 import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
 import { PollResultsView } from "@/components/present/PollResultsView";
+import { ThemeControl } from "@/components/ThemeControl";
 
 interface PollOverviewItem {
   id: string;
@@ -116,7 +117,10 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
   const joinUrl = getJoinUrl(joinCode);
 
   return (
-    <div data-theme="dark" className="flex min-h-screen flex-col bg-[#0a0a14] text-[var(--pulse-text)]">
+    <div
+      className="flex min-h-screen flex-col text-[var(--pulse-text)]"
+      style={{ background: "var(--pulse-bg-gradient)" }}
+    >
       <header className="flex flex-wrap items-center justify-between gap-4 px-8 pt-8">
         <div>
           <div className="mb-2 flex items-center gap-2.5">
@@ -125,20 +129,26 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
               alt="Quantana"
               width={96}
               height={22}
-              className="h-4 w-auto invert"
+              className="nav-logo h-4 w-auto"
               priority
             />
-            <span className="border-l border-white/20 pl-2.5 text-xs font-semibold tracking-wide text-[var(--pulse-text-muted)]">
+            <span
+              className="pl-2.5 text-xs font-semibold tracking-wide text-[var(--pulse-text-muted)]"
+              style={{ borderLeft: "1px solid var(--pulse-border-strong)" }}
+            >
               AI Cofounder
             </span>
           </div>
           <p className="pulse-kicker">Present Mode</p>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
         </div>
+        <div>
+          <ThemeControl />
+        </div>
       </header>
 
       <div className="flex flex-1 gap-6 px-6 py-8 sm:px-10">
-        <aside className="flex w-[260px] shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-black/20 p-4">
+        <aside className="flex w-[260px] shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-surface p-4">
           <div>
             <p className="pulse-kicker mb-2 px-2 text-xs">Views</p>
             <nav className="flex flex-col gap-1" aria-label="View switcher">
@@ -240,20 +250,31 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         </main>
       </div>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--pulse-border)] bg-black/30 px-8 py-6">
+      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--pulse-border)] bg-surface-strong px-8 py-6">
         <div className="flex items-center gap-4">
-          <div className="rounded-lg bg-white p-2">
-            <QRCodeSVG value={joinUrl} size={96} level="M" />
+          <div className="rounded-lg bg-white p-3">
+            <QRCodeSVG value={joinUrl} size={160} level="M" />
           </div>
           <div className="flex flex-col gap-1">
             <span className="pulse-kicker">Join now</span>
-            <span className="font-display text-gradient text-3xl font-bold tracking-[0.35em] sm:text-4xl">
+            <span className="font-display text-gradient text-xl font-bold tracking-[0.2em] sm:text-2xl">
               {joinCode}
             </span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1 text-right">
           <p className="text-lg font-medium text-[var(--pulse-text-muted)] sm:text-xl">{joinUrl}</p>
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden
+              className="h-2 w-2 shrink-0 animate-pulse rounded-full"
+              style={{ background: "var(--pulse-gold)" }}
+            />
+            <span className="font-display text-base font-bold tabular-nums text-[var(--pulse-text)] sm:text-lg">
+              {presentData.total} joined
+            </span>
+            <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
+          </span>
           <p className="text-xs text-[var(--pulse-text-muted)]">
             Use ← / → to switch views · {views.length} view{views.length === 1 ? "" : "s"} live
           </p>

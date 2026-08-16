@@ -28,10 +28,13 @@ export function WelcomeView({ workshopName, joinCode, joinUrl }: WelcomeViewProp
               alt="Quantana"
               width={180}
               height={40}
-              className="h-8 w-auto invert sm:h-10"
+              className="nav-logo h-8 w-auto sm:h-10"
               priority
             />
-            <span className="border-l border-white/20 pl-3 text-base font-semibold tracking-wide text-[var(--pulse-text-muted)] sm:text-lg">
+            <span
+              className="pl-3 text-base font-semibold tracking-wide text-[var(--pulse-text-muted)] sm:text-lg"
+              style={{ borderLeft: "1px solid var(--pulse-border-strong)" }}
+            >
               AI Cofounder
             </span>
           </div>
