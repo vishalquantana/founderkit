@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { STAGE_META } from "@/lib/readiness";
 import type { EvaluationResult } from "@/ai/schema";
@@ -49,6 +49,11 @@ function sortByReadiness(submissions: SubmissionRow[]): SubmissionRow[] {
  */
 export function SubmissionsTable({ submissions, workshopId, className }: SubmissionsTableProps) {
   const [sortMode, setSortMode] = useState<SortMode>("recent");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const orderedSubmissions = useMemo(
     () => (sortMode === "readiness" ? sortByReadiness(submissions) : submissions),
@@ -143,7 +148,7 @@ export function SubmissionsTable({ submissions, workshopId, className }: Submiss
                 )}
               </span>
               <span suppressHydrationWarning className="flex items-center justify-between gap-2 tabular-nums text-muted">
-                {formatCompletedAt(participant.completedAt)}
+                {mounted ? formatCompletedAt(participant.completedAt) : "—"}
                 <span className="text-xs font-semibold text-accent">View →</span>
               </span>
             </div>
