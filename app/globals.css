@@ -127,6 +127,12 @@ body::before {
   body::before { animation: none; }
 }
 
+/* The Quantana wordmark is purple (good on the light canvas); on dark surfaces
+   render it white for contrast. */
+[data-theme="dark"] .nav-logo {
+  filter: brightness(0) invert(1);
+}
+
 /* Present-mode Welcome view: ambient rotating gradient ring behind the money-shot. */
 .present-welcome-ring {
   position: absolute;

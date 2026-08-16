@@ -22,7 +22,7 @@ export function AppNav() {
       }}
     >
       <Link href="/" className="flex items-center gap-2.5">
-        <Image src="/quantana-logo.svg" alt="Quantana" width={82} height={18} className="h-4 w-auto" priority />
+        <Image src="/quantana-logo.svg" alt="Quantana" width={82} height={18} className="nav-logo h-4 w-auto" priority />
         <span
           className="border-l pl-2.5 text-xs font-semibold tracking-wide"
           style={{ borderColor: "var(--pulse-border-strong)", color: "var(--pulse-text-muted)" }}
