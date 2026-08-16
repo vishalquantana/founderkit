@@ -67,12 +67,7 @@ export async function answerAsVamshi(input: AnswerAsVamshiInput): Promise<string
   // and relies on automatic caching for others (Gemini) — the marker is ignored
   // gracefully where unsupported. History + the framed user turn stay dynamic.
   const messages = [
-    {
-      role: "system",
-      content: [
-        { type: "text", text: VAMSHI_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
-      ],
-    },
+    { role: "system", content: VAMSHI_SYSTEM_PROMPT },
     ...input.history.slice(-8),
     { role: "user", content: framedUser },
   ];
@@ -84,13 +79,14 @@ export async function answerAsVamshi(input: AnswerAsVamshiInput): Promise<string
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_CHAT_MODEL ?? process.env.OPENROUTER_SCORE_MODEL,
+      model: process.env.OPENROUTER_CHAT_MODEL || process.env.OPENROUTER_SCORE_MODEL || "google/gemini-2.5-flash-lite",
       messages,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenRouter chat request failed with status ${response.status}`);
+    const errText = await response.text().catch(() => "");
+    throw new Error(`OpenRouter chat request failed with status ${response.status}: ${errText}`);
   }
 
   const data = await response.json();
