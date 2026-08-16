@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
+  buildQuizQuestions,
   calculateQuizScore,
   personalityForScore,
   type Question,
@@ -17,46 +18,39 @@ export function LiveQuizChallenge({
   pid,
   founderName,
   startupName,
+  initialQuestions = [],
+  initialSubmission = null,
 }: {
   code: string;
   pid: string;
   founderName: string;
   startupName: string;
+  initialQuestions?: Question[];
+  initialSubmission?: { score: number; badgeTitle: string; badgeKey: string } | null;
 }) {
-  const [phase, setPhase] = useState<"intro" | "playing" | "submitting" | "result">("intro");
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [phase, setPhase] = useState<"intro" | "playing" | "submitting" | "result">(
+    initialSubmission ? "result" : "intro",
+  );
+  const [questions, setQuestions] = useState<Question[]>(
+    initialQuestions.length > 0 ? initialQuestions : buildQuizQuestions(),
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [finalScore, setFinalScore] = useState(0);
-  const [personality, setPersonality] = useState<Personality | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [finalScore, setFinalScore] = useState(initialSubmission?.score ?? 0);
+  const [personality, setPersonality] = useState<Personality | null>(
+    initialSubmission ? personalityForScore(initialSubmission.score) : null,
+  );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Load questions or check previous submission
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/w/${code}/quiz?pid=${pid}`);
-        const data = await res.json();
-        if (data.questions) {
-          setQuestions(data.questions);
-        }
-        if (data.submission) {
-          setFinalScore(data.submission.score);
-          setPersonality(personalityForScore(data.submission.score));
-          setPhase("result");
-        }
-      } catch (e) {
-        console.error("Failed to load quiz", e);
-      } finally {
-        setLoading(false);
-      }
+    // If questions were not available at initial render, generate them immediately
+    if (questions.length === 0) {
+      setQuestions(buildQuizQuestions());
     }
-    load();
-  }, [code, pid]);
+  }, [questions.length]);
 
   function startQuiz() {
     setPhase("playing");
@@ -133,14 +127,6 @@ export function LiveQuizChallenge({
         finishQuiz(updatedAnswers);
       }
     }, 450);
-  }
-
-  if (loading) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-lg items-center justify-center p-6 text-center text-muted">
-        Loading AI Showdown Challenge…
-      </main>
-    );
   }
 
   return (
