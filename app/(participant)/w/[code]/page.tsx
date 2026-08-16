@@ -1,4 +1,4 @@
-import { getWorkshopByJoinCode } from "@/db/queries/workshops";
+import { getWorkshopByJoinCode, type WorkshopSettings } from "@/db/queries/workshops";
 import { ParticipantWizard } from "@/components/participant/ParticipantWizard";
 import { workshopJoinState } from "./join-state";
 import { NotLive } from "./not-live";
@@ -23,6 +23,7 @@ export default async function WorkshopJoinPage({
         joinCode: workshop!.joinCode,
         name: workshop!.name,
         consentText: workshop!.consentText,
+        probeEnabled: Boolean((workshop!.settings as WorkshopSettings | null)?.probeEnabled),
       }}
     />
   );

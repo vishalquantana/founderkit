@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { createParticipant, saveResponse, completeParticipant, getWorkshopById, maybeEmailResult } = vi.hoisted(() => ({
+const { createParticipant, saveResponse, completeParticipant, getWorkshopById, maybeEmailResult, probeSection } = vi.hoisted(() => ({
   createParticipant: vi.fn(),
   saveResponse: vi.fn(),
   completeParticipant: vi.fn(),
   getWorkshopById: vi.fn(),
   maybeEmailResult: vi.fn(),
+  probeSection: vi.fn(),
 }));
 vi.mock("@/db/queries/participants", () => ({ createParticipant, completeParticipant }));
 vi.mock("@/db/queries/responses", () => ({ saveResponse }));
 vi.mock("@/db/queries/workshops", () => ({ getWorkshopById }));
 vi.mock("@/email/send-result", () => ({ maybeEmailResult }));
+vi.mock("@/ai/probe", () => ({ probeSection }));
 
 // Simple in-memory cookie store standing in for next/headers' cookies().
 const cookieStore = new Map<string, string>();
@@ -20,7 +22,7 @@ const cookiesApi = {
 };
 vi.mock("next/headers", () => ({ cookies: vi.fn(async () => cookiesApi) }));
 
-import { startParticipant, saveSectionAnswer, finishParticipant } from "../actions";
+import { startParticipant, saveSectionAnswer, finishParticipant, probeSectionAction } from "../actions";
 
 describe("participant actions", () => {
   beforeEach(() => {
@@ -30,6 +32,7 @@ describe("participant actions", () => {
     getWorkshopById.mockReset();
     maybeEmailResult.mockReset();
     maybeEmailResult.mockResolvedValue(undefined);
+    probeSection.mockReset();
     cookieStore.clear();
   });
 
@@ -117,5 +120,49 @@ describe("participant actions", () => {
     cookieStore.set("mrs_pid", "someone-else");
     await expect(finishParticipant("p1")).rejects.toThrow();
     expect(completeParticipant).not.toHaveBeenCalled();
+  });
+
+  it("saveSectionAnswer forwards probeQuestion/probeAnswer to saveResponse", async () => {
+    cookieStore.set("mrs_pid", "p1");
+    await saveSectionAnswer({
+      participantId: "p1",
+      section: "problem",
+      mainAnswer: "x",
+      probeQuestion: "Who exactly faces this?",
+      probeAnswer: "Small kirana stores",
+    });
+    expect(saveResponse).toHaveBeenCalledWith({
+      participantId: "p1",
+      section: "problem",
+      mainAnswer: "x",
+      probeQuestion: "Who exactly faces this?",
+      probeAnswer: "Small kirana stores",
+    });
+  });
+
+  it("probeSectionAction returns null when probeEnabled is false", async () => {
+    const result = await probeSectionAction({ section: "problem", mainAnswer: "x", probeEnabled: false });
+    expect(result).toEqual({ question: null });
+    expect(probeSection).not.toHaveBeenCalled();
+  });
+
+  it("probeSectionAction returns the mocked probe question when enabled and needed", async () => {
+    probeSection.mockResolvedValue({ needsProbe: true, question: "Who exactly faces this?" });
+    const result = await probeSectionAction({ section: "problem", mainAnswer: "x", probeEnabled: true });
+    expect(result).toEqual({ question: "Who exactly faces this?" });
+    expect(probeSection).toHaveBeenCalledWith({ section: "problem", mainAnswer: "x" });
+  });
+
+  it("probeSectionAction returns null when enabled but no probe is needed", async () => {
+    probeSection.mockResolvedValue({ needsProbe: false, question: null });
+    const result = await probeSectionAction({ section: "problem", mainAnswer: "x", probeEnabled: true });
+    expect(result).toEqual({ question: null });
+  });
+
+  it("probeSectionAction never throws — returns null when probeSection rejects", async () => {
+    probeSection.mockRejectedValue(new Error("boom"));
+    await expect(
+      probeSectionAction({ section: "problem", mainAnswer: "x", probeEnabled: true }),
+    ).resolves.toEqual({ question: null });
   });
 });

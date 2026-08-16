@@ -8,13 +8,18 @@ import { SectionStep } from "@/components/participant/SectionStep";
 import { ProgressBar } from "@/components/motion/ProgressBar";
 import { StepTransition } from "@/components/motion/StepTransition";
 import { SECTIONS } from "@/lib/sections";
-import { startParticipant, saveSectionAnswer, finishParticipant } from "@/app/(participant)/w/[code]/actions";
+import {
+  startParticipant,
+  saveSectionAnswer,
+  finishParticipant,
+} from "@/app/(participant)/w/[code]/actions";
 
 export interface WizardWorkshop {
   id: string;
   joinCode: string;
   name: string;
   consentText: string;
+  probeEnabled: boolean;
 }
 
 export interface ParticipantWizardProps {
@@ -64,11 +69,13 @@ export function ParticipantWizard({ workshop }: ParticipantWizardProps) {
     void saveSectionAnswer({ participantId, section: sectionKey, mainAnswer: value });
   }
 
-  async function handleSectionNext(sectionIndex: number, value: string) {
+  // The main answer (and, if the coach probes, the follow-up Q&A) is
+  // already persisted by SectionStep before this fires — this only moves
+  // the step machine forward (or finishes the wizard).
+  async function handleSectionAdvance(sectionIndex: number, value: string) {
     if (!participantId) return;
     const section = SECTIONS[sectionIndex];
     setAnswers((a) => ({ ...a, [section.key]: value }));
-    await saveSectionAnswer({ participantId, section: section.key, mainAnswer: value });
 
     const isLast = sectionIndex === SECTIONS.length - 1;
     if (isLast) {
@@ -98,7 +105,9 @@ export function ParticipantWizard({ workshop }: ParticipantWizardProps) {
           section={section}
           initialValue={answers[section.key]}
           isLast={sectionIndex === SECTIONS.length - 1}
-          onNext={(value) => handleSectionNext(sectionIndex, value)}
+          participantId={participantId!}
+          probeEnabled={workshop.probeEnabled}
+          onAdvance={(value) => handleSectionAdvance(sectionIndex, value)}
           onAutosave={(value) => handleAutosave(section.key, value)}
         />
       </StepTransition>

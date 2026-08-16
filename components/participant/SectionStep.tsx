@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Chip } from "@/components/motion/Chip";
 import type { Section } from "@/lib/sections";
+import { saveSectionAnswer, probeSectionAction } from "@/app/(participant)/w/[code]/actions";
 
 const SUGGESTED_LENGTH = 40; // words — a gentle nudge, not a hard rule
 
@@ -11,7 +12,9 @@ export interface SectionStepProps {
   section: Section;
   initialValue?: string;
   isLast: boolean;
-  onNext: (value: string) => void;
+  participantId: string;
+  probeEnabled: boolean;
+  onAdvance: (value: string) => void;
   onAutosave: (value: string) => void;
 }
 
@@ -19,15 +22,29 @@ export interface SectionStepProps {
  * One question, one screen. Autosaves on textarea blur (debounced by the
  * parent's saveSectionAnswer call), and moves on with "Next" / "Finish".
  *
- * The bordered slot below the textarea is reserved for Plan 3's AI Coach
- * probe card (a contextual follow-up question with Answer / Skip). Not
- * built yet — left as visible breathing room so the layout doesn't shift
- * when it lands.
+ * On "Next", the main answer is saved first, then (if the workshop has the
+ * AI coach enabled) a probe request checks whether the answer is vague. If
+ * so, the reserved slot below the textarea renders a follow-up question
+ * with Answer / Skip actions — at most once per section — before advancing.
  */
-export function SectionStep({ section, initialValue, isLast, onNext, onAutosave }: SectionStepProps) {
+export function SectionStep({
+  section,
+  initialValue,
+  isLast,
+  participantId,
+  probeEnabled,
+  onAdvance,
+  onAutosave,
+}: SectionStepProps) {
   const [value, setValue] = useState(initialValue ?? "");
   const [touched, setTouched] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [probeQuestion, setProbeQuestion] = useState<string | null>(null);
+  const [probeResolved, setProbeResolved] = useState(false);
+  const [probeAnswerValue, setProbeAnswerValue] = useState("");
+  const [probeSaving, setProbeSaving] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const isValid = value.trim().length > 0;
   const wordCount = value.trim().length === 0 ? 0 : value.trim().split(/\s+/).length;
@@ -39,10 +56,71 @@ export function SectionStep({ section, initialValue, isLast, onNext, onAutosave 
     }, 400);
   }
 
-  function handleNext() {
+  async function handleNext() {
     setTouched(true);
-    if (!isValid) return;
-    onNext(value);
+    if (!isValid || saving) return;
+
+    setSaving(true);
+    try {
+      await saveSectionAnswer({ participantId, section: section.key, mainAnswer: value });
+
+      if (probeResolved || !probeEnabled) {
+        onAdvance(value);
+        return;
+      }
+
+      const { question } = await probeSectionAction({
+        section: section.key,
+        mainAnswer: value,
+        probeEnabled,
+      });
+
+      if (question) {
+        setProbeQuestion(question);
+        return; // hold here for the AI Coach card; don't advance yet
+      }
+
+      setProbeResolved(true);
+      onAdvance(value);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleProbeAnswer() {
+    if (!probeQuestion || probeSaving) return;
+    setProbeSaving(true);
+    try {
+      await saveSectionAnswer({
+        participantId,
+        section: section.key,
+        mainAnswer: value,
+        probeQuestion,
+        probeAnswer: probeAnswerValue.trim() || undefined,
+      });
+      setProbeResolved(true);
+      onAdvance(value);
+    } finally {
+      setProbeSaving(false);
+    }
+  }
+
+  async function handleProbeSkip() {
+    if (!probeQuestion || probeSaving) return;
+    setProbeSaving(true);
+    try {
+      await saveSectionAnswer({
+        participantId,
+        section: section.key,
+        mainAnswer: value,
+        probeQuestion,
+      });
+    } finally {
+      // Skipping never blocks progress, even if the save is slow or fails.
+      setProbeSaving(false);
+      setProbeResolved(true);
+      onAdvance(value);
+    }
   }
 
   return (
@@ -84,8 +162,9 @@ export function SectionStep({ section, initialValue, isLast, onNext, onAutosave 
           onChange={(e) => setValue(e.target.value)}
           onBlur={handleBlur}
           rows={6}
+          disabled={probeQuestion !== null}
           placeholder="Type your answer here…"
-          className="pulse-input w-full resize-none p-4 text-sm leading-relaxed outline-none"
+          className="pulse-input w-full resize-none p-4 text-sm leading-relaxed outline-none disabled:opacity-60"
         />
         <div className="flex items-center justify-between text-xs text-[#A9A9C9]">
           <span>Aim for around {SUGGESTED_LENGTH} words — a few honest sentences beat a polished paragraph.</span>
@@ -96,18 +175,59 @@ export function SectionStep({ section, initialValue, isLast, onNext, onAutosave 
         )}
       </div>
 
-      {/* AI Coach probe card slot (Plan 3): a contextual follow-up question
-          with Answer / Skip actions will render here once the response is
-          saved. Intentionally left empty for now. */}
-      <div className="pulse-card border-l-2 border-l-[#8b5cf6] p-4 text-center text-xs text-[#A9A9C9]">
-        AI Coach follow-up coming soon
-      </div>
+      {/* AI Coach probe card slot: a contextual follow-up question with
+          Answer / Skip actions, shown at most once per section after the
+          main answer is saved. */}
+      <AnimatePresence>
+        {probeQuestion && (
+          <motion.div
+            key="ai-coach-card"
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
+            className="pulse-card relative flex flex-col gap-3 overflow-hidden border-l-2 border-l-[#8b5cf6] p-4"
+            style={{ boxShadow: "0 0 0 1px rgba(139,92,246,0.25), 0 20px 60px -20px rgba(139,92,246,0.55)" }}
+          >
+            <span className="pulse-kicker text-[#c4b5fd]">⚡ Quick follow-up from AI Coach</span>
+            <p className="text-sm leading-relaxed text-[#ECEAF6]">{probeQuestion}</p>
+            <textarea
+              value={probeAnswerValue}
+              onChange={(e) => setProbeAnswerValue(e.target.value)}
+              rows={3}
+              placeholder="Add a sentence or two (optional)…"
+              className="pulse-input w-full resize-none p-3 text-sm leading-relaxed outline-none"
+            />
+            <div className="flex gap-2">
+              <motion.button
+                type="button"
+                onClick={handleProbeAnswer}
+                disabled={probeSaving}
+                whileTap={{ scale: 0.97 }}
+                className="pulse-btn flex-1 px-4 py-2.5 text-sm disabled:cursor-not-allowed"
+              >
+                Answer
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={handleProbeSkip}
+                disabled={probeSaving}
+                whileTap={{ scale: 0.97 }}
+                className="pulse-btn-secondary flex-1 px-4 py-2.5 text-sm disabled:cursor-not-allowed"
+              >
+                Skip for now
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.button
         type="button"
         onClick={handleNext}
+        disabled={saving || probeQuestion !== null}
         whileTap={{ scale: 0.97 }}
-        className="pulse-btn w-full px-5 py-3"
+        className="pulse-btn w-full px-5 py-3 disabled:cursor-not-allowed"
       >
         {isLast ? "Finish" : "Next"}
       </motion.button>

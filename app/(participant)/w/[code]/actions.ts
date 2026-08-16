@@ -4,6 +4,7 @@ import { createParticipant, completeParticipant } from "@/db/queries/participant
 import { saveResponse } from "@/db/queries/responses";
 import { getWorkshopById } from "@/db/queries/workshops";
 import { maybeEmailResult } from "@/email/send-result";
+import { probeSection } from "@/ai/probe";
 import type { SectionKey } from "@/db/schema";
 
 const PID_COOKIE = "mrs_pid";
@@ -59,12 +60,25 @@ async function assertOwnsParticipant(participantId: string): Promise<void> {
 
 export async function saveSectionAnswer(input: {
   participantId: string; section: SectionKey; mainAnswer: string;
+  probeQuestion?: string | null; probeAnswer?: string | null;
 }): Promise<void> {
   await assertOwnsParticipant(input.participantId);
   if (input.mainAnswer.length > MAX_ANSWER_LENGTH) {
     throw new Error("mainAnswer is too long");
   }
   await saveResponse(input);
+}
+
+export async function probeSectionAction(input: {
+  section: SectionKey; mainAnswer: string; probeEnabled: boolean;
+}): Promise<{ question: string | null }> {
+  if (!input.probeEnabled) return { question: null };
+  try {
+    const r = await probeSection({ section: input.section, mainAnswer: input.mainAnswer });
+    return { question: r.needsProbe ? r.question : null };
+  } catch {
+    return { question: null };
+  }
 }
 
 export async function finishParticipant(participantId: string): Promise<void> {
