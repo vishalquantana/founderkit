@@ -3,7 +3,7 @@ import Link from "next/link";
 export interface FounderTabBarProps {
   code: string;
   pid: string;
-  active: "home" | "canvas" | "plan" | "polls";
+  active: "home" | "canvas" | "polls";
   canvasUnlocked?: boolean;
   hasResult?: boolean;
 }
@@ -19,12 +19,12 @@ function activeClassName(isActive: boolean): string {
 }
 
 /**
- * The founder's fixed bottom tab bar (Home / Canvas / Plan / Polls), shared
+ * The founder's fixed bottom tab bar (Home / Canvas / Polls), shared
  * across the founder dashboard and polls page so navigation is consistent.
- * Canvas/Plan enable rules mirror the original inline nav in FounderHome:
- * once results exist they always link to the result page; before that,
- * Canvas is enabled only when the presenter has unlocked it, and Plan stays
- * disabled until results exist.
+ * Canvas's enable rules mirror the original inline nav in FounderHome: once
+ * results exist it always links to the result page (which now folds the
+ * 7-day plan straight into the canvas); before that, Canvas is enabled only
+ * when the presenter has unlocked it.
  */
 export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: FounderTabBarProps) {
   return (
@@ -66,22 +66,6 @@ export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: 
         <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
           <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
           Canvas
-        </span>
-      )}
-
-      {hasResult ? (
-        <Link
-          href={`/w/${code}/result/${pid}#plan-section`}
-          className={activeClassName(active === "plan")}
-          style={activeStyle(active === "plan")}
-        >
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◉</span>
-          Plan
-        </Link>
-      ) : (
-        <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◉</span>
-          Plan
         </span>
       )}
 

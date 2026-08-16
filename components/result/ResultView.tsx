@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { StageReveal } from "@/components/motion/StageReveal";
 import { StageBadge } from "@/components/result/StageBadge";
 import { DimensionBars } from "@/components/result/DimensionBars";
 import { LeanCanvasExplorer } from "@/components/result/LeanCanvasExplorer";
+import { ShareCard } from "@/components/result/ShareCard";
+import { ActionButton } from "@/components/ui/ActionButton";
 import { reevaluateParticipant } from "@/app/(participant)/w/[code]/actions";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey, ReadinessStage } from "@/db/schema";
@@ -53,11 +55,56 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h2 className="pulse-kicker">{children}</h2>;
 }
 
+function DownloadIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.6 10.5 6.8-3.9" />
+      <path d="m8.6 13.5 6.8 3.9" />
+    </svg>
+  );
+}
+
 /**
- * The delightful results payoff: stage-forward reveal, a tasteful
- * celebration flourish, a staged fade-in of the narrative fields, a
- * always-visible detailed breakdown, and the interactive lean canvas
- * board. Warm, mobile-first, never leads with the number.
+ * The delightful results payoff: a share-worthy hero up top (stage, score,
+ * one-line summary, share + download controls), the strengths, the lean
+ * canvas with the 7-day plan folded straight in underneath it, "how to
+ * sharpen" recommendations, and — lower down, for the founders who want the
+ * numbers — the detailed breakdown, assumptions, and reflection prompt.
+ * Warm, mobile-first, never leads with the number... except in the hero,
+ * where the number IS the payoff.
  */
 export function ResultView({
   result,
@@ -73,6 +120,10 @@ export function ResultView({
   const glow = STAGE_GLOW_VAR[result.readinessStage];
   const [isRescoring, startRescoring] = useTransition();
   const [rescoreError, setRescoreError] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   function handleRescore() {
     setRescoreError(null);
@@ -86,8 +137,68 @@ export function ResultView({
     });
   }
 
+  async function handleShare() {
+    setShareError(null);
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const shareData = {
+      title: `${startupName} · Quantana AI Cofounder`,
+      text: `${founderName}'s readiness snapshot for ${startupName}`,
+      url,
+    };
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2500);
+        return;
+      }
+      setShareError("Sharing isn't supported on this device.");
+    } catch (error) {
+      // AbortError happens when the user cancels the native share sheet — not a real error.
+      if (error instanceof Error && error.name === "AbortError") return;
+      setShareError("Couldn't share right now. Please try again.");
+    }
+  }
+
+  async function handleDownloadImage() {
+    setDownloadError(null);
+    const node = shareCardRef.current;
+    if (!node) {
+      setDownloadError("Couldn't generate the image. Please try again.");
+      return;
+    }
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(node, { cacheBust: true, pixelRatio: 1 });
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "my-startup-readiness.png";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      setDownloadError("Couldn't generate the image. Please try again.");
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-8 pb-10">
+      {/* Off-screen artwork used only as the source for the downloaded PNG. */}
+      <div style={{ position: "fixed", top: 0, left: -99999, pointerEvents: "none" }} aria-hidden="true">
+        <ShareCard
+          ref={shareCardRef}
+          startupName={startupName}
+          stage={result.readinessStage}
+          score={result.backendScore}
+          summary={result.summary}
+        />
+      </div>
+
+      {/* Hero / share card */}
       <div className="relative flex flex-col items-center gap-4 pt-4">
         {!shouldReduceMotion ? (
           <motion.div
@@ -100,42 +211,68 @@ export function ResultView({
           />
         ) : null}
 
-        <p className="relative text-sm font-medium text-muted">
-          {founderName}, here&apos;s where {startupName} stands
-        </p>
-
-        <StageReveal className="relative">
-          <StageBadge stage={result.readinessStage} />
-        </StageReveal>
-
-        <a
-          href={`/w/${code}/result/${pid}/pdf`}
-          className="pulse-btn-secondary relative inline-flex items-center gap-2 px-4 py-2 text-sm"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
+        <div className="pulse-card relative flex w-full max-w-md flex-col items-center gap-4 overflow-hidden px-6 py-8 text-center">
+          <div
             aria-hidden="true"
-          >
-            <path d="M12 3v12" />
-            <path d="m7 10 5 5 5-5" />
-            <path d="M5 21h14" />
-          </svg>
-          Download PDF
-        </a>
+            className="pointer-events-none absolute inset-0 opacity-90"
+            style={{ background: "var(--pulse-bg-gradient)" }}
+          />
 
-        <Link
-          href={`/w/${code}/home/${pid}`}
-          className="pulse-btn-secondary relative inline-flex items-center gap-2 px-4 py-2 text-sm"
-        >
-          Go to your founder home
-        </Link>
+          <p className="relative text-sm font-medium text-muted">
+            {founderName}, here&apos;s where {startupName} stands
+          </p>
+
+          <h1 className="font-display text-gradient relative text-2xl font-bold tracking-tight">
+            {startupName}
+          </h1>
+
+          <StageReveal className="relative">
+            <StageBadge stage={result.readinessStage} />
+          </StageReveal>
+
+          <p className="relative font-display text-3xl font-bold" style={{ color: "var(--pulse-text)" }}>
+            {result.backendScore}
+            <span className="ml-1 text-sm font-medium" style={{ color: "var(--pulse-text-muted)" }}>
+              / 100
+            </span>
+          </p>
+
+          <p className="relative max-w-sm text-sm leading-relaxed text-foreground">{result.summary}</p>
+
+          <div className="relative flex flex-wrap items-center justify-center gap-2 pt-1">
+            <ActionButton
+              type="button"
+              onAction={handleShare}
+              className="pulse-btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-60"
+              pendingChildren={<>Sharing…</>}
+            >
+              <ShareIcon />
+              {linkCopied ? "Link copied!" : "Share / Save"}
+            </ActionButton>
+
+            <ActionButton
+              type="button"
+              onAction={handleDownloadImage}
+              aria-label="Download a shareable image of your result"
+              className="pulse-btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-60"
+              pendingChildren={<>Generating…</>}
+            >
+              <DownloadIcon />
+              Download image
+            </ActionButton>
+          </div>
+
+          {shareError ? <p className="relative text-xs text-red-500">{shareError}</p> : null}
+          {downloadError ? <p className="relative text-xs text-red-500">{downloadError}</p> : null}
+
+          <Link
+            href={`/w/${code}/home/${pid}`}
+            className="relative text-xs font-medium underline"
+            style={{ color: "var(--pulse-accent-text)" }}
+          >
+            Go to your founder home
+          </Link>
+        </div>
       </div>
 
       <motion.div
@@ -145,17 +282,12 @@ export function ResultView({
         className="flex flex-col gap-7"
       >
         <RevealSection>
-          <SectionLabel>Your snapshot</SectionLabel>
-          <p className="text-sm leading-relaxed text-foreground">{result.summary}</p>
-        </RevealSection>
-
-        <RevealSection>
-          <SectionLabel>What&apos;s working</SectionLabel>
+          <SectionLabel>What&apos;s strong</SectionLabel>
           <ul className="flex flex-col gap-2">
             {result.strengths.map((strength) => (
               <li
                 key={strength}
-                className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 text-sm leading-relaxed text-emerald-300"
+                className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 text-sm leading-relaxed text-emerald-700 dark:text-emerald-300"
               >
                 {strength}
               </li>
@@ -164,35 +296,26 @@ export function ResultView({
         </RevealSection>
 
         <RevealSection>
-          <SectionLabel>Worth testing</SectionLabel>
-          <ul className="flex flex-col gap-2">
-            {result.assumptions.map((assumption) => (
-              <li
-                key={assumption}
-                className="rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-amber-300"
-              >
-                {assumption}
-              </li>
-            ))}
-          </ul>
-        </RevealSection>
-
-        <RevealSection>
-          <SectionLabel>Your next MVP experiment</SectionLabel>
-          <p className="pulse-card px-4 py-3 text-sm leading-relaxed text-foreground">
-            {result.mvpExperiment}
+          <SectionLabel>Your lean canvas</SectionLabel>
+          <p className="text-xs text-muted">
+            {editable
+              ? "Tap a block on the map, or swipe through each area. Edit any answer to sharpen it."
+              : "Tap a block on the map, or swipe through each area."}
           </p>
+          <LeanCanvasExplorer result={result} answers={answers} editable={editable} participantId={pid} />
         </RevealSection>
 
         <RevealSection>
-          <SectionLabel>7-day plan</SectionLabel>
+          <SectionLabel>Your next 7 days</SectionLabel>
           <ol className="flex flex-col gap-2">
             {result.sevenDayPlan.map((day, index) => (
               <li
                 key={`${day.day}-${index}`}
                 className="pulse-card pulse-hover-lift flex gap-3 px-4 py-3 text-sm leading-relaxed text-foreground"
               >
-                <span className="font-display shrink-0 font-semibold text-muted">{day.day}</span>
+                <span className="font-display shrink-0 font-semibold" style={{ color: "var(--pulse-accent-text)" }}>
+                  {day.day}
+                </span>
                 <span>{day.text}</span>
               </li>
             ))}
@@ -200,82 +323,103 @@ export function ResultView({
         </RevealSection>
 
         <RevealSection>
-          <SectionLabel>Your pitch, sharpened</SectionLabel>
-          <p className="rounded-2xl border border-violet-400/25 bg-violet-500/10 px-4 py-3 text-sm leading-relaxed text-violet-200">
+          <SectionLabel>How to sharpen</SectionLabel>
+          <p className="rounded-2xl border border-violet-400/25 bg-violet-500/10 px-4 py-3 text-sm leading-relaxed" style={{ color: "var(--pulse-accent-text)" }}>
             {result.improvedPitch}
           </p>
-        </RevealSection>
-
-        <RevealSection>
-          <SectionLabel>Something to sit with</SectionLabel>
-          <p className="text-sm italic leading-relaxed text-muted">{result.reflectionQuestion}</p>
+          <p className="pulse-card px-4 py-3 text-sm leading-relaxed text-foreground">
+            <span className="font-semibold" style={{ color: "var(--pulse-accent-text-2)" }}>
+              Next MVP experiment →{" "}
+            </span>
+            {result.mvpExperiment}
+          </p>
         </RevealSection>
       </motion.div>
 
-      <div className="flex flex-col gap-3 border-t border-[var(--pulse-border)] pt-6">
-        <h2 className="pulse-kicker">Detailed breakdown</h2>
-        <DimensionBars
-          scores={result.dimensionScores}
-          total={result.backendScore}
-          justifications={result.dimensionJustifications}
-          className="pt-1"
-        />
-      </div>
+      <div className="flex flex-col gap-7 border-t border-[var(--pulse-border)] pt-6">
+        <h2 className="pulse-kicker">Details</h2>
 
-      <div className="flex flex-col gap-3">
-        <SectionLabel>Your lean canvas</SectionLabel>
-        <p className="text-xs text-muted">
-          {editable
-            ? "Tap a block on the map, or swipe through each area. Edit any answer to sharpen it."
-            : "Tap a block on the map, or swipe through each area."}
-        </p>
-        <LeanCanvasExplorer result={result} answers={answers} editable={editable} participantId={pid} />
-      </div>
-
-      {editable ? (
-        <div className="flex flex-col items-start gap-2">
-          <button
-            type="button"
-            onClick={handleRescore}
-            disabled={isRescoring}
-            aria-busy={isRescoring || undefined}
-            className="pulse-btn inline-flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-60"
-          >
-            {isRescoring ? (
-              <>
-                <svg
-                  className="h-4 w-4 animate-spin"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Re-scoring…
-              </>
-            ) : (
-              "Re-score my startup"
-            )}
-          </button>
-          <p className="text-xs text-muted">
-            Edited a block? Re-score to update your readiness and AI feedback.
-          </p>
-          {rescoreError ? <p className="text-xs text-red-500">{rescoreError}</p> : null}
+        <div className="flex flex-col gap-3">
+          <DimensionBars
+            scores={result.dimensionScores}
+            total={result.backendScore}
+            justifications={result.dimensionJustifications}
+          />
         </div>
-      ) : null}
+
+        <div className="flex flex-col gap-2">
+          <SectionLabel>Worth testing</SectionLabel>
+          <ul className="flex flex-col gap-2">
+            {result.assumptions.map((assumption) => (
+              <li
+                key={assumption}
+                className="rounded-2xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-amber-700 dark:text-amber-300"
+              >
+                {assumption}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <SectionLabel>Something to sit with</SectionLabel>
+          <p className="text-sm italic leading-relaxed text-muted">{result.reflectionQuestion}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-start gap-2 border-t border-[var(--pulse-border)] pt-6">
+        {editable ? (
+          <>
+            <button
+              type="button"
+              onClick={handleRescore}
+              disabled={isRescoring}
+              aria-busy={isRescoring || undefined}
+              className="pulse-btn inline-flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-60"
+            >
+              {isRescoring ? (
+                <>
+                  <svg
+                    className="h-4 w-4 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Re-scoring…
+                </>
+              ) : (
+                "Re-score my startup"
+              )}
+            </button>
+            <p className="text-xs text-muted">
+              Edited a block? Re-score to update your readiness and AI feedback.
+            </p>
+            {rescoreError ? <p className="text-xs text-red-500">{rescoreError}</p> : null}
+          </>
+        ) : null}
+        <a
+          href={`/w/${code}/result/${pid}/pdf`}
+          className="pulse-btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm"
+        >
+          <DownloadIcon />
+          Download PDF
+        </a>
+      </div>
     </div>
   );
 }
