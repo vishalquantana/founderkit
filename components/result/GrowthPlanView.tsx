@@ -243,12 +243,12 @@ export function GrowthPlanView({
           </div>
         </div>
 
-        <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
+        <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs font-medium text-amber-950 dark:text-amber-200">
           <span className="font-bold block text-[10px] uppercase">Biggest Distribution Risk:</span>
           {plan?.biggestRisk}
         </div>
 
-        <div className="mt-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+        <div className="mt-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-950 dark:text-emerald-200">
           <span className="font-bold block text-[10px] uppercase">Low-Hanging Opportunity:</span>
           {plan?.lowHangingOpportunity}
         </div>

@@ -90,7 +90,7 @@ export function canvasCellTone(
 export const CANVAS_TONE_LABEL: Record<Exclude<CanvasTone, "empty">, string> = {
   good: "Good",
   "needs-work": "Needs work",
-  bad: "Bad",
+  bad: "Risky",
 };
 
 export interface LeanCanvasSubBlock {

@@ -27,7 +27,7 @@ export const MINI_MAP_LEGEND_SWATCH_CLASSES: Record<MiniMapTone, string> = {
 const MINI_MAP_LEGEND_ITEMS: { tone: MiniMapTone; label: string }[] = [
   { tone: "good", label: "Good" },
   { tone: "needs-work", label: "Needs work" },
-  { tone: "bad", label: "Bad" },
+  { tone: "bad", label: "Risky" },
   { tone: "empty", label: "Empty" },
 ];
 
