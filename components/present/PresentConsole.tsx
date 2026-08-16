@@ -10,6 +10,12 @@ import type { PresentData } from "@/components/present/types";
 import { AggregateView } from "@/components/present/AggregateView";
 import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
+import { PollResultsView } from "@/components/present/PollResultsView";
+
+interface PollResultsResponse {
+  poll: { id: string; question: string; options: string[] } | null;
+  tally: { counts: number[]; total: number } | null;
+}
 
 export interface PresentConsoleProps {
   workshopId: string;
@@ -34,6 +40,12 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
     refreshInterval: 4000,
     revalidateOnFocus: false,
   });
+
+  const { data: pollData } = useSWR<PollResultsResponse>(
+    `/api/workshops/${workshopId}/poll-results`,
+    fetcher,
+    { refreshInterval: 3000, revalidateOnFocus: false },
+  );
 
   const presentData = data ?? initialData;
   const effectiveSettings = presentData.settings ?? settings;
@@ -107,18 +119,36 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
       <main className="flex flex-1 items-center justify-center px-6 py-8 sm:px-10">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={activeView}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="w-full max-w-6xl"
-          >
-            {activeView === "dashboard" && <AggregateView data={presentData} />}
-            {activeView === "wordcloud" && <WordCloudView data={presentData} />}
-            {activeView === "progression" && <ProgressionView data={presentData} />}
-          </motion.div>
+          {pollData?.poll ? (
+            <motion.div
+              key="poll-results"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="w-full max-w-6xl"
+            >
+              <PollResultsView
+                question={pollData.poll.question}
+                options={pollData.poll.options}
+                counts={pollData.tally?.counts ?? []}
+                total={pollData.tally?.total ?? 0}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key={activeView}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="w-full max-w-6xl"
+            >
+              {activeView === "dashboard" && <AggregateView data={presentData} />}
+              {activeView === "wordcloud" && <WordCloudView data={presentData} />}
+              {activeView === "progression" && <ProgressionView data={presentData} />}
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
