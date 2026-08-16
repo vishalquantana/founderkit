@@ -466,6 +466,28 @@ export function FounderHome({
         </motion.div>
       )}
 
+      {/* 60-Second AI Challenge Card */}
+      <motion.div {...cardMotionProps} className="pulse-card relative overflow-hidden p-4">
+        <div className="flex items-center justify-between">
+          <CardLabel>Live Activity</CardLabel>
+          <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+            60s Challenge ⚡
+          </span>
+        </div>
+        <p className="mt-1 text-sm font-semibold text-foreground">
+          AI & Startup Showdown
+        </p>
+        <p className="mt-1 text-xs text-muted leading-relaxed">
+          Test your prompt engineering, LLM instincts, and MVP validation skills in 60 seconds. Earn your badge and climb the live room leaderboard!
+        </p>
+        <Link
+          href={`/w/${code}/quiz/${pid}`}
+          className="pulse-btn mt-3 flex w-full items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold shadow-sm"
+        >
+          <span>Play 60s AI Challenge →</span>
+        </Link>
+      </motion.div>
+
       {/* Workshop Feedback Button */}
       <motion.div {...cardMotionProps} className="pulse-card p-4">
         <CardLabel>Session Feedback</CardLabel>

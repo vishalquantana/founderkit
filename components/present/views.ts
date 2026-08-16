@@ -1,14 +1,15 @@
-export type PresentView = "welcome" | "dashboard" | "wordcloud" | "progression";
+export type PresentView = "welcome" | "dashboard" | "wordcloud" | "progression" | "quiz";
 
 export const VIEW_LABELS: Record<PresentView, string> = {
   welcome: "Welcome",
   dashboard: "Canvas Statistics",
   wordcloud: "Word Cloud",
   progression: "Progression",
+  quiz: "AI Quiz Results",
 };
 
 export interface ViewAvailabilitySettings {
-  liveViews: { dashboard: boolean; wordCloud: boolean; progression: boolean };
+  liveViews: { dashboard: boolean; wordCloud: boolean; progression: boolean; quiz?: boolean };
   leaderboard: boolean;
 }
 
@@ -25,6 +26,7 @@ export function availableViews(settings: ViewAvailabilitySettings): PresentView[
   if (settings.liveViews.dashboard) views.push("dashboard");
   if (settings.liveViews.wordCloud) views.push("wordcloud");
   if (settings.liveViews.progression || settings.leaderboard) views.push("progression");
+  if (settings.liveViews.quiz !== false) views.push("quiz");
 
   return views.length > 1 ? views : ["welcome", "dashboard"];
 }

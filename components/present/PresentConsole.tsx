@@ -15,6 +15,7 @@ import { AggregateView } from "@/components/present/AggregateView";
 import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
 import { PollResultsView } from "@/components/present/PollResultsView";
+import { QuizLeaderboardView } from "@/components/present/QuizLeaderboardView";
 import { ThemeControl } from "@/components/ThemeControl";
 import { ActionButton } from "@/components/ui/ActionButton";
 import { activatePollAction, closePollAction } from "@/app/(admin)/workshops/[id]/poll-actions";
@@ -387,6 +388,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 {selection.view === "dashboard" && <AggregateView data={presentData} />}
                 {selection.view === "wordcloud" && <WordCloudView data={presentData} />}
                 {selection.view === "progression" && <ProgressionView data={presentData} />}
+                {selection.view === "quiz" && <QuizLeaderboardView workshopId={workshopId} />}
               </motion.div>
             )}
           </AnimatePresence>

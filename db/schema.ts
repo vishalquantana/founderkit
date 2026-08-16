@@ -186,6 +186,19 @@ export const escalations = sqliteTable("escalations", {
   createdAt: createdAt(),
 });
 
+export const quizSubmissions = sqliteTable("quiz_submissions", {
+  id: id(),
+  workshopId: text("workshop_id").notNull().references(() => workshops.id),
+  participantId: text("participant_id").notNull().references(() => participants.id),
+  score: integer("score").notNull(),
+  badgeTitle: text("badge_title").notNull(),
+  badgeKey: text("badge_key").notNull(),
+  timeTakenSeconds: integer("time_taken_seconds").notNull(),
+  responses: text("responses", { mode: "json" }),
+  createdAt: createdAt(),
+});
+
 export type ChatMessageRow = typeof chatMessages.$inferSelect;
 export type FaqRow = typeof faqs.$inferSelect;
 export type EscalationRow = typeof escalations.$inferSelect;
+export type QuizSubmissionRow = typeof quizSubmissions.$inferSelect;
