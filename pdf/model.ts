@@ -24,6 +24,7 @@ export interface PdfModelBlock {
   gridArea: string;
   answer: string | null;
   feedback: string | null;
+  suggestion?: string;
   score?: number;
   max?: number;
   sub?: PdfModelSubBlock;
@@ -88,6 +89,7 @@ export function buildPdfModel(input: BuildPdfModelInput): PdfModel {
     const score = block.dimension ? result.dimensionScores[block.dimension] : undefined;
     const max = block.dimension ? DIMENSION_MAX[block.dimension] : undefined;
     const feedback = score !== undefined && max !== undefined ? cellFeedback(score, max).label : null;
+    const suggestion = answer && block.source ? result.sectionFeedback?.[block.source] : undefined;
 
     const sub: PdfModelSubBlock | undefined = block.sub
       ? {
@@ -104,6 +106,7 @@ export function buildPdfModel(input: BuildPdfModelInput): PdfModel {
       gridArea: block.gridArea,
       answer,
       feedback,
+      suggestion,
       score,
       max,
       sub,

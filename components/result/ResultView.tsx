@@ -209,7 +209,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
         <SectionLabel>Your lean canvas</SectionLabel>
         <p className="text-xs text-[#A9A9C9]">Tap a tile to see the full answer and how it scored.</p>
         <div className="pulse-card p-3 sm:p-5">
-          <CanvasBoard result={result} answers={answers} />
+          <CanvasBoard result={result} answers={answers} suggestions={result.sectionFeedback} />
         </div>
       </div>
     </div>

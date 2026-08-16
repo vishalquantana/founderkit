@@ -24,6 +24,7 @@ export interface ResolvedCanvasPiece {
   answer: string | null;
   score?: number;
   dimension?: keyof typeof DIMENSION_MAX;
+  suggestion?: string;
 }
 
 export function resolveFeedback(piece: ResolvedCanvasPiece): CellFeedback | null {
@@ -155,6 +156,12 @@ export function CanvasOverlayCard({ piece, onClose, layoutId }: CanvasOverlayCar
             />
           </div>
         </div>
+      ) : null}
+
+      {piece.suggestion ? (
+        <p className="rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-600">
+          <span className="font-semibold">How to sharpen this →</span> {piece.suggestion}
+        </p>
       ) : null}
 
       <button

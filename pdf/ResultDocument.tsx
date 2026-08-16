@@ -109,6 +109,13 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     marginTop: 2,
   },
+  blockSuggestion: {
+    fontSize: 5.5,
+    fontStyle: "italic",
+    color: "#94a3b8",
+    marginTop: 2,
+    lineHeight: 1.3,
+  },
   subBlock: {
     borderTopWidth: 1,
     borderTopColor: "#000000",
@@ -183,11 +190,12 @@ function blockPosition(gridArea: string) {
   };
 }
 
-function BlockContent({ title, helper, answer, feedback, score, max }: {
+function BlockContent({ title, helper, answer, feedback, suggestion, score, max }: {
   title: string;
   helper: string;
   answer: string | null;
   feedback?: string | null;
+  suggestion?: string;
   score?: number;
   max?: number;
 }) {
@@ -203,6 +211,7 @@ function BlockContent({ title, helper, answer, feedback, score, max }: {
               {score !== undefined && max !== undefined ? `  ·  ${score}/${max}` : ""}
             </Text>
           ) : null}
+          {suggestion ? <Text style={styles.blockSuggestion}>{suggestion}</Text> : null}
         </>
       ) : (
         <Text style={styles.blockHelper}>{helper} (not captured in this snapshot)</Text>
@@ -221,6 +230,7 @@ function CanvasBlock({ block }: { block: PdfModelBlock }) {
           helper={block.helper}
           answer={block.answer}
           feedback={block.feedback}
+          suggestion={block.suggestion}
           score={block.score}
           max={block.max}
         />

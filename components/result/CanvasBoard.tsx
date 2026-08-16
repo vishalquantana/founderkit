@@ -16,6 +16,7 @@ import type { SectionKey } from "@/db/schema";
 export interface CanvasBoardProps {
   result: EvaluationResult;
   answers: Record<SectionKey, string>;
+  suggestions?: Record<SectionKey, string>;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ function resolveMainPiece(
   block: (typeof LEAN_CANVAS_BLOCKS)[number],
   answers: Record<SectionKey, string>,
   result: EvaluationResult,
+  suggestions?: Record<SectionKey, string>,
 ): ResolvedCanvasPiece {
   const answer = block.source
     ? (answers[block.source] ?? "").trim() || null
@@ -41,6 +43,7 @@ function resolveMainPiece(
     answer,
     score: block.dimension ? result.dimensionScores[block.dimension] : undefined,
     dimension: block.dimension,
+    suggestion: answer && block.source ? suggestions?.[block.source] : undefined,
   };
 }
 
@@ -74,7 +77,7 @@ function resolveSubPiece(
  * fallback once it can no longer shrink legibly). Tapping a populated
  * block morphs it (shared layoutId) into a full-detail overlay.
  */
-export function CanvasBoard({ result, answers, className }: CanvasBoardProps) {
+export function CanvasBoard({ result, answers, suggestions, className }: CanvasBoardProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,7 +97,7 @@ export function CanvasBoard({ result, answers, className }: CanvasBoardProps) {
 
   const pieces = new Map<string, ResolvedCanvasPiece>();
   for (const block of LEAN_CANVAS_BLOCKS) {
-    pieces.set(block.key, resolveMainPiece(block, answers, result));
+    pieces.set(block.key, resolveMainPiece(block, answers, result, suggestions));
     const sub = resolveSubPiece(block, answers, result);
     if (sub) pieces.set(sub.id, sub);
   }

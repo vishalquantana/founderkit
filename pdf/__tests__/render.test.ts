@@ -10,6 +10,14 @@ it("renders a non-empty PDF buffer", async () => {
       dimensionScores: { problemClarity: 12, customerClarity: 9, valuePayment: 15, mvpQuality: 10, distribution: 7, validation: 7, teamStageFit: 3, cashflow: 2 },
       readinessStage: "pilot_ready", summary: "s", strengths: ["a", "b"], assumptions: ["c", "d"],
       mvpExperiment: "m", sevenDayPlan: [{ day: "Day 1", text: "x" }], improvedPitch: "p", reflectionQuestion: "q",
+      sectionFeedback: {
+        problem: "Sharpen the problem statement.",
+        customer: "Narrow the customer segment.",
+        value: "Clarify the value proposition.",
+        mvp: "Trim the MVP scope.",
+        distribution: "Pick one channel to test first.",
+        proof: "Add a concrete validation metric.",
+      },
     } as any,
     answers: { problem: "P", customer: "C", value: "V", mvp: "M", distribution: "D", proof: "PR" } as any,
   });
