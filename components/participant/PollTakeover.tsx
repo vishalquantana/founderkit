@@ -68,20 +68,27 @@ function markVoted(pollId: string): void {
   }
 }
 
-/** Only resolves a voter id for founders who have actually signed up — no
- * anon-uuid fallback, so the takeover stays hidden for brand-new visitors
- * still on the signup page. */
-function resolveVoterId(code: string): string | null {
+/** Resolve a voter id. Prefer the signed-up participant id; otherwise fall
+ * back to a persisted anonymous id so polls are answerable WITHOUT signup
+ * (polls are the highest-priority interaction — a founder can answer the
+ * live question even before / without filling out the basics form). */
+function resolveVoterId(code: string): string {
   try {
     const progressRaw = localStorage.getItem(`mrs-progress-${code}`);
     if (progressRaw) {
       const progress = JSON.parse(progressRaw) as { participantId?: string };
       if (progress.participantId) return progress.participantId;
     }
+    let anon = localStorage.getItem("mrs-voter");
+    if (!anon) {
+      anon = crypto.randomUUID();
+      localStorage.setItem("mrs-voter", anon);
+    }
+    return anon;
   } catch {
-    /* ignore malformed storage, fall through */
+    // Storage unavailable — still let them vote this session.
+    return crypto.randomUUID();
   }
-  return null;
 }
 
 export function PollTakeover({ code }: PollTakeoverProps) {
