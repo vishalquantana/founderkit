@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { StageReveal } from "@/components/motion/StageReveal";
 import { StageBadge } from "@/components/result/StageBadge";
@@ -101,6 +102,13 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
           </svg>
           Download PDF
         </a>
+
+        <Link
+          href={`/w/${code}/home/${pid}`}
+          className="pulse-btn-secondary relative inline-flex items-center gap-2 px-4 py-2 text-sm"
+        >
+          Go to your founder home
+        </Link>
       </div>
 
       <motion.div

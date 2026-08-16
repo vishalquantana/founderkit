@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { LEAN_CANVAS_BLOCKS, canvasCellTone, cellFeedback, type CellFeedback } from "@/lib/result-view";
 import { DIMENSION_MAX } from "@/lib/readiness";
+import { CanvasMiniMap, CanvasMiniMapLegend, type MiniMapTone } from "@/components/result/CanvasMiniMap";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey } from "@/db/schema";
 
@@ -13,27 +14,13 @@ export interface LeanCanvasExplorerProps {
   className?: string;
 }
 
-type Tone = "strong" | "growing" | "sharpen" | "empty";
-
-/** Mini-map cell fill/ring classes per tone — the only strong colours on the card. */
-const CELL_TONE_CLASSES: Record<Tone, string> = {
-  strong: "bg-green-200/80 dark:bg-green-400/30",
-  growing: "bg-blue-200/80 dark:bg-blue-400/30",
-  sharpen: "bg-amber-200/80 dark:bg-amber-400/30",
-  empty: "bg-slate-200/70 dark:bg-white/10",
-};
+type Tone = MiniMapTone;
 
 /** Legend + card pill classes per tone, readable in both themes. */
 const PILL_TONE_CLASSES: Record<CellFeedback["tone"], string> = {
   strong: "bg-green-500/15 text-green-700 border border-green-500/30 dark:text-green-300",
   growing: "bg-blue-500/15 text-blue-700 border border-blue-500/30 dark:text-blue-300",
   sharpen: "bg-amber-500/15 text-amber-700 border border-amber-500/30 dark:text-amber-300",
-};
-
-const LEGEND_SWATCH_CLASSES: Record<CellFeedback["tone"], string> = {
-  strong: "bg-green-500",
-  growing: "bg-blue-500",
-  sharpen: "bg-amber-500",
 };
 
 interface ResolvedBlock {
@@ -106,45 +93,19 @@ export function LeanCanvasExplorer({ result, answers, className }: LeanCanvasExp
   return (
     <div className={className}>
       {/* Mini-map */}
-      <div
-        className="grid gap-[3px] rounded-lg border p-1"
-        style={{
-          gridTemplateColumns: "repeat(10, minmax(0, 1fr))",
-          gridTemplateRows: "repeat(3, 18px)",
-          borderColor: "var(--pulse-border-strong)",
-          background: "var(--pulse-surface-strong)",
-        }}
-      >
-        {blocks.map((block, i) => (
-          <button
-            key={block.key}
-            type="button"
-            aria-label={block.title}
-            aria-pressed={i === index}
-            onClick={() => goTo(i)}
-            style={{ gridArea: block.gridArea }}
-            className={`rounded-[3px] transition ${CELL_TONE_CLASSES[block.tone]} ${
-              i === index ? "outline outline-2 outline-offset-1 outline-[var(--pulse-violet)]" : ""
-            }`}
-          />
-        ))}
-      </div>
+      <CanvasMiniMap
+        cells={blocks.map((block) => ({
+          key: block.key,
+          title: block.title,
+          gridArea: block.gridArea,
+          tone: block.tone,
+        }))}
+        activeIndex={index}
+        onSelect={goTo}
+      />
 
       {/* Legend */}
-      <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted">
-        <span className="flex items-center gap-1.5">
-          <span className={`inline-block h-2 w-2 rounded-full ${LEGEND_SWATCH_CLASSES.strong}`} />
-          Strong
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className={`inline-block h-2 w-2 rounded-full ${LEGEND_SWATCH_CLASSES.growing}`} />
-          Growing
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className={`inline-block h-2 w-2 rounded-full ${LEGEND_SWATCH_CLASSES.sharpen}`} />
-          Sharpen
-        </span>
-      </div>
+      <CanvasMiniMapLegend className="mt-2" />
 
       {/* Card */}
       <div className="pulse-card relative mt-3 overflow-hidden p-4">
