@@ -28,6 +28,28 @@ export const EvaluationResultSchema = z.object({
     distribution: z.string(),
     proof: z.string(),
   }),
+  dimensionJustifications: z
+    .object({
+      problemClarity: z.string(),
+      customerClarity: z.string(),
+      valuePayment: z.string(),
+      mvpQuality: z.string(),
+      distribution: z.string(),
+      validation: z.string(),
+      teamStageFit: z.string(),
+      cashflow: z.string(),
+    })
+    .optional(),
+  sectionRecommendations: z
+    .object({
+      problem: z.array(z.string()),
+      customer: z.array(z.string()),
+      value: z.array(z.string()),
+      mvp: z.array(z.string()),
+      distribution: z.array(z.string()),
+      proof: z.array(z.string()),
+    })
+    .optional(),
 });
 
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;

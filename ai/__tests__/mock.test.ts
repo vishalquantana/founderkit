@@ -27,6 +27,36 @@ describe("mockEvaluate", () => {
       expect(v.length).toBeGreaterThan(0);
     }
   });
+
+  it("produces dimension justifications for all 8 dimensions", () => {
+    const r = mockEvaluate({ responses });
+    expect(Object.keys(r.dimensionJustifications ?? {}).sort()).toEqual(
+      [
+        "problemClarity", "customerClarity", "valuePayment", "mvpQuality",
+        "distribution", "validation", "teamStageFit", "cashflow",
+      ].sort()
+    );
+    for (const v of Object.values(r.dimensionJustifications ?? {})) {
+      expect(typeof v).toBe("string");
+      expect(v.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("produces 2-3 recommendations per section", () => {
+    const r = mockEvaluate({ responses });
+    expect(Object.keys(r.sectionRecommendations ?? {}).sort()).toEqual(
+      ["customer", "distribution", "mvp", "problem", "proof", "value"].sort()
+    );
+    for (const list of Object.values(r.sectionRecommendations ?? {})) {
+      expect(Array.isArray(list)).toBe(true);
+      expect(list.length).toBeGreaterThanOrEqual(2);
+      expect(list.length).toBeLessThanOrEqual(3);
+      for (const item of list) {
+        expect(typeof item).toBe("string");
+        expect(item.length).toBeGreaterThan(0);
+      }
+    }
+  });
   it("empty answers score low → idea_clarity", () => {
     const r = mockEvaluate({ responses: [] });
     expect(r.readinessStage).toBe("idea_clarity");

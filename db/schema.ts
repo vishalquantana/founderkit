@@ -80,6 +80,8 @@ export const results = sqliteTable("results", {
   improvedPitch: text("improved_pitch").notNull(),
   reflectionQuestion: text("reflection_question").notNull(),
   sectionFeedback: text("section_feedback", { mode: "json" }).notNull().default("{}"),
+  dimensionJustifications: text("dimension_justifications", { mode: "json" }),
+  sectionRecommendations: text("section_recommendations", { mode: "json" }),
   aiRaw: text("ai_raw", { mode: "json" }),
   createdAt: createdAt(),
 });

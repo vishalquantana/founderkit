@@ -47,7 +47,9 @@ Always produce:
 - 7-day action plan
 - Improved one-line pitch
 - One founder reflection question
-- One encouraging, concrete improvement sentence per section (problem, customer, value, mvp, distribution, proof), tied to what the founder actually wrote`;
+- One encouraging, concrete improvement sentence per section (problem, customer, value, mvp, distribution, proof), tied to what the founder actually wrote
+- One short justification sentence per scoring dimension, tied to what the founder actually wrote
+- 2-3 concrete, imperative recommendations per section`;
 
 export type ScoringPromptInput = {
   participant: {
@@ -108,6 +110,8 @@ Return:
 8. Improved one-line pitch
 9. One founder reflection question
 10. Per-section improvement suggestions: for each of the 6 sections (problem, customer, value, mvp, distribution, proof), write one short, encouraging sentence on how to sharpen that specific answer — tied to what the founder actually wrote for that section, never harsh ("bad," "weak," "wrong").
+11. Per-dimension justifications: for each of the 8 scoring dimensions, write one short sentence (max ~18 words) explaining why it received its score, tied to what the founder actually wrote.
+12. Per-section recommendations: for each of the 6 sections, give 2-3 short, concrete, imperative improvement tips (e.g. "Quantify the pain in hours or dollars.").
 
 Tone should be founder-friendly, direct, and practical.
 
@@ -141,6 +145,24 @@ Return ONLY a single JSON object (no markdown, no code fences, no commentary) ma
     "mvp": string,
     "distribution": string,
     "proof": string
+  },
+  "dimensionJustifications": {
+    "problemClarity": string,
+    "customerClarity": string,
+    "valuePayment": string,
+    "mvpQuality": string,
+    "distribution": string,
+    "validation": string,
+    "teamStageFit": string,
+    "cashflow": string
+  },
+  "sectionRecommendations": {
+    "problem": [string, ...] (2-3 items),
+    "customer": [string, ...] (2-3 items),
+    "value": [string, ...] (2-3 items),
+    "mvp": [string, ...] (2-3 items),
+    "distribution": [string, ...] (2-3 items),
+    "proof": [string, ...] (2-3 items)
   }
 }`;
 }

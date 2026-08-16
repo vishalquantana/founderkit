@@ -126,6 +126,153 @@ function computeSectionFeedback(
   };
 }
 
+/**
+ * Deterministic, band-based one-sentence justification per dimension score.
+ * Reuses the same 50%-of-max threshold as computeSectionFeedback. No
+ * randomness, no Date — purely a function of the already-computed scores.
+ */
+const DIMENSION_JUSTIFICATION: Record<Dimension, { high: string; low: string }> = {
+  problemClarity: {
+    high: "Clear, specific problem tied to a real segment — well articulated.",
+    low: "Problem is still broad — add who feels it and how often.",
+  },
+  customerClarity: {
+    high: "User, payer, and influencer roles are named and distinct.",
+    low: "Customer roles are still fuzzy — name who uses, pays, and influences.",
+  },
+  valuePayment: {
+    high: "Willingness to pay is backed by pricing or commitments already in hand.",
+    low: "Payment readiness is unproven — show pricing or a pre-commitment.",
+  },
+  mvpQuality: {
+    high: "MVP is a lean, testable experiment rather than a full build.",
+    low: "MVP still leans toward a full product — cut it down to one testable step.",
+  },
+  distribution: {
+    high: "First channel is concrete and has already produced early reach.",
+    low: "Distribution channel is vague — name the exact first channel to use.",
+  },
+  validation: {
+    high: "Real evidence (pilots, conversations, repeat use) backs the idea.",
+    low: "Validation evidence is thin — gather more direct user proof.",
+  },
+  teamStageFit: {
+    high: "Founder execution signal matches the current stage well.",
+    low: "Execution signal is light for this stage — show more hands-on delivery.",
+  },
+  cashflow: {
+    high: "Early revenue or pricing signal gives some cashflow runway.",
+    low: "Cashflow signal is weak — clarify pricing or early revenue plans.",
+  },
+};
+
+function computeDimensionJustifications(
+  dimensionScores: Record<Dimension, number>
+): EvaluationResult["dimensionJustifications"] {
+  const band = (dim: Dimension): "high" | "low" =>
+    dimensionScores[dim] / DIMENSION_MAX[dim] >= 0.5 ? "high" : "low";
+
+  return {
+    problemClarity: DIMENSION_JUSTIFICATION.problemClarity[band("problemClarity")],
+    customerClarity: DIMENSION_JUSTIFICATION.customerClarity[band("customerClarity")],
+    valuePayment: DIMENSION_JUSTIFICATION.valuePayment[band("valuePayment")],
+    mvpQuality: DIMENSION_JUSTIFICATION.mvpQuality[band("mvpQuality")],
+    distribution: DIMENSION_JUSTIFICATION.distribution[band("distribution")],
+    validation: DIMENSION_JUSTIFICATION.validation[band("validation")],
+    teamStageFit: DIMENSION_JUSTIFICATION.teamStageFit[band("teamStageFit")],
+    cashflow: DIMENSION_JUSTIFICATION.cashflow[band("cashflow")],
+  };
+}
+
+/**
+ * Deterministic 2-3 imperative recommendations per section, lightly varied
+ * by that section's dimension score band. No randomness, no Date.
+ */
+const SECTION_RECOMMENDATIONS: Record<SectionKey, { high: string[]; low: string[] }> = {
+  problem: {
+    high: [
+      "Quantify the pain in hours or dollars lost.",
+      "Confirm the problem recurs, not a one-off complaint.",
+    ],
+    low: [
+      "Name the exact sub-segment that feels this problem most.",
+      "Quantify the pain in hours or dollars.",
+      "Describe the current workaround people use today.",
+    ],
+  },
+  customer: {
+    high: [
+      "Confirm the payer and user agree on the value delivered.",
+      "Map the influencer who nudges the buying decision.",
+    ],
+    low: [
+      "Separate the user, payer, and influencer into distinct people.",
+      "Interview the likely payer directly, not just the user.",
+      "Note who could block adoption even if the product works.",
+    ],
+  },
+  value: {
+    high: [
+      "Test a small price increase with the next pilot.",
+      "Ask committed customers why they said yes.",
+    ],
+    low: [
+      "State a concrete price and ask for a pre-commitment.",
+      "List what the customer currently pays to solve this problem.",
+      "Offer a paid pilot instead of a free trial.",
+    ],
+  },
+  mvp: {
+    high: [
+      "Strip the MVP down to the single riskiest assumption.",
+      "Set a clear pass/fail metric before running it.",
+    ],
+    low: [
+      "Cut the MVP to one manual, testable step.",
+      "Deliver the first version by hand before automating it.",
+      "Define what result would prove the concept.",
+    ],
+  },
+  distribution: {
+    high: [
+      "Double down on the channel that is already converting.",
+      "Track cost and conversion per lead on that channel.",
+    ],
+    low: [
+      "Name the exact first channel to start with.",
+      "Run a small test batch through that one channel.",
+      "Track how many leads convert from that channel.",
+    ],
+  },
+  proof: {
+    high: [
+      "Turn one satisfied pilot into a named reference.",
+      "Track repeat usage, not just first-time signups.",
+    ],
+    low: [
+      "Run at least 10 structured user conversations.",
+      "Capture concrete evidence of repeat use or payment.",
+      "Convert a soft yes into a real pilot commitment.",
+    ],
+  },
+};
+
+function computeSectionRecommendations(
+  dimensionScores: Record<Dimension, number>
+): EvaluationResult["sectionRecommendations"] {
+  const band = (dim: Dimension): "high" | "low" =>
+    dimensionScores[dim] / DIMENSION_MAX[dim] >= 0.5 ? "high" : "low";
+
+  return {
+    problem: [...SECTION_RECOMMENDATIONS.problem[band("problemClarity")]],
+    customer: [...SECTION_RECOMMENDATIONS.customer[band("customerClarity")]],
+    value: [...SECTION_RECOMMENDATIONS.value[band("valuePayment")]],
+    mvp: [...SECTION_RECOMMENDATIONS.mvp[band("mvpQuality")]],
+    distribution: [...SECTION_RECOMMENDATIONS.distribution[band("distribution")]],
+    proof: [...SECTION_RECOMMENDATIONS.proof[band("validation")]],
+  };
+}
+
 interface StageCopy {
   summary: string;
   strengths: [string, string];
@@ -281,6 +428,8 @@ export function mockEvaluate(input: MockEvaluateInput): EvaluationResult {
     improvedPitch: copy.improvedPitch,
     reflectionQuestion: copy.reflectionQuestion,
     sectionFeedback: computeSectionFeedback(dimensionScores),
+    dimensionJustifications: computeDimensionJustifications(dimensionScores),
+    sectionRecommendations: computeSectionRecommendations(dimensionScores),
   };
 
   return EvaluationResultSchema.parse(result);
