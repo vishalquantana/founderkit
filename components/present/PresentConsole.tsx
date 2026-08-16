@@ -56,7 +56,7 @@ function getJoinUrl(joinCode: string): string {
 }
 
 export function PresentConsole({ workshopId, workshopName, joinCode, initialData, settings }: PresentConsoleProps) {
-  const { data } = useSWR<PresentData>(`/api/workshops/${workshopId}/present`, fetcher, {
+  const { data, mutate: mutatePresent } = useSWR<PresentData>(`/api/workshops/${workshopId}/present`, fetcher, {
     fallbackData: initialData,
     refreshInterval: 4000,
     revalidateOnFocus: false,
@@ -72,6 +72,9 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
   const [pendingPollId, setPendingPollId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [joinOpen, setJoinOpen] = useState(true);
+  // Optimistic canvas-unlock: flip the toggle instantly on tap, reconcile
+  // when the present SWR catches up (see effect below).
+  const [optimisticCanvas, setOptimisticCanvas] = useState<boolean | null>(null);
 
   const presentData = data ?? initialData;
   const effectiveSettings = presentData.settings ?? settings;
@@ -98,6 +101,15 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
       setSelection({ kind: "view", view: "welcome" });
     }
   }, [views, selection]);
+
+  // Drop the optimistic canvas state once the server-backed settings agree.
+  useEffect(() => {
+    if (optimisticCanvas !== null && effectiveSettings.canvasUnlocked === optimisticCanvas) {
+      setOptimisticCanvas(null);
+    }
+  }, [optimisticCanvas, effectiveSettings.canvasUnlocked]);
+
+  const canvasUnlockedDisplayed = optimisticCanvas ?? effectiveSettings.canvasUnlocked;
 
   const selectedPollId = selection.kind === "poll" ? selection.pollId : null;
   const { data: pollResults } = useSWR<PollResultsResponse>(
@@ -237,37 +249,37 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
             <p className="pulse-kicker mb-2 px-2 text-xs">Lean Canvas</p>
             <button
               type="button"
-              disabled={isPollActionPending}
+              disabled={optimisticCanvas !== null}
               role="switch"
-              aria-checked={effectiveSettings.canvasUnlocked}
-              onClick={() =>
-                startPollActionTransition(() =>
-                  updateSettings(workshopId, {
-                    ...effectiveSettings,
-                    canvasUnlocked: !effectiveSettings.canvasUnlocked,
-                  }),
-                )
-              }
-              className="flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors duration-150 active:scale-95"
+              aria-checked={canvasUnlockedDisplayed}
+              onClick={() => {
+                const next = !canvasUnlockedDisplayed;
+                setOptimisticCanvas(next); // instant flip + locks the button
+                startPollActionTransition(async () => {
+                  await updateSettings(workshopId, { ...effectiveSettings, canvasUnlocked: next });
+                  await mutatePresent();
+                });
+              }}
+              className="flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors duration-150 active:scale-95 disabled:opacity-70"
               style={{
                 background: "var(--pulse-surface-strong)",
                 borderColor: "var(--pulse-border-strong)",
                 color: "var(--pulse-text)",
               }}
             >
-              <span>{effectiveSettings.canvasUnlocked ? "Canvas unlocked — tap to lock" : "Unlock Lean Canvas"}</span>
+              <span>{canvasUnlockedDisplayed ? "Canvas unlocked — tap to lock" : "Unlock Lean Canvas"}</span>
               <span
                 aria-hidden
                 className="flex h-5 w-9 shrink-0 items-center rounded-full border p-0.5 transition-colors"
                 style={{
                   borderColor: "var(--pulse-border-strong)",
-                  background: effectiveSettings.canvasUnlocked ? "var(--pulse-text-muted)" : "transparent",
+                  background: canvasUnlockedDisplayed ? "var(--pulse-text-muted)" : "transparent",
                 }}
               >
                 <span
                   className="h-3.5 w-3.5 rounded-full bg-[var(--pulse-bg)] transition-transform"
                   style={{
-                    transform: effectiveSettings.canvasUnlocked ? "translateX(16px)" : "translateX(0)",
+                    transform: canvasUnlockedDisplayed ? "translateX(16px)" : "translateX(0)",
                   }}
                 />
               </span>
