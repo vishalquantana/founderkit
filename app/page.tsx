@@ -13,7 +13,7 @@ export default function Home() {
         <div className="pulse-card p-8">
           <p className="pulse-kicker">AI founder diagnostic</p>
           <h1 className="font-display mt-2 text-3xl font-extrabold tracking-tight text-gradient">
-            MVP Readiness Snapshot
+            Quantana AI Cofounder
           </h1>
           <p className="mt-2 text-muted">
             Find your next best MVP move in 5 minutes. Answer 6 quick questions and get an

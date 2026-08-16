@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Orbitron, Chakra_Petch } from "next/font/google";
 import "./globals.css";
 import { ThemeControl } from "@/components/ThemeControl";
+import { AppNav } from "@/components/AppNav";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -21,9 +22,9 @@ const chakraPetch = Chakra_Petch({
 });
 
 export const metadata: Metadata = {
-  title: "MVP Readiness Snapshot",
+  title: "Quantana AI Cofounder",
   description:
-    "An AI-powered founder diagnostic by Quantana. Answer 6 quick questions and get your MVP readiness view with a 7-day action plan.",
+    "Quantana AI Cofounder — an AI-powered founder diagnostic. Answer 6 quick questions and get your startup readiness view with a 7-day action plan.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <AppNav />
         {children}
         <ThemeControl />
       </body>

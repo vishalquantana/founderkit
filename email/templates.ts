@@ -9,18 +9,18 @@ function wrapHtml(bodyHtml: string): string {
 <div style="background-color:#f6f5f2;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
   <div style="max-width:480px;margin:0 auto;background-color:#ffffff;border-radius:12px;padding:32px;border:1px solid #eae7e0;">
     <p style="margin:0 0 20px;font-size:14px;font-weight:600;letter-spacing:0.02em;color:#7c6f5c;text-transform:uppercase;">
-      MVP Readiness Snapshot
+      Quantana AI Cofounder
     </p>
     ${bodyHtml}
     <p style="margin:28px 0 0;font-size:12px;color:#a39c8f;">
-      Sent with care by the MVP Readiness Snapshot team.
+      Sent with care by the Quantana AI Cofounder team.
     </p>
   </div>
 </div>`.trim();
 }
 
 export function otpEmail(code: string): EmailContent {
-  const subject = "Your MVP Readiness Snapshot sign-in code";
+  const subject = "Your Quantana AI Cofounder sign-in code";
 
   const html = wrapHtml(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#2b2620;">Here's your sign-in code</h1>
@@ -38,7 +38,7 @@ export function otpEmail(code: string): EmailContent {
   const text = [
     "Here's your sign-in code",
     "",
-    `Your MVP Readiness Snapshot sign-in code is: ${code}`,
+    `Your Quantana AI Cofounder sign-in code is: ${code}`,
     "",
     "This code is valid for a few minutes.",
     "If you didn't request this code, you can safely ignore this email.",
@@ -55,12 +55,12 @@ export function resultEmail(input: {
   link: string;
 }): EmailContent {
   const { founderName, startupName, stageLabel, summary, link } = input;
-  const subject = `${startupName}'s MVP Readiness Snapshot is ready`;
+  const subject = `${startupName}'s Quantana AI Cofounder snapshot is ready`;
 
   const html = wrapHtml(`
     <h1 style="margin:0 0 12px;font-size:20px;color:#2b2620;">Nice work, ${founderName}!</h1>
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#4a453d;">
-      Your MVP Readiness Snapshot for <strong>${startupName}</strong> is ready. Here's where things
+      Your Quantana AI Cofounder snapshot for <strong>${startupName}</strong> is ready. Here's where things
       stand right now:
     </p>
     <div style="margin:0 0 16px;padding:14px 18px;background-color:#f0ede4;border-radius:10px;display:inline-block;">
@@ -80,7 +80,7 @@ export function resultEmail(input: {
   const text = [
     `Nice work, ${founderName}!`,
     "",
-    `Your MVP Readiness Snapshot for ${startupName} is ready. Here's where things stand right now:`,
+    `Your Quantana AI Cofounder snapshot for ${startupName} is ready. Here's where things stand right now:`,
     "",
     `Stage: ${stageLabel}`,
     "",

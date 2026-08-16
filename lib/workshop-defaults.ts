@@ -7,4 +7,4 @@ export const DEFAULT_SETTINGS: WorkshopSettings = {
 };
 
 export const DEFAULT_CONSENT_TEXT =
-  "By continuing, you agree that your responses will be used to generate an AI-assisted MVP readiness snapshot. This is a directional learning tool, not investment, legal, financial, or business guarantee advice. Please avoid sharing confidential information.";
+  "By continuing, you agree that your responses will be used to generate an AI-assisted startup readiness snapshot. This is a directional learning tool, not investment, legal, financial, or business guarantee advice. Please avoid sharing confidential information.";

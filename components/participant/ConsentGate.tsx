@@ -51,7 +51,7 @@ export function ConsentGate({ consentText, onStart }: ConsentGateProps) {
         <span className="pulse-kicker">
           5-minute check-in
         </span>
-        <h1 className="font-display text-2xl font-extrabold tracking-tight text-gradient">MVP Readiness Snapshot</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-gradient">Quantana AI Cofounder</h1>
         <p className="text-base text-foreground">
           Find your next best MVP move in 5 minutes.
         </p>

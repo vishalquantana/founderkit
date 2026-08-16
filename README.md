@@ -1,6 +1,6 @@
-# MVP Readiness Snapshot
+# Quantana AI Cofounder
 
-An AI-powered founder diagnostic for live entrepreneur workshops. A founder scans a QR code, answers 6 guided questions about their startup on their phone, and gets a friendly, non-judgmental **MVP readiness view** plus a 7-day validation plan — with an interactive Lean Canvas they can tap to explore. The presenter runs the room from an admin dashboard and projects live views.
+Quantana AI Cofounder is an AI-powered founder diagnostic for live entrepreneur workshops. A founder scans a QR code, answers 6 guided questions about their startup on their phone, and gets a friendly, non-judgmental **MVP readiness view** plus a 7-day validation plan — with an interactive Lean Canvas they can tap to explore. The presenter runs the room from an admin dashboard and projects live views.
 
 > Philosophy: *Build proof before product.* This is **a founder thinking tool, not a startup judging tool** — no harsh scores, no "bad idea" language.
 

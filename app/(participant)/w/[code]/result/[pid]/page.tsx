@@ -43,7 +43,7 @@ export default async function ResultPage({
         <h1 className="text-xl font-semibold text-slate-800">We couldn&apos;t find that snapshot</h1>
         <p className="max-w-xs text-sm leading-relaxed text-slate-500">
           Double-check the link with your facilitator, or head back and complete the workshop to
-          get your MVP Readiness Snapshot.
+          get your Quantana AI Cofounder snapshot.
         </p>
       </main>
     );
