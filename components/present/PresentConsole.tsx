@@ -70,6 +70,8 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
   const [isPollActionPending, startPollActionTransition] = useTransition();
   const [pendingPollId, setPendingPollId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [joinOpen, setJoinOpen] = useState(true);
 
   const presentData = data ?? initialData;
   const effectiveSettings = presentData.settings ?? settings;
@@ -153,23 +155,36 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
     >
       <header className="flex flex-wrap items-center justify-between gap-4 px-8 pt-8">
         <div>
-          <Link
-            href={`/workshops/${workshopId}`}
-            className="mb-1 inline-block text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
-          >
-            ← Dashboard
-          </Link>
-          <div className="mb-2 flex items-center gap-2.5">
+          <div className="mb-1 flex items-center gap-2">
+            <Link
+              href={`/workshops/${workshopId}`}
+              className="inline-block text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+            >
+              ← Dashboard
+            </Link>
+            {!sidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                aria-expanded={sidebarOpen}
+                aria-label="Show controls sidebar"
+                className="flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2 py-0.5 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+              >
+                <span aria-hidden>☰</span> Show controls
+              </button>
+            )}
+          </div>
+          <div className="mb-2 flex items-center gap-3">
             <Image
               src="/quantana-logo.svg"
               alt="Quantana"
-              width={96}
-              height={22}
-              className="nav-logo h-4 w-auto"
+              width={140}
+              height={32}
+              className="nav-logo h-6 w-auto sm:h-7"
               priority
             />
             <span
-              className="pl-2.5 text-xs font-semibold tracking-wide text-[var(--pulse-text-muted)]"
+              className="pl-3 text-sm font-semibold tracking-wide text-[var(--pulse-text-muted)] sm:text-base"
               style={{ borderLeft: "1px solid var(--pulse-border-strong)" }}
             >
               AI Cofounder
@@ -179,39 +194,52 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
         </div>
 
-        <div className="flex flex-col items-end gap-3">
-          <ThemeControl />
-          <div className="flex items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface px-4 py-3">
-            <div className="rounded-lg bg-white p-2">
-              <QRCodeSVG value={joinUrl} size={140} level="M" />
-            </div>
-            <div className="flex flex-col items-end gap-1 text-right">
-              <span className="pulse-kicker">Join now</span>
-              <span className="font-display text-gradient text-2xl font-bold tracking-[0.2em]">{joinCode}</span>
-              <p className="text-xs text-[var(--pulse-text-muted)]">{joinUrl}</p>
-              <span className="flex items-center gap-2">
-                <span
-                  aria-hidden
-                  className="h-2 w-2 shrink-0 animate-pulse rounded-full"
-                  style={{ background: "var(--pulse-gold)" }}
-                />
-                <span className="font-display text-sm font-bold tabular-nums text-[var(--pulse-text)]">
-                  {presentData.total} joined
+        <div className="flex flex-col items-end gap-2">
+          <button
+            type="button"
+            onClick={() => setJoinOpen((open) => !open)}
+            aria-expanded={joinOpen}
+            aria-label={joinOpen ? "Hide join code" : "Show join code"}
+            className="rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2.5 py-1 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+          >
+            {joinOpen ? "Hide" : "Show"} join code
+          </button>
+          {joinOpen && (
+            <div className="flex items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface px-4 py-3">
+              <div className="rounded-lg bg-white p-2">
+                <QRCodeSVG value={joinUrl} size={140} level="M" />
+              </div>
+              <div className="flex flex-col items-end gap-1 text-right">
+                <span className="pulse-kicker">Join now</span>
+                <span className="font-display text-gradient text-2xl font-bold tracking-[0.2em]">{joinCode}</span>
+                <p className="text-xs text-[var(--pulse-text-muted)]">{joinUrl}</p>
+                <span className="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="h-2 w-2 shrink-0 animate-pulse rounded-full"
+                    style={{ background: "var(--pulse-gold)" }}
+                  />
+                  <span className="font-display text-sm font-bold tabular-nums text-[var(--pulse-text)]">
+                    {presentData.total} joined
+                  </span>
+                  <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
                 </span>
-                <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
-              </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
       <div className="flex flex-1 gap-6 px-6 py-8 sm:px-10">
+        {sidebarOpen && (
         <aside className="flex w-[260px] shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-surface p-4">
           <div>
             <p className="pulse-kicker mb-2 px-2 text-xs">Lean Canvas</p>
             <button
               type="button"
               disabled={isPollActionPending}
+              role="switch"
+              aria-checked={effectiveSettings.canvasUnlocked}
               onClick={() =>
                 startPollActionTransition(() =>
                   updateSettings(workshopId, {
@@ -220,12 +248,29 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                   }),
                 )
               }
-              className={[
-                "w-full rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors duration-150 active:scale-95",
-                effectiveSettings.canvasUnlocked ? "pulse-btn" : "pulse-btn-secondary",
-              ].join(" ")}
+              className="flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors duration-150 active:scale-95"
+              style={{
+                background: "var(--pulse-surface-strong)",
+                borderColor: "var(--pulse-border-strong)",
+                color: "var(--pulse-text)",
+              }}
             >
-              {effectiveSettings.canvasUnlocked ? "Canvas unlocked ✓ — tap to lock" : "Unlock Lean Canvas"}
+              <span>{effectiveSettings.canvasUnlocked ? "Canvas unlocked — tap to lock" : "Unlock Lean Canvas"}</span>
+              <span
+                aria-hidden
+                className="flex h-5 w-9 shrink-0 items-center rounded-full border p-0.5 transition-colors"
+                style={{
+                  borderColor: "var(--pulse-border-strong)",
+                  background: effectiveSettings.canvasUnlocked ? "var(--pulse-text-muted)" : "transparent",
+                }}
+              >
+                <span
+                  className="h-3.5 w-3.5 rounded-full bg-[var(--pulse-bg)] transition-transform"
+                  style={{
+                    transform: effectiveSettings.canvasUnlocked ? "translateX(16px)" : "translateX(0)",
+                  }}
+                />
+              </span>
             </button>
           </div>
 
@@ -311,7 +356,21 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
               </nav>
             )}
           </div>
+
+          <div className="mt-auto flex items-center justify-between gap-2 border-t border-[var(--pulse-border)] pt-3">
+            <ThemeControl />
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              aria-expanded={sidebarOpen}
+              aria-label="Hide controls sidebar"
+              className="rounded-full border border-[var(--pulse-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+            >
+              Hide
+            </button>
+          </div>
         </aside>
+        )}
 
         <main className="flex flex-1 items-center justify-center">
           <AnimatePresence mode="wait">
