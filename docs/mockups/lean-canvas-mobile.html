@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lean Canvas — mobile readability mockups</title>
+<style>
+  :root{
+    --bg:#0a0a14; --ink:#eceaf6; --muted:#a9a9c9;
+    --violet:#8b5cf6; --pink:#f472b6; --gold:#f4c748;
+    --grad:linear-gradient(135deg,#8b5cf6,#f472b6);
+    --surface:rgba(255,255,255,.04); --surface2:rgba(255,255,255,.07);
+    --border:rgba(255,255,255,.09); --border2:rgba(255,255,255,.14);
+    --strong:#4ade80; --grow:#60a5fa; --sharp:#f4c748;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Chakra Petch",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:
+      radial-gradient(100% 70% at 80% 0%, #2a0f4d 0%, transparent 60%),
+      radial-gradient(90% 60% at 0% 100%, #160a28 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);min-height:100vh;padding:28px 16px 64px}
+  h1{font-family:Orbitron,system-ui,sans-serif;font-weight:800;letter-spacing:.02em;font-size:22px;margin:0 0 4px;text-align:center}
+  .sub{color:var(--muted);text-align:center;max-width:760px;margin:0 auto 6px;font-size:14px;line-height:1.5}
+  .kicker{color:var(--pink);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:11px;text-align:center;display:block;margin-bottom:22px}
+  .row{display:flex;gap:22px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+  .col{flex:0 0 320px;max-width:320px}
+  .label{font-family:Orbitron,sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-align:center}
+  .tag{display:inline-block;font-size:11px;color:var(--muted);text-align:center;width:100%;margin-bottom:12px}
+  /* phone frame */
+  .phone{background:#05050b;border:1px solid var(--border2);border-radius:34px;padding:12px;box-shadow:0 30px 80px -30px rgba(139,92,246,.5)}
+  .screen{background:linear-gradient(180deg,#0c0c18,#0a0a14);border-radius:24px;padding:16px;height:620px;overflow-y:auto}
+  .screen::-webkit-scrollbar{width:0}
+  .h2{font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--pink);font-weight:700;margin:2px 0 10px}
+  .hint{font-size:12px;color:var(--muted);margin:0 0 14px}
+
+  /* ---------- Option A: stacked accordion cards ---------- */
+  .acard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:13px 14px;margin-bottom:10px}
+  .acard .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .acard .t{font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#fff;font-weight:700}
+  .acard .ans{font-size:13px;line-height:1.5;color:var(--ink);margin:8px 0 0}
+  .pill{font-size:10px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+  .pill.s{background:rgba(74,222,128,.15);color:#7ff0a8;border:1px solid rgba(74,222,128,.3)}
+  .pill.g{background:rgba(96,165,250,.15);color:#9cc4ff;border:1px solid rgba(96,165,250,.3)}
+  .pill.k{background:rgba(244,199,72,.15);color:#f7d572;border:1px solid rgba(244,199,72,.3)}
+  .score{font-size:11px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+  .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:5px}
+  .bar > i{display:block;height:100%;border-radius:999px;background:var(--grad)}
+  .recs{margin:11px 0 0;padding:11px;border-radius:12px;background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.22)}
+  .recs h4{margin:0 0 7px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#c4b5fd;font-weight:700}
+  .recs ul{margin:0;padding-left:16px}
+  .recs li{font-size:12px;line-height:1.5;color:#e7e2fb;margin-bottom:5px}
+  .muted-block{opacity:.55}
+  .chevron{color:var(--muted);font-size:14px}
+
+  /* ---------- Option B: mini-map + swipe carousel ---------- */
+  .map{border:1px solid var(--border2);border-radius:10px;background:#fff;padding:5px;display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(3,18px);gap:3px;margin-bottom:14px}
+  .cell{background:#eef0f4;border-radius:3px}
+  .cell.on{outline:2px solid var(--violet);outline-offset:1px;background:#e6dcff}
+  .cell.g0{grid-column:1/3;grid-row:1/3} .cell.g1{grid-column:3/5;grid-row:1/2} .cell.g2{grid-column:3/5;grid-row:2/3}
+  .cell.g3{grid-column:5/7;grid-row:1/3} .cell.g4{grid-column:7/9;grid-row:1/2} .cell.g5{grid-column:7/9;grid-row:2/3}
+  .cell.g6{grid-column:9/11;grid-row:1/3} .cell.g7{grid-column:1/5;grid-row:3/4} .cell.g8{grid-column:5/11;grid-row:3/4}
+  .dots{display:flex;gap:5px;justify-content:center;margin:12px 0 0}
+  .dots i{width:6px;height:6px;border-radius:999px;background:var(--border2)}
+  .dots i.on{background:var(--pink);width:18px;border-radius:999px}
+  .swipe-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+  .bigcard{background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:16px}
+  .bigcard .t{font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .bigcard .ans{font-size:14px;line-height:1.55;margin:10px 0 0}
+
+  /* ---------- Option C: zoomable canvas ---------- */
+  .cv{border:1px solid var(--border2);border-radius:14px;background:#fff;color:#111;overflow:hidden}
+  .cv .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#111}
+  .cv .b{background:#fff;padding:9px;min-height:88px}
+  .cv .b .bt{font-size:8.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:#111;margin-bottom:3px}
+  .cv .b .bx{font-size:9px;line-height:1.35;color:#475569}
+  .zoomctl{display:flex;gap:8px;align-items:center;justify-content:center;margin:12px 0 4px}
+  .zoomctl button{background:var(--surface2);border:1px solid var(--border2);color:var(--ink);border-radius:999px;width:34px;height:34px;font-size:16px}
+  .zoomctl span{font-size:11px;color:var(--muted)}
+  .foot{max-width:900px;margin:30px auto 0;color:var(--muted);font-size:13px;line-height:1.6;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+  .foot b{color:var(--ink)}
+  .rec-flag{margin-top:6px;font-size:11px;color:#c4b5fd}
+</style>
+</head>
+<body>
+  <span class="kicker">Quantana · AI Cofounder</span>
+  <h1>Lean Canvas — readable & tappable on mobile</h1>
+  <p class="sub">The current results screen shrinks the whole landscape canvas to ~36%, so nothing is legible. Three ways to fix it. Each expanded block now also carries <b>multiple improvement recommendations</b> (your ask #11), not just one line.</p>
+  <div style="height:18px"></div>
+
+  <div class="row">
+    <!-- OPTION A -->
+    <div class="col">
+      <div class="label">Option A</div>
+      <div class="tag">Stacked cards · tap to expand · recommended</div>
+      <div class="phone"><div class="screen">
+        <div class="h2">Your Lean Canvas</div>
+        <p class="hint">9 blocks, full-width and legible. Tap any block to expand answer, score & tips.</p>
+
+        <div class="acard">
+          <div class="top"><span class="t">Problem</span><span class="pill s">Strong</span></div>
+          <p class="ans">Existing rebate discovery is a battleground of small and medium manufacturers — unknown incentives, manual application, missed claims.</p>
+          <div class="score"><span>Problem clarity</span><span>12 / 15</span></div>
+          <div class="bar"><i style="width:80%"></i></div>
+          <div class="recs">
+            <h4>How to sharpen this →</h4>
+            <ul>
+              <li>Quantify the pain: how many hours or $ are lost per missed rebate?</li>
+              <li>Name the exact segment feeling it most acutely (industry + size).</li>
+              <li>Add one line of evidence — a quote or stat from a real founder.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="acard">
+          <div class="top"><span class="t">Solution</span><span class="pill g">Growing</span></div>
+          <p class="ans">WhatsApp MVP that walks a founder through eligibility and auto-drafts the claim.</p>
+          <div class="score"><span>Value &amp; payment</span><span>12 / 20</span></div>
+          <div class="bar"><i style="width:60%"></i></div>
+          <div class="recs">
+            <h4>How to sharpen this →</h4>
+            <ul>
+              <li>State the single riskiest assumption this MVP tests.</li>
+              <li>Clarify what stays manual now vs. automated later.</li>
+              <li>Define the “done” signal that proves it worked.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="acard muted-block">
+          <div class="top"><span class="t">Unique value proposition</span><span class="chevron">▾</span></div>
+          <p class="ans">Get daily rebate alerts so you never miss what you're owed…</p>
+        </div>
+        <div class="acard muted-block">
+          <div class="top"><span class="t">Customer segments</span><span class="chevron">▾</span></div>
+          <p class="ans">SMB manufacturers claiming govt rebates…</p>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="col">
+      <div class="label">Option B</div>
+      <div class="tag">Mini-map + swipeable cards</div>
+      <div class="phone"><div class="screen">
+        <div class="h2">Your Lean Canvas</div>
+        <p class="hint">A tiny true-to-form map shows where you are; swipe through readable cards.</p>
+        <div class="map">
+          <div class="cell g0 on"></div><div class="cell g1"></div><div class="cell g2"></div>
+          <div class="cell g3"></div><div class="cell g4"></div><div class="cell g5"></div>
+          <div class="cell g6"></div><div class="cell g7"></div><div class="cell g8"></div>
+        </div>
+        <div class="bigcard">
+          <div class="t"><span>Problem</span><span class="pill s">Strong</span></div>
+          <p class="ans">Existing rebate discovery is a battleground for SMB manufacturers — unknown incentives, manual application, missed claims.</p>
+          <div class="score" style="margin-top:12px"><span>Problem clarity</span><span>12 / 15</span></div>
+          <div class="bar"><i style="width:80%"></i></div>
+          <div class="recs">
+            <h4>Recommendations</h4>
+            <ul>
+              <li>Quantify the $ lost per missed rebate.</li>
+              <li>Pin the sharpest segment (industry + size).</li>
+              <li>Add a real founder quote as evidence.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="swipe-note">‹ swipe · 1 of 9 · Problem ›</p>
+      </div></div>
+    </div>
+
+    <!-- OPTION C -->
+    <div class="col">
+      <div class="label">Option C</div>
+      <div class="tag">True canvas · pinch-zoom + tap</div>
+      <div class="phone"><div class="screen">
+        <div class="h2">Your Lean Canvas</div>
+        <p class="hint">Keep the authentic layout, but bigger by default with pinch-zoom &amp; pan. Tap a cell to open the readable card.</p>
+        <div class="cv">
+          <div class="grid">
+            <div class="b"><div class="bt">Problem</div><div class="bx">Rebate discovery is a battleground for SMB manufacturers…</div></div>
+            <div class="b"><div class="bt">Solution</div><div class="bx">WhatsApp MVP that drafts the claim…</div></div>
+            <div class="b"><div class="bt">Unique value prop</div><div class="bx">Never miss a rebate you're owed…</div></div>
+            <div class="b"><div class="bt">Unfair advantage</div><div class="bx">Proprietary rebate ruleset…</div></div>
+            <div class="b"><div class="bt">Customer segments</div><div class="bx">SMB manufacturers claiming govt rebates…</div></div>
+            <div class="b"><div class="bt">Channels</div><div class="bx">Referrals via accountants…</div></div>
+          </div>
+        </div>
+        <div class="zoomctl"><button>−</button><span>fit ·  pinch to zoom</span><button>+</button></div>
+        <p class="swipe-note">Tap any cell → full answer, score &amp; recommendations</p>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>My recommendation: Option A (stacked cards).</b> It's the most legible on a phone with zero gestures to learn, gives each block room for the answer + score bar + <b>multiple improvement recommendations</b>, and degrades perfectly for reduced-motion and screen readers. Keep the authentic landscape grid for wide screens and the PDF export (where it already reads well).<br><br>
+    <b>Option B</b> keeps a sense of the real canvas shape via the mini-map but adds a swipe interaction. <b>Option C</b> preserves the true canvas but relies on pinch-zoom, which is fiddlier and the hardest to make accessible. All three replace the tiny 36%-scaled grid on mobile.
+    <div class="rec-flag">Every option surfaces richer per-area recommendations — which means the AI needs to return 2–3 improvement tips per block (a small schema/prompt addition).</div>
+  </div>
+</body>
+</html>

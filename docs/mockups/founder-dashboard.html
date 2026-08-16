@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Founder Home — app-like dashboard mockup</title>
+<style>
+  :root{
+    --bg:#0a0a14; --ink:#eceaf6; --muted:#a9a9c9;
+    --violet:#8b5cf6; --pink:#f472b6; --gold:#f4c748;
+    --grad:linear-gradient(135deg,#8b5cf6,#f472b6);
+    --surface:rgba(255,255,255,.04); --surface2:rgba(255,255,255,.07);
+    --border:rgba(255,255,255,.09); --border2:rgba(255,255,255,.14);
+    --strong:#4ade80; --grow:#60a5fa; --sharp:#f4c748;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Chakra Petch",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(100% 70% at 80% 0%, #2a0f4d 0%, transparent 60%),radial-gradient(90% 60% at 0% 100%, #160a28 0%, transparent 60%),var(--bg);
+    color:var(--ink);min-height:100vh;padding:26px 16px 60px}
+  h1{font-family:Orbitron,sans-serif;font-weight:800;font-size:22px;margin:0 0 4px;text-align:center}
+  .sub{color:var(--muted);text-align:center;max-width:720px;margin:0 auto 22px;font-size:14px;line-height:1.5}
+  .kicker{color:var(--pink);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:11px;text-align:center;display:block;margin-bottom:16px}
+  .stage{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .phone{background:#05050b;border:1px solid var(--border2);border-radius:36px;padding:12px;box-shadow:0 30px 90px -30px rgba(139,92,246,.55);width:360px}
+  .screen{background:linear-gradient(180deg,#0c0c18,#0a0a14);border-radius:26px;padding:0;height:720px;overflow-y:auto}
+  .screen::-webkit-scrollbar{width:0}
+
+  /* navbar (task #8) */
+  .nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;background:rgba(10,10,20,.72);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px}
+  .logo{width:24px;height:24px;border-radius:7px;background:var(--grad);display:grid;place-items:center;font-family:Orbitron,sans-serif;font-weight:800;font-size:13px;color:#fff}
+  .brand .n{font-family:Orbitron,sans-serif;font-weight:700;font-size:13px;letter-spacing:.02em}
+  .brand .p{font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .navicons{display:flex;gap:14px;color:var(--muted);font-size:16px}
+
+  .body{padding:16px}
+  .hello{font-family:Orbitron,sans-serif;font-size:18px;font-weight:700;margin:2px 0 2px}
+  .hello span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hellosub{color:var(--muted);font-size:13px;margin:0 0 14px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:13px}
+  .card.glow{box-shadow:0 20px 60px -30px rgba(139,92,246,.5)}
+  .rowbtwn{display:flex;justify-content:space-between;align-items:center}
+
+  /* readiness gauge widget */
+  .gauge-wrap{display:flex;gap:15px;align-items:center}
+  .gauge{--p:71;width:104px;height:104px;border-radius:50%;flex:0 0 104px;
+    background:conic-gradient(from 220deg,#8b5cf6 0%,#f472b6 calc(var(--p)*1%*1.0),rgba(255,255,255,.08) 0);
+    display:grid;place-items:center;mask:radial-gradient(farthest-side,transparent 60%,#000 62%);-webkit-mask:radial-gradient(farthest-side,transparent 60%,#000 62%)}
+  .gauge-num{position:relative;text-align:center}
+  .gnum{font-family:Orbitron,sans-serif;font-weight:800;font-size:26px;line-height:1}
+  .gof{font-size:11px;color:var(--muted)}
+  .gauge-holder{position:relative;width:104px;height:104px}
+  .gauge-holder .gauge-num{position:absolute;inset:0;display:grid;place-items:center}
+  .stagebadge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;font-family:Orbitron,sans-serif;
+    background:color-mix(in srgb,#a78bfa 16%,transparent);border:1px solid color-mix(in srgb,#a78bfa 45%,transparent);color:#c4b5fd;box-shadow:0 0 24px 1px color-mix(in srgb,#a78bfa 35%,transparent)}
+  .gdesc{font-size:12px;color:var(--muted);line-height:1.45;margin-top:8px}
+
+  .kickerL{color:var(--pink);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:10px;margin-bottom:9px;display:block}
+  .dims{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .dim{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 10px}
+  .dim .dl{font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between}
+  .dim .bar{height:6px;border-radius:999px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden}
+  .dim .bar i{display:block;height:100%;background:var(--grad)}
+
+  /* profile chips */
+  .prow{display:flex;align-items:center;gap:11px}
+  .avatar{width:42px;height:42px;border-radius:12px;background:var(--grad);display:grid;place-items:center;font-family:Orbitron,sans-serif;font-weight:800;font-size:16px;color:#fff}
+  .pmeta .pn{font-weight:700;font-size:14px}
+  .pmeta .ps{font-size:12px;color:var(--muted)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+  .tag{font-size:11px;color:var(--muted);border:1px solid var(--border2);border-radius:999px;padding:3px 10px}
+
+  /* canvas mini preview (option B minimap, colour-coded) */
+  .map{border:1px solid var(--border2);border-radius:9px;background:#fff;padding:5px;display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(3,16px);gap:3px}
+  .c{border-radius:3px}
+  .c.s{background:#bbf7d0}.c.g{background:#bfdbfe}.c.k{background:#fde68a}
+  .c.g0{grid-column:1/3;grid-row:1/3}.c.g1{grid-column:3/5;grid-row:1/2}.c.g2{grid-column:3/5;grid-row:2/3}
+  .c.g3{grid-column:5/7;grid-row:1/3}.c.g4{grid-column:7/9;grid-row:1/2}.c.g5{grid-column:7/9;grid-row:2/3}
+  .c.g6{grid-column:9/11;grid-row:1/3}.c.g7{grid-column:1/5;grid-row:3/4}.c.g8{grid-column:5/11;grid-row:3/4}
+  .legend{display:flex;gap:12px;margin-top:9px;font-size:10.5px;color:var(--muted)}
+  .legend b{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:middle}
+
+  .btn{display:block;width:100%;text-align:center;background:var(--grad);color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:13px;border:none;border-radius:999px;padding:12px;margin-top:4px}
+  .btn.ghost{background:var(--surface2);border:1px solid var(--border2);color:var(--ink)}
+
+  .todo{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+  .todo:last-child{border-bottom:none}
+  .dot{width:8px;height:8px;border-radius:999px;margin-top:5px;flex:0 0 8px}
+  .todo .tt{font-size:13px;line-height:1.4}
+  .todo .td{font-size:11px;color:var(--muted)}
+
+  .rec{font-size:12px;line-height:1.5;color:#e7e2fb;padding:9px 11px;border-radius:11px;background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.22);margin-bottom:8px}
+  .rec b{color:#c4b5fd}
+
+  /* bottom tab bar */
+  .tabbar{position:sticky;bottom:0;display:flex;justify-content:space-around;padding:11px 8px 13px;background:rgba(10,10,20,.82);backdrop-filter:blur(10px);border-top:1px solid var(--border)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--muted)}
+  .tab.on{color:var(--pink)}
+  .tab i{font-size:17px;font-style:normal}
+
+  .foot{max-width:820px;margin:26px auto 0;color:var(--muted);font-size:13px;line-height:1.6;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+  <span class="kicker">Quantana · AI Cofounder</span>
+  <h1>Founder Home — app-like dashboard</h1>
+  <p class="sub">A personal home the founder lands on after their snapshot: profile, a readiness-score widget, dimension mini-stats, their Lean Canvas at a glance, next steps, and AI recommendations. Navbar (#8) + bottom tab bar make it feel like a real app. No new login — reached via their existing snapshot link / saved session.</p>
+
+  <div class="stage">
+    <div class="phone"><div class="screen">
+      <div class="nav">
+        <div class="brand"><div class="logo">Q</div><div><div class="n">Quantana</div><div class="p">AI Cofounder</div></div></div>
+        <div class="navicons">◑ &nbsp; ⌾</div>
+      </div>
+
+      <div class="body">
+        <div class="hello">Hey <span>Ramesh</span> 👋</div>
+        <p class="hellosub">Here's where RebateRadar stands today.</p>
+
+        <!-- READINESS WIDGET -->
+        <div class="card glow">
+          <div class="gauge-wrap">
+            <div class="gauge-holder">
+              <div class="gauge" style="--p:71"></div>
+              <div class="gauge-num"><div class="gnum">71</div><div class="gof">/ 100</div></div>
+            </div>
+            <div>
+              <div class="stagebadge">◆ MVP Candidate</div>
+              <div class="gdesc">You've got a clear problem and a testable MVP. Next: prove someone will pay.</div>
+            </div>
+          </div>
+          <div style="height:13px"></div>
+          <span class="kickerL">Readiness by dimension</span>
+          <div class="dims">
+            <div class="dim"><div class="dl"><span>Problem clarity</span><span>12/15</span></div><div class="bar"><i style="width:80%"></i></div></div>
+            <div class="dim"><div class="dl"><span>Customer clarity</span><span>11/15</span></div><div class="bar"><i style="width:73%"></i></div></div>
+            <div class="dim"><div class="dl"><span>Value &amp; payment</span><span>12/20</span></div><div class="bar"><i style="width:60%"></i></div></div>
+            <div class="dim"><div class="dl"><span>Validation</span><span>6/10</span></div><div class="bar"><i style="width:60%"></i></div></div>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="card">
+          <div class="prow">
+            <div class="avatar">R</div>
+            <div class="pmeta"><div class="pn">Ramesh Kumar</div><div class="ps">RebateRadar · Founder</div></div>
+          </div>
+          <div class="tags"><span class="tag">FinTech</span><span class="tag">Idea → MVP</span><span class="tag">Solo</span><span class="tag">B2B SaaS</span></div>
+        </div>
+
+        <!-- CANVAS AT A GLANCE -->
+        <div class="card">
+          <div class="rowbtwn"><span class="kickerL" style="margin:0">Your Lean Canvas</span><span style="font-size:11px;color:var(--muted)">tap a block →</span></div>
+          <div style="height:10px"></div>
+          <div class="map">
+            <div class="c g0 s"></div><div class="c g1 s"></div><div class="c g2 k"></div>
+            <div class="c g3 g"></div><div class="c g4 g"></div><div class="c g5 k"></div>
+            <div class="c g6 s"></div><div class="c g7 k"></div><div class="c g8 g"></div>
+          </div>
+          <div class="legend"><span><b style="background:#bbf7d0"></b>Strong</span><span><b style="background:#bfdbfe"></b>Growing</span><span><b style="background:#fde68a"></b>Sharpen</span></div>
+          <div style="height:12px"></div>
+          <button class="btn ghost">Open full canvas</button>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="card">
+          <span class="kickerL">Your 7-day plan</span>
+          <div class="todo"><span class="dot" style="background:var(--strong)"></span><div><div class="tt">Interview 5 target manufacturers</div><div class="td">Validate the missed-rebate pain · Day 1–2</div></div></div>
+          <div class="todo"><span class="dot" style="background:var(--grow)"></span><div><div class="tt">Draft a landing page + pricing</div><div class="td">Test willingness to pay · Day 3–4</div></div></div>
+          <div class="todo"><span class="dot" style="background:var(--sharp)"></span><div><div class="tt">Run 1 concierge claim end-to-end</div><div class="td">Prove you can deliver value · Day 5–7</div></div></div>
+        </div>
+
+        <!-- RECOMMENDATIONS -->
+        <div class="card">
+          <span class="kickerL">AI Cofounder · recommendations</span>
+          <div class="rec"><b>Value &amp; payment (12/20):</b> You haven't named a price. Put a number on the landing page and measure click-to-intent.</div>
+          <div class="rec"><b>Validation (6/10):</b> Nothing tested yet with real users — book 5 calls this week before building more.</div>
+          <div class="rec"><b>Customer clarity:</b> "SMB manufacturers" is broad. Pick one sub-sector (e.g. food processing) to start.</div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab on"><i>⌂</i>Home</div>
+        <div class="tab"><i>◱</i>Canvas</div>
+        <div class="tab"><i>◉</i>Plan</div>
+        <div class="tab"><i>✦</i>Coach</div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="foot">
+    <b>What this reuses vs. adds.</b> Everything shown already exists in your data — profile (name/startup/sector/stage), the 71/100 readiness score, dimension scores, the Lean Canvas, and the 7-day plan. The dashboard is a new <b>home layout</b> that arranges them as widgets, plus the navbar (#8) and a bottom tab bar. <b>New work:</b> a founder "home" route keyed to their existing participant id (no new login), the circular readiness gauge, the colour-coded mini-map (shared with Lean Canvas Option B), and the AI recommendations feed (shares the enriched AI output powering the per-score justifications). Light/dark both supported by the theme tokens.
+  </div>
+</body>
+</html>
