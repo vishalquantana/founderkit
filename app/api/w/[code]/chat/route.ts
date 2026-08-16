@@ -17,6 +17,7 @@ import { findBestFaqMatch } from "@/ai/faq-match";
 import { estimateConfidence, LOW_CONFIDENCE } from "@/ai/confidence";
 import { GROWTH_FAQ_SEED } from "@/ai/persona";
 import { notifyEscalation } from "@/lib/slack";
+import { sendSlackErrorAlert } from "@/lib/slack-logger";
 import { answerAsVamshi } from "@/ai/chat";
 import { buildFounderContext } from "@/ai/chat-context";
 
@@ -198,7 +199,13 @@ export async function POST(
     if (flagged) {
       await escalate(userMsg.id, trimmed);
     }
-  } catch {
+  } catch (err) {
+    console.error("Vamshi.AI chat generation error:", err);
+    await sendSlackErrorAlert({
+      source: "backend",
+      error: err,
+      context: { api: "/api/w/[code]/chat", participantId, message: trimmed },
+    });
     reply = FALLBACK_REPLY;
     flagged = true;
     const userMsg = await insertChatMessage({ participantId, role: "user", content: trimmed });
