@@ -90,6 +90,42 @@ export const results = sqliteTable("results", {
   createdAt: createdAt(),
 });
 
+export const growthPlans = sqliteTable("growth_plans", {
+  id: id(),
+  participantId: text("participant_id").notNull().references(() => participants.id).unique(),
+  primaryChannel: text("primary_channel").notNull(),
+  targetSegment: text("target_segment").notNull(),
+  conversionGoal: text("conversion_goal").notNull(),
+  successMetric30Day: text("success_metric_30_day").notNull(),
+  biggestRisk: text("biggest_risk").notNull(),
+  lowHangingOpportunity: text("low_hanging_opportunity").notNull(),
+  topChannels: text("top_channels", { mode: "json" }).$type<string[]>().notNull(),
+  plan30Day: text("plan_30_day", { mode: "json" }).$type<string[]>().notNull(),
+  plan60Day: text("plan_60_day", { mode: "json" }).$type<string[]>().notNull(),
+  plan90Day: text("plan_90_day", { mode: "json" }).$type<string[]>().notNull(),
+  metricsToTrack: text("metrics_to_track", { mode: "json" }).$type<string[]>().notNull(),
+  outreachScript: text("outreach_script").notNull(),
+  avoidOverbuildingRec: text("avoid_overbuilding_rec").notNull(),
+  checkedTasks: text("checked_tasks", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
+  aiRaw: text("ai_raw", { mode: "json" }),
+  createdAt: createdAt(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+});
+
+export const feedbackSubmissions = sqliteTable("feedback_submissions", {
+  id: id(),
+  participantId: text("participant_id").notNull().references(() => participants.id).unique(),
+  q1Usefulness: text("q1_usefulness").notNull(),
+  q2MostValuable: text("q2_most_valuable").notNull(),
+  q3IdentifiedAssumptions: text("q3_identified_assumptions").notNull(),
+  q4AiToolUsefulness: text("q4_ai_tool_usefulness").notNull(),
+  q5Next7DaysAction: text("q5_next_7_days_action").notNull(),
+  q6Suggestions: text("q6_suggestions"),
+  q7FollowupInterest: text("q7_followup_interest").notNull(),
+  q7ContactInfo: text("q7_contact_info"),
+  createdAt: createdAt(),
+});
+
 export const polls = sqliteTable("polls", {
   id: id(),
   workshopId: text("workshop_id").notNull().references(() => workshops.id),
@@ -133,7 +169,9 @@ export const faqs = sqliteTable("faqs", {
   source: text("source").notNull(), // "seed" | "manual" | "human_resolved"
   topic: text("topic"),
   createdAt: createdAt(),
-});
+}, (table) => ({
+  faqsGlobalQuestionIdx: uniqueIndex("faqs_global_question_idx").on(table.question).where(sql`workshop_id IS NULL`),
+}));
 
 export const escalations = sqliteTable("escalations", {
   id: id(),

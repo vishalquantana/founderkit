@@ -50,14 +50,17 @@ export async function insertFaq(input: {
   topic?: string;
 }): Promise<{ id: string }> {
   const id = newId();
-  await db.insert(faqs).values({
-    id,
-    workshopId: input.workshopId,
-    question: input.question,
-    answer: input.answer,
-    source: input.source,
-    topic: input.topic,
-  });
+  await db
+    .insert(faqs)
+    .values({
+      id,
+      workshopId: input.workshopId,
+      question: input.question,
+      answer: input.answer,
+      source: input.source,
+      topic: input.topic,
+    })
+    .onConflictDoNothing();
   return { id };
 }
 

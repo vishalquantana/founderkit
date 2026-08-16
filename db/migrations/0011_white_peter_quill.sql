@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `faqs_global_question_idx` ON `faqs` (`question`) WHERE workshop_id IS NULL;
