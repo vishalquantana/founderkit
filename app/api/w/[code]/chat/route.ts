@@ -1,0 +1,194 @@
+import { cookies } from "next/headers";
+import { getWorkshopByJoinCode } from "@/db/queries/workshops";
+import { getParticipant } from "@/db/queries/participants";
+import {
+  insertChatMessage,
+  getWorkshopFaqs,
+  insertFaq,
+  countFaqs,
+  createEscalation,
+  lockParticipant,
+  unlockParticipant,
+  isParticipantLocked,
+  getMessages,
+} from "@/db/queries/chat";
+import { classifyGuard, ABUSE_REPLY, INJECTION_REPLY, IDENTITY_REPLY } from "@/ai/guards";
+import { findBestFaqMatch } from "@/ai/faq-match";
+import { estimateConfidence, LOW_CONFIDENCE } from "@/ai/confidence";
+import { GROWTH_FAQ_SEED } from "@/ai/persona";
+import { answerAsVamshi } from "@/ai/chat";
+import { buildFounderContext } from "@/ai/chat-context";
+
+const PID_COOKIE = "mrs_pid";
+const MAX_MESSAGE_LENGTH = 2000;
+const FALLBACK_REPLY = "Let me check with the team and get back to you.";
+const HISTORY_TURNS_FOR_LLM = 8;
+
+export interface ChatTurnResponse {
+  reply: string;
+  flagged: boolean;
+  locked: boolean;
+}
+
+async function assertOwnsParticipant(participantId: string): Promise<boolean> {
+  const cookieStore = await cookies();
+  const pid = cookieStore.get(PID_COOKIE)?.value;
+  return Boolean(pid) && pid === participantId;
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ code: string }> },
+): Promise<Response> {
+  const { code } = await params;
+
+  let body: { participantId?: string; message?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const { participantId, message } = body;
+  if (!participantId || typeof message !== "string") {
+    return Response.json({ error: "participantId and message are required" }, { status: 400 });
+  }
+
+  const trimmed = message.trim();
+  if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) {
+    return Response.json({ error: "message must be between 1 and 2000 characters" }, { status: 400 });
+  }
+
+  const authorized = await assertOwnsParticipant(participantId);
+  if (!authorized) {
+    return Response.json({ error: "Not authorized for this participant" }, { status: 403 });
+  }
+
+  const workshop = await getWorkshopByJoinCode(code);
+  if (!workshop) {
+    return Response.json({ error: "Workshop not found" }, { status: 404 });
+  }
+
+  const participant = await getParticipant(participantId);
+  if (!participant || participant.workshopId !== workshop.id) {
+    return Response.json({ error: "Participant not found for this workshop" }, { status: 404 });
+  }
+
+  const guard = classifyGuard(trimmed);
+
+  // Locked check comes after the unlock-keyword classification so a locked
+  // participant can still escape lockout, but before any other processing.
+  const locked = await isParticipantLocked(participantId);
+  if (locked && guard !== "unlock") {
+    const data: ChatTurnResponse = { reply: "", flagged: false, locked: true };
+    return Response.json(data);
+  }
+
+  if (guard === "unlock") {
+    await unlockParticipant(participantId);
+    const reply = "You're back in. How can I help?";
+    await insertChatMessage({ participantId, role: "assistant", content: reply });
+    const data: ChatTurnResponse = { reply, flagged: false, locked: false };
+    return Response.json(data);
+  }
+
+  if (guard === "abuse") {
+    await insertChatMessage({ participantId, role: "user", content: trimmed });
+    await lockParticipant(participantId);
+    await insertChatMessage({ participantId, role: "assistant", content: ABUSE_REPLY, flagged: true });
+    const data: ChatTurnResponse = { reply: ABUSE_REPLY, flagged: true, locked: true };
+    return Response.json(data);
+  }
+
+  if (guard === "injection" || guard === "identity") {
+    const reply = guard === "injection" ? INJECTION_REPLY : IDENTITY_REPLY;
+    await insertChatMessage({ participantId, role: "user", content: trimmed });
+    await insertChatMessage({
+      participantId,
+      role: "assistant",
+      content: reply,
+      intent: guard,
+    });
+    const data: ChatTurnResponse = { reply, flagged: false, locked: false };
+    return Response.json(data);
+  }
+
+  // Ensure the global seed FAQs exist (idempotent guard by count).
+  if ((await countFaqs(null)) === 0) {
+    for (const faq of GROWTH_FAQ_SEED) {
+      await insertFaq({
+        workshopId: null,
+        question: faq.question,
+        answer: faq.answer,
+        source: "seed",
+        topic: faq.topic,
+      });
+    }
+  }
+
+  const workshopFaqs = await getWorkshopFaqs(workshop.id);
+  const faqMatch = findBestFaqMatch(trimmed, workshopFaqs);
+
+  if (faqMatch) {
+    await insertChatMessage({ participantId, role: "user", content: trimmed });
+    await insertChatMessage({
+      participantId,
+      role: "assistant",
+      content: faqMatch.faq.answer,
+      confidence: 95,
+      intent: "faq",
+    });
+    const data: ChatTurnResponse = { reply: faqMatch.faq.answer, flagged: false, locked: false };
+    return Response.json(data);
+  }
+
+  let reply: string;
+  let flagged: boolean;
+  try {
+    const context = await buildFounderContext(participantId);
+    const history = (await getMessages(participantId))
+      .slice(-HISTORY_TURNS_FOR_LLM)
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+    reply = await answerAsVamshi({ message: trimmed, context, history });
+    const confidence = estimateConfidence(reply);
+    flagged = confidence < LOW_CONFIDENCE;
+
+    const userMsg = await insertChatMessage({ participantId, role: "user", content: trimmed });
+    await insertChatMessage({
+      participantId,
+      role: "assistant",
+      content: reply,
+      confidence: Math.round(confidence * 100),
+      flagged,
+    });
+
+    if (flagged) {
+      await createEscalation({
+        workshopId: workshop.id,
+        participantId,
+        questionMessageId: userMsg.id,
+        question: trimmed,
+      });
+    }
+  } catch {
+    reply = FALLBACK_REPLY;
+    flagged = true;
+    const userMsg = await insertChatMessage({ participantId, role: "user", content: trimmed });
+    await insertChatMessage({
+      participantId,
+      role: "assistant",
+      content: reply,
+      flagged: true,
+    });
+    await createEscalation({
+      workshopId: workshop.id,
+      participantId,
+      questionMessageId: userMsg.id,
+      question: trimmed,
+    });
+  }
+
+  const data: ChatTurnResponse = { reply, flagged, locked: false };
+  return Response.json(data);
+}
