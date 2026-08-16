@@ -62,9 +62,10 @@ function Avatar({ size = 40 }: { size?: number }) {
  */
 export function VamshiChat({ code, participantId: propPid }: VamshiChatProps) {
   const pathname = usePathname();
-  // Extract pid from URL if cookie was missing during layout rendering (e.g. /w/[code]/home/[pid] or /feedback/[pid])
-  const urlPid = pathname.split("/").pop();
-  const participantId = propPid || (urlPid && urlPid.startsWith("p_") ? urlPid : "");
+  // Extract pid from URL if cookie was missing during layout rendering (e.g. /w/[code]/home/[pid] or /feedback/[pid] or /result/[pid])
+  const segments = pathname.split("/").filter(Boolean);
+  const urlPid = segments.length >= 4 ? segments[3] : undefined;
+  const participantId = propPid || urlPid || "";
 
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
