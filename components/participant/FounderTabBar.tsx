@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Home, LayoutDashboard, BarChart3 } from "lucide-react";
 
 export interface FounderTabBarProps {
   code: string;
@@ -40,7 +41,7 @@ export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: 
         className={activeClassName(active === "home")}
         style={activeStyle(active === "home")}
       >
-        <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">⌂</span>
+        <Home aria-hidden="true" className="h-6 w-6" />
         Home
       </Link>
 
@@ -50,7 +51,7 @@ export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: 
           className={activeClassName(active === "canvas")}
           style={activeStyle(active === "canvas")}
         >
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
+          <LayoutDashboard aria-hidden="true" className="h-6 w-6" />
           Canvas
         </Link>
       ) : canvasUnlocked ? (
@@ -59,12 +60,12 @@ export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: 
           className={activeClassName(active === "canvas")}
           style={activeStyle(active === "canvas")}
         >
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
+          <LayoutDashboard aria-hidden="true" className="h-6 w-6" />
           Canvas
         </Link>
       ) : (
         <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
+          <LayoutDashboard aria-hidden="true" className="h-6 w-6" />
           Canvas
         </span>
       )}
@@ -74,7 +75,7 @@ export function FounderTabBar({ code, pid, active, canvasUnlocked, hasResult }: 
         className={activeClassName(active === "polls")}
         style={activeStyle(active === "polls")}
       >
-        <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">📊</span>
+        <BarChart3 aria-hidden="true" className="h-6 w-6" />
         Polls
       </Link>
     </nav>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Sparkles } from "lucide-react";
 import { Chip } from "@/components/motion/Chip";
 import type { Section } from "@/lib/sections";
 import { saveSectionAnswer, probeSectionAction } from "@/app/(participant)/w/[code]/actions";
@@ -202,7 +203,9 @@ export function SectionStep({
             className="pulse-card relative flex flex-col gap-3 overflow-hidden border-l-2 border-l-[#8b5cf6] p-4"
             aria-live="polite"
           >
-            <span className="pulse-kicker text-[#c4b5fd]">⚡ Quick follow-up from AI Coach</span>
+            <span className="pulse-kicker inline-flex items-center gap-1.5 text-[#c4b5fd]">
+              <Sparkles aria-hidden className="h-[1em] w-[1em]" /> Quick follow-up from AI Coach
+            </span>
             <div className="flex flex-col gap-2">
               <div className="shimmer h-3 w-5/6 rounded-full bg-surface" />
               <div className="shimmer h-3 w-2/3 rounded-full bg-surface" />
@@ -227,7 +230,9 @@ export function SectionStep({
             className="pulse-card relative flex flex-col gap-3 overflow-hidden border-l-2 border-l-[#8b5cf6] p-4"
             style={{ boxShadow: "0 0 0 1px rgba(139,92,246,0.25), 0 20px 60px -20px rgba(139,92,246,0.55)" }}
           >
-            <span className="pulse-kicker text-[#c4b5fd]">⚡ Quick follow-up from AI Coach</span>
+            <span className="pulse-kicker inline-flex items-center gap-1.5 text-[#c4b5fd]">
+              <Sparkles aria-hidden className="h-[1em] w-[1em]" /> Quick follow-up from AI Coach
+            </span>
             <p className="text-sm leading-relaxed text-foreground">{probeQuestion}</p>
             <textarea
               value={probeAnswerValue}

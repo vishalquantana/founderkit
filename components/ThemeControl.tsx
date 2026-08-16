@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { Moon, Sun } from "lucide-react";
 import { THEME_STORAGE_KEY, resolveInitialTheme, nextTheme, type Theme } from "@/lib/theme";
 
 function apply(theme: Theme) {
@@ -68,7 +69,7 @@ export function ThemeControl() {
             transition={{ duration: 0.18 }}
             aria-hidden
           >
-            {dark ? "🌙" : "☀️"}
+            {dark ? <Moon className="h-[15px] w-[15px]" /> : <Sun className="h-[15px] w-[15px]" />}
           </motion.span>
         </AnimatePresence>
       </button>

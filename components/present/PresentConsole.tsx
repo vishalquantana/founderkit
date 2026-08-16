@@ -6,6 +6,7 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
+import { Menu } from "lucide-react";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 import { availableViews, VIEW_LABELS, type PresentView } from "@/components/present/views";
 import type { PresentData } from "@/components/present/types";
@@ -173,7 +174,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 aria-label="Show controls sidebar"
                 className="flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2 py-0.5 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
               >
-                <span aria-hidden>☰</span> Show controls
+                <Menu aria-hidden className="h-4 w-4" /> Show controls
               </button>
             )}
           </div>
