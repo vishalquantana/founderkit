@@ -311,7 +311,8 @@ export function ResultView({
             {result.strengths.map((strength) => (
               <li
                 key={strength}
-                className="rounded-2xl border border-emerald-600/30 bg-emerald-500/15 px-4 py-3 text-sm font-semibold leading-relaxed text-emerald-950 dark:text-emerald-200"
+                className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold leading-relaxed text-emerald-900 dark:text-emerald-300"
+                style={{ color: "var(--strength-text, #064e3b)" }}
               >
                 {strength}
               </li>
