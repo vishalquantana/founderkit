@@ -2,7 +2,7 @@ export type PresentView = "welcome" | "dashboard" | "wordcloud" | "progression";
 
 export const VIEW_LABELS: Record<PresentView, string> = {
   welcome: "Welcome",
-  dashboard: "Aggregate",
+  dashboard: "Canvas Statistics",
   wordcloud: "Word Cloud",
   progression: "Progression",
 };

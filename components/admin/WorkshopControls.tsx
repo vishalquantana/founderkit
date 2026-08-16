@@ -218,7 +218,7 @@ export function WorkshopControls({
         </h2>
         <div className="flex flex-col gap-2">
           <ToggleRow
-            label="Dashboard"
+            label="Canvas statistics"
             checked={currentSettings.liveViews.dashboard}
             onChange={(next) =>
               changeSettings({
