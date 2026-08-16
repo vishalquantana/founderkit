@@ -18,8 +18,11 @@ function requireNonEmpty(value: string, field: string, maxLength = MAX_FIELD_LEN
   return trimmed;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function startParticipant(input: {
   workshopId: string; founderName: string; startupName: string; contact: string;
+  mobile?: string;
   sector?: string; stage?: string; teamSize?: string; productType?: string;
   businessModel?: string; consentFollowup?: boolean;
 }): Promise<{ participantId: string }> {
@@ -30,13 +33,18 @@ export async function startParticipant(input: {
 
   const founderName = requireNonEmpty(input.founderName, "founderName");
   const startupName = requireNonEmpty(input.startupName, "startupName");
-  const contact = requireNonEmpty(input.contact, "contact");
+  const contact = requireNonEmpty(input.contact, "email"); // email is required
+  if (!EMAIL_RE.test(contact)) throw new Error("A valid email is required");
+  const mobile = input.mobile?.trim()
+    ? requireNonEmpty(input.mobile, "mobile", 40)
+    : undefined;
 
   const p = await createParticipant({
     ...input,
     founderName,
     startupName,
     contact,
+    mobile,
   });
 
   const cookieStore = await cookies();

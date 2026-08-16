@@ -12,7 +12,8 @@ import type { SectionKey } from "@/db/schema";
 const HEADERS = [
   "Founder name",
   "Startup name",
-  "Contact",
+  "Email",
+  "Mobile",
   "Sector",
   "Stage",
   "Team size",
@@ -55,6 +56,7 @@ export async function GET(
         participant.founderName,
         participant.startupName,
         participant.contact,
+        participant.mobile ?? null,
         participant.sector ?? null,
         participant.stage ?? null,
         participant.teamSize ?? null,

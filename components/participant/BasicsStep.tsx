@@ -13,7 +13,8 @@ import {
 export interface BasicsValues {
   founderName: string;
   startupName: string;
-  contact: string;
+  email: string;
+  mobile: string;
   sector: string;
   stage: string;
   teamSize: string;
@@ -21,6 +22,8 @@ export interface BasicsValues {
   businessModel: string;
   consentFollowup: boolean;
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export interface BasicsStepProps {
   onSubmit: (values: BasicsValues) => void;
@@ -30,7 +33,8 @@ export interface BasicsStepProps {
 const EMPTY: BasicsValues = {
   founderName: "",
   startupName: "",
-  contact: "",
+  email: "",
+  mobile: "",
   sector: "",
   stage: "",
   teamSize: "",
@@ -48,10 +52,11 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
   const [values, setValues] = useState<BasicsValues>(EMPTY);
   const [touched, setTouched] = useState(false);
 
+  const emailValid = EMAIL_RE.test(values.email.trim());
   const isValid =
     values.founderName.trim().length > 0 &&
     values.startupName.trim().length > 0 &&
-    values.contact.trim().length > 0;
+    emailValid;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -107,17 +112,32 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-[#A9A9C9]">Phone or email</span>
+          <span className="text-sm font-medium text-[#A9A9C9]">Email</span>
           <input
-            type="text"
-            value={values.contact}
-            onChange={(e) => update("contact", e.target.value)}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            value={values.email}
+            onChange={(e) => update("email", e.target.value)}
             placeholder="So we can send your snapshot"
             className="pulse-input w-full px-4 py-3 text-sm outline-none"
           />
-          {touched && !values.contact.trim() && (
-            <span className="text-xs text-rose-400">This field is required.</span>
+          {touched && !emailValid && (
+            <span className="text-xs text-rose-400">A valid email is required.</span>
           )}
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium text-[#A9A9C9]">Mobile (optional)</span>
+          <input
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={values.mobile}
+            onChange={(e) => update("mobile", e.target.value)}
+            placeholder="+91…"
+            className="pulse-input w-full px-4 py-3 text-sm outline-none"
+          />
         </label>
 
         <label className="flex flex-col gap-1.5">

@@ -44,7 +44,8 @@ export const participants = sqliteTable("participants", {
   workshopId: text("workshop_id").notNull().references(() => workshops.id),
   founderName: text("founder_name").notNull(),
   startupName: text("startup_name").notNull(),
-  contact: text("contact").notNull(),
+  contact: text("contact").notNull(), // email (required)
+  mobile: text("mobile"), // optional
   sector: text("sector"),
   stage: text("stage"),
   teamSize: text("team_size"),

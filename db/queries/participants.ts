@@ -7,6 +7,7 @@ export type Participant = typeof participants.$inferSelect;
 
 export async function createParticipant(input: {
   workshopId: string; founderName: string; startupName: string; contact: string;
+  mobile?: string;
   sector?: string; stage?: string; teamSize?: string; productType?: string;
   businessModel?: string; consentFollowup?: boolean;
 }): Promise<Participant> {

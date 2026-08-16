@@ -39,7 +39,7 @@ describe("participant actions", () => {
   it("startParticipant returns new id and sets the mrs_pid cookie", async () => {
     getWorkshopById.mockResolvedValue({ id: "w1", status: "live" });
     createParticipant.mockResolvedValue({ id: "p1" });
-    const result = await startParticipant({ workshopId: "w1", founderName: "A", startupName: "S", contact: "c" });
+    const result = await startParticipant({ workshopId: "w1", founderName: "A", startupName: "S", contact: "a@b.com" });
     expect(result).toEqual({ participantId: "p1" });
     expect(cookieStore.get("mrs_pid")).toBe("p1");
   });
@@ -48,14 +48,14 @@ describe("participant actions", () => {
     getWorkshopById.mockResolvedValue({ id: "w1", status: "draft" });
     createParticipant.mockResolvedValue({ id: "p1" });
     await expect(
-      startParticipant({ workshopId: "w1", founderName: "A", startupName: "S", contact: "c" }),
+      startParticipant({ workshopId: "w1", founderName: "A", startupName: "S", contact: "a@b.com" }),
     ).resolves.toEqual({ participantId: "p1" });
   });
 
   it("startParticipant throws when the workshop is closed", async () => {
     getWorkshopById.mockResolvedValue({ id: "w1", status: "closed" });
     await expect(
-      startParticipant({ workshopId: "w1", founderName: "A", startupName: "S", contact: "c" }),
+      startParticipant({ workshopId: "w1", founderName: "A", startupName: "S", contact: "a@b.com" }),
     ).rejects.toThrow();
     expect(createParticipant).not.toHaveBeenCalled();
   });
@@ -63,7 +63,7 @@ describe("participant actions", () => {
   it("startParticipant throws when the workshop is missing", async () => {
     getWorkshopById.mockResolvedValue(undefined);
     await expect(
-      startParticipant({ workshopId: "missing", founderName: "A", startupName: "S", contact: "c" }),
+      startParticipant({ workshopId: "missing", founderName: "A", startupName: "S", contact: "a@b.com" }),
     ).rejects.toThrow();
     expect(createParticipant).not.toHaveBeenCalled();
   });
@@ -71,7 +71,7 @@ describe("participant actions", () => {
   it("startParticipant throws for blank required fields", async () => {
     getWorkshopById.mockResolvedValue({ id: "w1", status: "live" });
     await expect(
-      startParticipant({ workshopId: "w1", founderName: "  ", startupName: "S", contact: "c" }),
+      startParticipant({ workshopId: "w1", founderName: "  ", startupName: "S", contact: "a@b.com" }),
     ).rejects.toThrow();
     expect(createParticipant).not.toHaveBeenCalled();
   });
