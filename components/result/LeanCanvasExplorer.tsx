@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   LEAN_CANVAS_BLOCKS,
@@ -10,7 +11,11 @@ import {
 } from "@/lib/result-view";
 import { DIMENSION_MAX } from "@/lib/readiness";
 import { CanvasMiniMap, CanvasMiniMapLegend } from "@/components/result/CanvasMiniMap";
-import { saveSectionAnswer, saveCanvasBlock } from "@/app/(participant)/w/[code]/actions";
+import {
+  saveSectionAnswer,
+  saveCanvasBlock,
+  reevaluateParticipant,
+} from "@/app/(participant)/w/[code]/actions";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey } from "@/db/schema";
 
@@ -22,6 +27,9 @@ export interface LeanCanvasExplorerProps {
   editable?: boolean;
   participantId?: string;
 }
+
+/** Debounce window before a burst of section-block edits triggers one AI re-eval. */
+const RESCORE_DEBOUNCE_MS = 2500;
 
 /** Card pill classes per tone, readable in both light and dark. */
 const PILL_TONE_CLASSES: Record<Exclude<CanvasTone, "empty">, string> = {
@@ -147,6 +155,7 @@ export function LeanCanvasExplorer({
   participantId,
 }: LeanCanvasExplorerProps) {
   const shouldReduceMotion = useReducedMotion();
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [overrides, setOverrides] = useState<Record<string, string>>({});
@@ -154,6 +163,51 @@ export function LeanCanvasExplorer({
   const [draft, setDraft] = useState("");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
+  const [rescoring, setRescoring] = useState(false);
+
+  // Debounced, single-flight auto re-score after a section-block save.
+  const rescoreTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rescoreInFlight = useRef(false);
+  const rescorePending = useRef(false);
+
+  const runRescore = useCallback(async () => {
+    if (!participantId) return;
+    if (rescoreInFlight.current) {
+      // A run is already going; make sure another pass follows it.
+      rescorePending.current = true;
+      return;
+    }
+    rescoreInFlight.current = true;
+    setRescoring(true);
+    try {
+      await reevaluateParticipant(participantId);
+      router.refresh();
+    } catch {
+      // Re-scoring is a background nicety; the manual button remains a fallback.
+    } finally {
+      rescoreInFlight.current = false;
+      if (rescorePending.current) {
+        rescorePending.current = false;
+        void runRescore();
+      } else {
+        setRescoring(false);
+      }
+    }
+  }, [participantId, router]);
+
+  const scheduleRescore = useCallback(() => {
+    if (rescoreTimer.current) clearTimeout(rescoreTimer.current);
+    rescoreTimer.current = setTimeout(() => {
+      rescoreTimer.current = null;
+      void runRescore();
+    }, RESCORE_DEBOUNCE_MS);
+  }, [runRescore]);
+
+  useEffect(() => {
+    return () => {
+      if (rescoreTimer.current) clearTimeout(rescoreTimer.current);
+    };
+  }, []);
 
   const blocks = LEAN_CANVAS_BLOCKS.map((block) =>
     resolveBlock(block, answers, canvasExtras, result, overrides),
@@ -195,6 +249,9 @@ export function LeanCanvasExplorer({
         setOverrides((prev) => ({ ...prev, [field.key]: value }));
         setEditingKey(null);
         setSaveError(null);
+        // Only section-backed blocks are scoring inputs — schedule a debounced
+        // AI re-score. Extra blocks just flip colour optimistically (no AI).
+        if (field.source) scheduleRescore();
       } catch {
         setSaveError("Couldn't save that change. Please try again.");
       }
@@ -238,6 +295,43 @@ export function LeanCanvasExplorer({
 
   return (
     <div className={className}>
+      {/* Subtle, non-blocking auto re-score indicator. */}
+      <AnimatePresence>
+        {rescoring ? (
+          <motion.div
+            key="rescoring-pill"
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="mb-2 flex items-center justify-center"
+            role="status"
+            aria-live="polite"
+          >
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
+              style={{
+                background: "var(--pulse-surface-strong)",
+                border: "1px solid var(--pulse-border)",
+                color: "var(--pulse-text)",
+              }}
+            >
+              <svg
+                className={shouldReduceMotion ? "h-3 w-3" : "h-3 w-3 animate-spin"}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Re-scoring your startup…
+            </span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
       {/* Mini-map */}
       <CanvasMiniMap
         cells={blocks.map((block) => ({
