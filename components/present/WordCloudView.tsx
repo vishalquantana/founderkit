@@ -30,13 +30,13 @@ export interface WordCloudViewProps {
 export function WordCloudView({ data }: WordCloudViewProps) {
   const shouldReduceMotion = useReducedMotion();
   const [mode, setMode] = useState<"globe" | "grid">("globe");
-  const [sizeScale, setSizeScale] = useState(1.35); // Default expanded scale
-  const words = useMemo(() => buildWordFrequencies(data.problems, { max: 32 }), [data.problems]);
+  const [sizeScale, setSizeScale] = useState(1.0); // 1.0 represents standard full-stage size
+  const words = useMemo(() => buildWordFrequencies(data.problems, { max: 36 }), [data.problems]);
   const maxCount = words.length > 0 ? words[0].count : 1;
 
   if (words.length === 0) {
     return (
-      <div className="flex min-h-[18rem] items-center justify-center">
+      <div className="flex min-h-[22rem] items-center justify-center">
         <p className="text-xl font-medium text-[var(--pulse-text-muted)]">
           Words will appear here as founders submit problems.
         </p>
@@ -45,9 +45,9 @@ export function WordCloudView({ data }: WordCloudViewProps) {
   }
 
   return (
-    <div className="relative flex w-full flex-col items-center justify-center gap-4 py-1">
+    <div className="relative flex w-full flex-1 flex-col items-center justify-center gap-4 py-1">
       {/* Controls Bar: Mode Switcher + Live Size Slider */}
-      <div className="z-20 flex flex-wrap items-center justify-center gap-4 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-4 py-1.5 shadow-sm backdrop-blur-md">
+      <div className="z-30 flex flex-wrap items-center justify-center gap-4 rounded-full border border-[var(--pulse-border-strong)] bg-surface/90 px-4 py-1.5 shadow-md backdrop-blur-md">
         {/* Mode Toggle */}
         <div className="flex items-center gap-1">
           <button
@@ -81,11 +81,11 @@ export function WordCloudView({ data }: WordCloudViewProps) {
 
         {/* Size Slider Control */}
         <div className="flex items-center gap-2 text-xs font-semibold text-[var(--pulse-text-muted)]">
-          <span>Size</span>
+          <span>Scale</span>
           <input
             type="range"
-            min="0.8"
-            max="2.0"
+            min="0.75"
+            max="1.8"
             step="0.05"
             value={sizeScale}
             onChange={(e) => setSizeScale(parseFloat(e.target.value))}
@@ -102,7 +102,7 @@ export function WordCloudView({ data }: WordCloudViewProps) {
         <RotatingWordGlobe words={words} maxCount={maxCount} sizeScale={sizeScale} />
       ) : (
         <div
-          className="flex max-h-[62vh] max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-4 px-4 py-4 overflow-hidden transition-transform duration-150"
+          className="flex min-h-[60vh] w-full max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-6 px-6 py-8 overflow-hidden transition-transform duration-150"
           style={{ transform: `scale(${sizeScale})`, transformOrigin: "center center" }}
         >
           {words.map((w, i) => (
@@ -115,7 +115,7 @@ export function WordCloudView({ data }: WordCloudViewProps) {
                   : {
                       opacity: 1,
                       scale: 1,
-                      y: [0, -4, 0],
+                      y: [0, -6, 0],
                     }
               }
               transition={{
@@ -123,9 +123,9 @@ export function WordCloudView({ data }: WordCloudViewProps) {
                 scale: { delay: i * 0.02, type: "spring", stiffness: 200, damping: 18 },
                 y: { delay: i * 0.02 + 0.3, duration: 4 + (i % 5) * 0.4, repeat: Infinity, ease: "easeInOut" },
               }}
-              className="font-display font-bold leading-tight tracking-tight"
+              className="font-display font-black leading-none tracking-tight"
               style={{
-                fontSize: `clamp(0.9rem, ${fontSizeFor(w.count, maxCount)}vw + 0.6rem, 2.5rem)`,
+                fontSize: `clamp(1.1rem, ${fontSizeFor(w.count, maxCount)}vw + 1rem, 3.8rem)`,
                 color: PALETTE[i % PALETTE.length],
               }}
             >
@@ -152,19 +152,20 @@ function RotatingWordGlobe({
   sizeScale: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState({ x: 0.2, y: 0 });
+  const [rotation, setRotation] = useState({ x: 0.15, y: 0 });
 
-  // Calculate Fibonacci Sphere coordinates for uniform point distribution with dynamic scale
+  // Calculate Fibonacci Sphere coordinates for uniform point distribution with expansive radius
   const points = useMemo(() => {
     const total = words.length;
-    const radius = 175 * sizeScale; // dynamically scaled sphere radius
+    // Generous default radius (280px * sizeScale) to expand across the full stage
+    const radius = 280 * sizeScale;
     return words.map((item, i) => {
       // Golden spiral distribution on sphere
       const phi = Math.acos(1 - (2 * (i + 0.5)) / total);
       const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
 
       const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = radius * Math.cos(phi);
+      const y = radius * Math.cos(phi) * 0.85; // slightly flattened ellipse for cinematic look
       const z = radius * Math.sin(phi) * Math.sin(theta);
 
       return {
@@ -187,10 +188,10 @@ function RotatingWordGlobe({
       const delta = (time - lastTime) / 1000;
       lastTime = time;
 
-      // Slow elegant rotation (approx 1 revolution per 24 seconds)
+      // Slow elegant rotation (approx 1 revolution per 26 seconds)
       setRotation((prev) => ({
         x: prev.x,
-        y: prev.y + delta * 0.25,
+        y: prev.y + delta * 0.24,
       }));
 
       animId = requestAnimationFrame(frame);
@@ -203,12 +204,12 @@ function RotatingWordGlobe({
   return (
     <div
       ref={containerRef}
-      className="relative flex h-[24rem] w-full max-w-3xl items-center justify-center overflow-hidden select-none"
-      style={{ perspective: "1000px" }}
+      className="relative flex h-[34rem] sm:h-[38rem] w-full max-w-5xl items-center justify-center overflow-hidden select-none"
+      style={{ perspective: "1200px" }}
     >
       {/* Ambient background glow ring */}
       <div
-        className="pointer-events-none absolute h-72 w-72 rounded-full opacity-20 blur-3xl"
+        className="pointer-events-none absolute h-96 w-96 rounded-full opacity-25 blur-3xl"
         style={{ background: "radial-gradient(circle, #8b5cf6, #f472b6)" }}
       />
 
@@ -228,11 +229,11 @@ function RotatingWordGlobe({
         const z2 = p.baseY * sinX + z1 * cosX;
 
         // Perspective scale factor
-        const distance = 420;
+        const distance = 580;
         const scale = distance / (distance - z2);
-        const opacity = Math.max(0.18, Math.min(1, (z2 + 250) / 450));
-        const zIndex = Math.round((z2 + 300) * 10);
-        const fontSize = (0.9 + (p.count / maxCount) * 1.5) * scale;
+        const opacity = Math.max(0.18, Math.min(1, (z2 + 320) / 600));
+        const zIndex = Math.round((z2 + 400) * 10);
+        const fontSize = (1.0 + (p.count / maxCount) * 1.8) * scale;
 
         return (
           <span
@@ -244,8 +245,8 @@ function RotatingWordGlobe({
               color: p.color,
               opacity,
               zIndex,
-              filter: z2 < -50 ? `blur(${Math.min(2.5, Math.abs(z2 + 50) / 70)}px)` : "none",
-              textShadow: z2 > 50 ? "0 4px 18px rgba(0,0,0,0.3)" : "none",
+              filter: z2 < -80 ? `blur(${Math.min(2.5, Math.abs(z2 + 80) / 90)}px)` : "none",
+              textShadow: z2 > 60 ? "0 4px 20px rgba(0,0,0,0.35)" : "none",
             }}
           >
             {p.word}
