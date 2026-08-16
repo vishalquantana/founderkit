@@ -20,6 +20,7 @@ export interface DimensionBarsProps {
   scores: EvaluationResult["dimensionScores"];
   /** Overall backend score out of 100. Defaults to the sum of `scores`. */
   total?: number;
+  justifications?: EvaluationResult["dimensionJustifications"];
   className?: string;
 }
 
@@ -27,7 +28,7 @@ export interface DimensionBarsProps {
  * Eight animated bars, one per readiness dimension, plus an overall
  * AnimatedNumber total out of 100.
  */
-export function DimensionBars({ scores, total, className }: DimensionBarsProps) {
+export function DimensionBars({ scores, total, justifications, className }: DimensionBarsProps) {
   const shouldReduceMotion = useReducedMotion();
   const overall =
     total ?? DIMENSIONS.reduce((sum, dim) => sum + (scores[dim] ?? 0), 0);
@@ -82,6 +83,9 @@ export function DimensionBars({ scores, total, className }: DimensionBarsProps) 
                   }
                 />
               </div>
+              {justifications?.[dim] ? (
+                <p className="text-xs leading-snug text-muted">{justifications[dim]}</p>
+              ) : null}
             </li>
           );
         })}

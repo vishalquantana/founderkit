@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
+import { motion, useReducedMotion, type Variants } from "motion/react";
 import { StageReveal } from "@/components/motion/StageReveal";
 import { StageBadge } from "@/components/result/StageBadge";
 import { DimensionBars } from "@/components/result/DimensionBars";
@@ -52,11 +51,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 /**
  * The delightful results payoff: stage-forward reveal, a tasteful
  * celebration flourish, a staged fade-in of the narrative fields, a
- * breakdown toggle (score hidden until requested), and the interactive
- * lean canvas board. Warm, mobile-first, never leads with the number.
+ * always-visible detailed breakdown, and the interactive lean canvas
+ * board. Warm, mobile-first, never leads with the number.
  */
 export function ResultView({ result, answers, founderName, startupName, code, pid }: ResultViewProps) {
-  const [showBreakdown, setShowBreakdown] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const glow = STAGE_GLOW_VAR[result.readinessStage];
 
@@ -180,29 +178,13 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
       </motion.div>
 
       <div className="flex flex-col gap-3 border-t border-[var(--pulse-border)] pt-6">
-        <button
-          type="button"
-          onClick={() => setShowBreakdown((v) => !v)}
-          className="self-start text-sm font-semibold text-muted underline-offset-4 transition hover:text-foreground hover:underline"
-          aria-expanded={showBreakdown}
-        >
-          {showBreakdown ? "Hide detailed breakdown" : "View detailed breakdown"}
-        </button>
-
-        <AnimatePresence initial={false}>
-          {showBreakdown ? (
-            <motion.div
-              key="breakdown"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: shouldReduceMotion ? 0.15 : 0.3 }}
-              className="overflow-hidden"
-            >
-              <DimensionBars scores={result.dimensionScores} total={result.backendScore} className="pt-2" />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        <h2 className="pulse-kicker">Detailed breakdown</h2>
+        <DimensionBars
+          scores={result.dimensionScores}
+          total={result.backendScore}
+          justifications={result.dimensionJustifications}
+          className="pt-1"
+        />
       </div>
 
       <div className="flex flex-col gap-3">
