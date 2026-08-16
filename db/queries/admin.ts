@@ -16,6 +16,29 @@ export function emptyStageDistribution(): Record<ReadinessStage, number> {
   };
 }
 
+/**
+ * All workshops, most-recent first, each with its participant count.
+ * Admins share access to every workshop (see `assertOwnership`), so the
+ * dashboard lists all of them regardless of who created each one.
+ */
+export async function listAllWorkshops(): Promise<
+  (Workshop & { participantCount: number })[]
+> {
+  const rows = await db.query.workshops.findMany({
+    orderBy: desc(workshops.createdAt),
+  });
+
+  return Promise.all(
+    rows.map(async (w) => {
+      const [row] = await db
+        .select({ n: count() })
+        .from(participants)
+        .where(eq(participants.workshopId, w.id));
+      return { ...w, participantCount: row?.n ?? 0 };
+    }),
+  );
+}
+
 export async function listWorkshopsByOwner(
   ownerId: string,
 ): Promise<(Workshop & { participantCount: number })[]> {
