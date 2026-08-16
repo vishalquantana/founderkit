@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import useSWR from "swr";
 import { motion, useReducedMotion } from "motion/react";
 import { gaugePercent } from "@/lib/gauge";
 import { DIMENSIONS, DIMENSION_MAX, STAGE_META, type Dimension } from "@/lib/readiness";
@@ -12,8 +13,12 @@ import {
   resolveMiniMapCells,
 } from "@/components/result/CanvasMiniMap";
 import { ProfileEditForm } from "@/components/participant/ProfileEditForm";
+import { FounderTabBar } from "@/components/participant/FounderTabBar";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey } from "@/db/schema";
+import type { WorkshopStateResponse } from "@/app/api/w/[code]/state/route";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export interface FounderHomeParticipant {
   founderName: string;
@@ -164,6 +169,12 @@ export function FounderHome({
   const shouldReduceMotion = useReducedMotion();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const initial = participant.founderName.trim().charAt(0).toUpperCase() || "?";
+
+  const { data: stateData } = useSWR<WorkshopStateResponse>(`/api/w/${code}/state`, fetcher, {
+    refreshInterval: 5000,
+    fallbackData: { canvasUnlocked },
+  });
+  const liveUnlocked = stateData?.canvasUnlocked ?? canvasUnlocked;
 
   const tags = [
     participant.sector,
@@ -412,7 +423,7 @@ export function FounderHome({
       ) : (
         <motion.div {...cardMotionProps} id="canvas-card" className="pulse-card p-4">
           <CardLabel>Your Lean Canvas</CardLabel>
-          {canvasUnlocked ? (
+          {liveUnlocked ? (
             <>
               <p className="text-sm leading-relaxed text-foreground">
                 Ready when you are — six short questions to map your startup.
@@ -446,58 +457,7 @@ export function FounderHome({
       )}
 
       {/* Bottom tab bar */}
-      <nav
-        className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t px-2 py-3 backdrop-blur-md"
-        style={{
-          background: "color-mix(in srgb, var(--background) 88%, transparent)",
-          borderColor: "var(--pulse-border)",
-        }}
-      >
-        <span className="flex flex-col items-center gap-1 text-[10px] font-semibold" style={{ color: "var(--pulse-kicker)" }}>
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">⌂</span>
-          Home
-        </span>
-        {showResult ? (
-          <Link
-            href={`/w/${code}/result/${pid}`}
-            className="flex flex-col items-center gap-1 text-[10px] text-muted"
-          >
-            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
-            Canvas
-          </Link>
-        ) : canvasUnlocked ? (
-          <Link
-            href={`/w/${code}/canvas/${pid}`}
-            className="flex flex-col items-center gap-1 text-[10px] text-muted"
-          >
-            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
-            Canvas
-          </Link>
-        ) : (
-          <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
-            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
-            Canvas
-          </span>
-        )}
-        {showResult ? (
-          <a href="#plan-section" className="flex flex-col items-center gap-1 text-[10px] text-muted">
-            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◉</span>
-            Plan
-          </a>
-        ) : (
-          <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
-            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◉</span>
-            Plan
-          </span>
-        )}
-        <Link
-          href={`/w/${code}/polls/${pid}`}
-          className="flex flex-col items-center gap-1 text-[10px] text-muted"
-        >
-          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">📊</span>
-          Polls
-        </Link>
-      </nav>
+      <FounderTabBar code={code} pid={pid} active="home" canvasUnlocked={liveUnlocked} hasResult={showResult} />
     </div>
   );
 }
