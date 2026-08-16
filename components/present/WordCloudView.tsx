@@ -30,7 +30,8 @@ export interface WordCloudViewProps {
 export function WordCloudView({ data }: WordCloudViewProps) {
   const shouldReduceMotion = useReducedMotion();
   const [mode, setMode] = useState<"globe" | "grid">("globe");
-  const words = useMemo(() => buildWordFrequencies(data.problems, { max: 28 }), [data.problems]);
+  const [sizeScale, setSizeScale] = useState(1.35); // Default expanded scale
+  const words = useMemo(() => buildWordFrequencies(data.problems, { max: 32 }), [data.problems]);
   const maxCount = words.length > 0 ? words[0].count : 1;
 
   if (words.length === 0) {
@@ -45,38 +46,65 @@ export function WordCloudView({ data }: WordCloudViewProps) {
 
   return (
     <div className="relative flex w-full flex-col items-center justify-center gap-4 py-1">
-      {/* Mode Switcher */}
-      <div className="z-20 flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface p-1 shadow-sm backdrop-blur-md">
-        <button
-          type="button"
-          onClick={() => setMode("globe")}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
-            mode === "globe"
-              ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow"
-              : "text-[var(--pulse-text-muted)] hover:text-foreground"
-          }`}
-        >
-          <Globe className="h-3.5 w-3.5" />
-          <span>3D Globe</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("grid")}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
-            mode === "grid"
-              ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow"
-              : "text-[var(--pulse-text-muted)] hover:text-foreground"
-          }`}
-        >
-          <Grid className="h-3.5 w-3.5" />
-          <span>Text Grid</span>
-        </button>
+      {/* Controls Bar: Mode Switcher + Live Size Slider */}
+      <div className="z-20 flex flex-wrap items-center justify-center gap-4 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-4 py-1.5 shadow-sm backdrop-blur-md">
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setMode("globe")}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+              mode === "globe"
+                ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow"
+                : "text-[var(--pulse-text-muted)] hover:text-foreground"
+            }`}
+          >
+            <Globe className="h-3.5 w-3.5" />
+            <span>3D Globe</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("grid")}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+              mode === "grid"
+                ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow"
+                : "text-[var(--pulse-text-muted)] hover:text-foreground"
+            }`}
+          >
+            <Grid className="h-3.5 w-3.5" />
+            <span>Text Grid</span>
+          </button>
+        </div>
+
+        {/* Vertical Divider */}
+        <span className="hidden sm:inline-block h-4 w-px bg-[var(--pulse-border-strong)]" />
+
+        {/* Size Slider Control */}
+        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--pulse-text-muted)]">
+          <span>Size</span>
+          <input
+            type="range"
+            min="0.8"
+            max="2.0"
+            step="0.05"
+            value={sizeScale}
+            onChange={(e) => setSizeScale(parseFloat(e.target.value))}
+            aria-label="Adjust word cloud size"
+            className="h-1.5 w-24 cursor-pointer appearance-none rounded-lg bg-[var(--pulse-border-strong)] accent-purple-500"
+          />
+          <span className="tabular-nums text-[11px] font-bold text-foreground w-8 text-right">
+            {Math.round(sizeScale * 100)}%
+          </span>
+        </div>
       </div>
 
       {mode === "globe" ? (
-        <RotatingWordGlobe words={words} maxCount={maxCount} />
+        <RotatingWordGlobe words={words} maxCount={maxCount} sizeScale={sizeScale} />
       ) : (
-        <div className="flex max-h-[55vh] max-w-4xl flex-wrap items-center justify-center gap-x-5 gap-y-3 px-4 py-4 overflow-hidden">
+        <div
+          className="flex max-h-[62vh] max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-4 px-4 py-4 overflow-hidden transition-transform duration-150"
+          style={{ transform: `scale(${sizeScale})`, transformOrigin: "center center" }}
+        >
           {words.map((w, i) => (
             <motion.span
               key={w.word}
@@ -97,7 +125,7 @@ export function WordCloudView({ data }: WordCloudViewProps) {
               }}
               className="font-display font-bold leading-tight tracking-tight"
               style={{
-                fontSize: `clamp(0.85rem, ${fontSizeFor(w.count, maxCount)}vw + 0.5rem, 2.2rem)`,
+                fontSize: `clamp(0.9rem, ${fontSizeFor(w.count, maxCount)}vw + 0.6rem, 2.5rem)`,
                 color: PALETTE[i % PALETTE.length],
               }}
             >
@@ -117,17 +145,19 @@ export function WordCloudView({ data }: WordCloudViewProps) {
 function RotatingWordGlobe({
   words,
   maxCount,
+  sizeScale,
 }: {
   words: { word: string; count: number }[];
   maxCount: number;
+  sizeScale: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState({ x: 0.2, y: 0 });
 
-  // Calculate Fibonacci Sphere coordinates for uniform point distribution
+  // Calculate Fibonacci Sphere coordinates for uniform point distribution with dynamic scale
   const points = useMemo(() => {
     const total = words.length;
-    const radius = 175; // compact sphere radius in px for laptop presentation
+    const radius = 175 * sizeScale; // dynamically scaled sphere radius
     return words.map((item, i) => {
       // Golden spiral distribution on sphere
       const phi = Math.acos(1 - (2 * (i + 0.5)) / total);
@@ -146,7 +176,7 @@ function RotatingWordGlobe({
         color: PALETTE[i % PALETTE.length],
       };
     });
-  }, [words]);
+  }, [words, sizeScale]);
 
   // Continuous smooth auto-rotation
   useEffect(() => {

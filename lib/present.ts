@@ -22,6 +22,22 @@ const STOPWORDS = new Set([
   "startup", "startups", "founder", "founders", "solution", "business",
 ]);
 
+const PROFANITY_FILTER = new Set([
+  "fuck", "fucking", "fucked", "fucker", "fucks",
+  "shit", "shitting", "shitty", "shits",
+  "bitch", "bitches", "bitching",
+  "bastard", "bastards",
+  "asshole", "assholes", "ass", "asses",
+  "cunt", "cunts",
+  "dick", "dicks", "dickhead",
+  "piss", "pissed", "pissing",
+  "cock", "cocks", "cocky",
+  "damn", "damned",
+  "crap", "crappy",
+  "bollocks", "bugger", "wanker", "prick", "slut", "whore",
+  "chutiya", "madarchod", "bhenchod", "gaand", "harami", "kamina", "saala", "lund", "bhosadi", "choot",
+]);
+
 export function buildWordFrequencies(
   texts: string[],
   opts?: { max?: number },
@@ -34,6 +50,7 @@ export function buildWordFrequencies(
     for (const token of tokens) {
       if (!token || token.length < 3) continue;
       if (STOPWORDS.has(token)) continue;
+      if (PROFANITY_FILTER.has(token)) continue;
       counts.set(token, (counts.get(token) ?? 0) + 1);
     }
   }
