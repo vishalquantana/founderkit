@@ -16,8 +16,8 @@ const PALETTE = [
 ];
 
 function fontSizeFor(count: number, maxCount: number): number {
-  const min = 1.1;
-  const max = 4.2;
+  const min = 0.9;
+  const max = 2.4;
   if (maxCount <= 0) return min;
   const ratio = count / maxCount;
   return min + ratio * (max - min);
@@ -30,13 +30,13 @@ export interface WordCloudViewProps {
 export function WordCloudView({ data }: WordCloudViewProps) {
   const shouldReduceMotion = useReducedMotion();
   const [mode, setMode] = useState<"globe" | "grid">("globe");
-  const words = useMemo(() => buildWordFrequencies(data.problems, { max: 36 }), [data.problems]);
+  const words = useMemo(() => buildWordFrequencies(data.problems, { max: 28 }), [data.problems]);
   const maxCount = words.length > 0 ? words[0].count : 1;
 
   if (words.length === 0) {
     return (
-      <div className="flex min-h-[24rem] items-center justify-center">
-        <p className="text-2xl font-medium text-[var(--pulse-text-muted)]">
+      <div className="flex min-h-[18rem] items-center justify-center">
+        <p className="text-xl font-medium text-[var(--pulse-text-muted)]">
           Words will appear here as founders submit problems.
         </p>
       </div>
@@ -44,7 +44,7 @@ export function WordCloudView({ data }: WordCloudViewProps) {
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center gap-6 py-4">
+    <div className="relative flex w-full flex-col items-center justify-center gap-4 py-1">
       {/* Mode Switcher */}
       <div className="z-20 flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface p-1 shadow-sm backdrop-blur-md">
         <button
@@ -76,28 +76,28 @@ export function WordCloudView({ data }: WordCloudViewProps) {
       {mode === "globe" ? (
         <RotatingWordGlobe words={words} maxCount={maxCount} />
       ) : (
-        <div className="flex min-h-[26rem] max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-4 px-4 py-8">
+        <div className="flex max-h-[55vh] max-w-4xl flex-wrap items-center justify-center gap-x-5 gap-y-3 px-4 py-4 overflow-hidden">
           {words.map((w, i) => (
             <motion.span
               key={w.word}
-              initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.6, y: 12 }}
+              initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.7, y: 8 }}
               animate={
                 shouldReduceMotion
                   ? undefined
                   : {
                       opacity: 1,
                       scale: 1,
-                      y: [0, -6, 0],
+                      y: [0, -4, 0],
                     }
               }
               transition={{
-                opacity: { delay: i * 0.025, duration: 0.4 },
-                scale: { delay: i * 0.025, type: "spring", stiffness: 200, damping: 18 },
-                y: { delay: i * 0.025 + 0.4, duration: 4 + (i % 5) * 0.4, repeat: Infinity, ease: "easeInOut" },
+                opacity: { delay: i * 0.02, duration: 0.3 },
+                scale: { delay: i * 0.02, type: "spring", stiffness: 200, damping: 18 },
+                y: { delay: i * 0.02 + 0.3, duration: 4 + (i % 5) * 0.4, repeat: Infinity, ease: "easeInOut" },
               }}
-              className="font-display font-bold leading-none tracking-tight"
+              className="font-display font-bold leading-tight tracking-tight"
               style={{
-                fontSize: `${fontSizeFor(w.count, maxCount)}rem`,
+                fontSize: `clamp(0.85rem, ${fontSizeFor(w.count, maxCount)}vw + 0.5rem, 2.2rem)`,
                 color: PALETTE[i % PALETTE.length],
               }}
             >
@@ -127,7 +127,7 @@ function RotatingWordGlobe({
   // Calculate Fibonacci Sphere coordinates for uniform point distribution
   const points = useMemo(() => {
     const total = words.length;
-    const radius = 230; // sphere radius in px
+    const radius = 175; // compact sphere radius in px for laptop presentation
     return words.map((item, i) => {
       // Golden spiral distribution on sphere
       const phi = Math.acos(1 - (2 * (i + 0.5)) / total);
@@ -173,7 +173,7 @@ function RotatingWordGlobe({
   return (
     <div
       ref={containerRef}
-      className="relative flex h-[32rem] w-full max-w-4xl items-center justify-center overflow-hidden select-none"
+      className="relative flex h-[24rem] w-full max-w-3xl items-center justify-center overflow-hidden select-none"
       style={{ perspective: "1000px" }}
     >
       {/* Ambient background glow ring */}
