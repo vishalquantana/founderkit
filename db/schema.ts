@@ -58,6 +58,7 @@ export const participants = sqliteTable("participants", {
   createdAt: createdAt(),
   completedAt: integer("completed_at", { mode: "timestamp" }),
   resultEmailedAt: integer("result_emailed_at", { mode: "timestamp" }),
+  lockedAt: integer("locked_at", { mode: "timestamp" }),
 });
 
 export const responses = sqliteTable("responses", {
@@ -111,3 +112,42 @@ export const pollVotes = sqliteTable("poll_votes", {
 
 export type Poll = typeof polls.$inferSelect;
 export type PollVote = typeof pollVotes.$inferSelect;
+
+export const chatMessages = sqliteTable("chat_messages", {
+  id: id(),
+  participantId: text("participant_id").notNull().references(() => participants.id),
+  role: text("role").notNull(), // "user" | "assistant"
+  content: text("content").notNull(),
+  intent: text("intent"),
+  confidence: integer("confidence"), // 0-100 (int; avoids real-type friction)
+  flagged: integer("flagged", { mode: "boolean" }).notNull().default(false),
+  escalationId: text("escalation_id"),
+  createdAt: createdAt(),
+});
+
+export const faqs = sqliteTable("faqs", {
+  id: id(),
+  workshopId: text("workshop_id").references(() => workshops.id), // null = global seed
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  source: text("source").notNull(), // "seed" | "manual" | "human_resolved"
+  topic: text("topic"),
+  createdAt: createdAt(),
+});
+
+export const escalations = sqliteTable("escalations", {
+  id: id(),
+  workshopId: text("workshop_id").notNull().references(() => workshops.id),
+  participantId: text("participant_id").notNull().references(() => participants.id),
+  questionMessageId: text("question_message_id").notNull().references(() => chatMessages.id),
+  question: text("question").notNull(),
+  status: text("status").notNull().default("open"), // "open" | "answered"
+  presenterReply: text("presenter_reply"),
+  answeredBy: text("answered_by").references(() => users.id),
+  answeredAt: integer("answered_at", { mode: "timestamp" }),
+  createdAt: createdAt(),
+});
+
+export type ChatMessageRow = typeof chatMessages.$inferSelect;
+export type FaqRow = typeof faqs.$inferSelect;
+export type EscalationRow = typeof escalations.$inferSelect;

@@ -21,7 +21,7 @@ async function migrate() {
 describe("participant queries", () => {
   beforeEach(async () => {
     await client.execute("PRAGMA foreign_keys=OFF");
-    for (const t of ["poll_votes", "polls", "otp_codes", "results", "responses", "participants", "workshops", "users"]) {
+    for (const t of ["escalations", "chat_messages", "faqs", "poll_votes", "polls", "otp_codes", "results", "responses", "participants", "workshops", "users"]) {
       await client.execute(`DROP TABLE IF EXISTS ${t}`);
     }
     await migrate();
