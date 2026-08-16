@@ -63,26 +63,51 @@ export async function POST(
 
   const { participantId, message } = body;
   if (!participantId || typeof message !== "string") {
+    await sendSlackErrorAlert({
+      source: "backend",
+      error: "participantId and message are required",
+      context: { api: "/api/w/[code]/chat", body },
+    });
     return Response.json({ error: "participantId and message are required" }, { status: 400 });
   }
 
   const trimmed = message.trim();
   if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) {
+    await sendSlackErrorAlert({
+      source: "backend",
+      error: "message must be between 1 and 2000 characters",
+      context: { api: "/api/w/[code]/chat", participantId, length: trimmed.length },
+    });
     return Response.json({ error: "message must be between 1 and 2000 characters" }, { status: 400 });
   }
 
   const authorized = await assertOwnsParticipant(participantId);
   if (!authorized) {
+    await sendSlackErrorAlert({
+      source: "backend",
+      error: "Not authorized for this participant",
+      context: { api: "/api/w/[code]/chat", participantId },
+    });
     return Response.json({ error: "Not authorized for this participant" }, { status: 403 });
   }
 
   const workshop = await getWorkshopByJoinCode(code);
   if (!workshop) {
+    await sendSlackErrorAlert({
+      source: "backend",
+      error: "Workshop not found",
+      context: { api: "/api/w/[code]/chat", code },
+    });
     return Response.json({ error: "Workshop not found" }, { status: 404 });
   }
 
   const participant = await getParticipant(participantId);
   if (!participant || participant.workshopId !== workshop.id) {
+    await sendSlackErrorAlert({
+      source: "backend",
+      error: "Participant not found for this workshop",
+      context: { api: "/api/w/[code]/chat", participantId, workshopId: workshop.id },
+    });
     return Response.json({ error: "Participant not found for this workshop" }, { status: 404 });
   }
 
