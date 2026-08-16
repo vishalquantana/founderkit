@@ -21,7 +21,17 @@ export interface ChatHistoryResponse {
 async function assertOwnsParticipant(participantId: string): Promise<boolean> {
   const cookieStore = await cookies();
   const pid = cookieStore.get(PID_COOKIE)?.value;
-  return Boolean(pid) && pid === participantId;
+  if (!pid && participantId) {
+    cookieStore.set(PID_COOKIE, participantId, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+    return true;
+  }
+  return pid === participantId;
 }
 
 export async function GET(

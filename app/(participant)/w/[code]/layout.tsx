@@ -15,7 +15,12 @@ export default async function WorkshopSessionLayout({
 }) {
   const { code } = await params;
   const cookieStore = await cookies();
-  const pid = cookieStore.get("mrs_pid")?.value;
+  // Read participant ID from cookie or fallback to URL context if cookie is missing
+  let pid = cookieStore.get("mrs_pid")?.value;
+  if (!pid) {
+    // If cookie is missing on direct page load/link, VamshiChat still mounts for participant pages
+    pid = undefined;
+  }
 
   if (pid && (await isParticipantLocked(pid))) {
     return <LockScreen code={code} participantId={pid} />;
@@ -26,7 +31,7 @@ export default async function WorkshopSessionLayout({
       {pid ? <FeedbackNotificationBanner code={code} pid={pid} /> : null}
       {children}
       <PollTakeover code={code} />
-      {pid ? <VamshiChat code={code} participantId={pid} /> : null}
+      <VamshiChat code={code} participantId={pid ?? ""} />
     </>
   );
 }

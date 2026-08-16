@@ -21,6 +21,9 @@ export async function generateAndSaveGrowthPlan(participantId: string): Promise<
   if (!participant) throw new Error("Participant not found");
 
   const responses = await getResponses(participantId);
+  if (responses.length === 0) {
+    throw new Error("Please complete your Lean Canvas framework first before generating a growth plan.");
+  }
   const answers = responses.reduce((acc, r) => {
     acc[r.section as SectionKey] = r.mainAnswer;
     return acc;

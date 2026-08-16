@@ -11,7 +11,15 @@ const PID_COOKIE = "mrs_pid";
 async function assertOwnsParticipant(participantId: string): Promise<void> {
   const cookieStore = await cookies();
   const pid = cookieStore.get(PID_COOKIE)?.value;
-  if (!pid || pid !== participantId) {
+  if (!pid) {
+    cookieStore.set(PID_COOKIE, participantId, {
+      path: "/",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    return;
+  }
+  if (pid !== participantId) {
     throw new Error("Not authorized for this participant");
   }
 }

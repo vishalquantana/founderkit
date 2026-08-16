@@ -33,9 +33,9 @@ const RESCORE_DEBOUNCE_MS = 2500;
 
 /** Card pill classes per tone, readable in both light and dark. */
 const PILL_TONE_CLASSES: Record<Exclude<CanvasTone, "empty">, string> = {
-  good: "bg-green-500/15 text-green-700 border border-green-500/30 dark:text-green-300",
-  "needs-work": "bg-amber-500/15 text-amber-700 border border-amber-500/30 dark:text-amber-300",
-  bad: "bg-red-500/15 text-red-700 border border-red-500/30 dark:text-red-300",
+  good: "bg-green-500/15 text-green-950 font-semibold border border-green-500/30 dark:text-green-300 dark:font-medium",
+  "needs-work": "bg-amber-500/15 text-amber-950 font-semibold border border-amber-500/30 dark:text-amber-300 dark:font-medium",
+  bad: "bg-red-500/15 text-red-950 font-semibold border border-red-500/30 dark:text-red-300 dark:font-medium",
 };
 
 /** A single editable Lean Canvas field — either backed by a questionnaire

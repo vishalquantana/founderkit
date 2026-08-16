@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getWorkshopByJoinCode } from "@/db/queries/workshops";
 import { getParticipant } from "@/db/queries/participants";
+import { getResponses } from "@/db/queries/responses";
 import { getGrowthPlan } from "@/db/queries/growth";
 import { FounderTabBar } from "@/components/participant/FounderTabBar";
 import { GrowthPlanView } from "@/components/result/GrowthPlanView";
@@ -17,6 +18,11 @@ export default async function GrowthPlanPage({
 
   if (!workshop || !participant || participant.workshopId !== workshop.id) {
     notFound();
+  }
+
+  const responses = await getResponses(pid);
+  if (responses.length === 0) {
+    redirect(`/w/${code}/canvas/${pid}`);
   }
 
   const initialPlan = await getGrowthPlan(pid);
