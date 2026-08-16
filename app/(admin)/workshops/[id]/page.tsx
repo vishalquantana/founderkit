@@ -14,7 +14,7 @@ import { ChatsPanel } from "@/components/admin/ChatsPanel";
 import { KnowledgeBasePanel } from "@/components/admin/KnowledgeBasePanel";
 import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
-import { updateStatus, updateSettings } from "./actions";
+import { updateStatus, updateSettings, updateWorkshopName } from "./actions";
 import type { SectionKey, WorkshopStatus } from "@/db/schema";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 
@@ -111,10 +111,12 @@ export default async function WorkshopDetailPage({
           <div className="pulse-card p-5">
             <WorkshopControls
               workshopId={id}
+              workshopName={workshop!.name}
               status={workshop!.status as WorkshopStatus}
               settings={workshop!.settings as WorkshopSettings}
               onUpdateStatus={updateStatus}
               onUpdateSettings={updateSettings}
+              onUpdateName={updateWorkshopName}
             />
           </div>
         }

@@ -9,10 +9,12 @@ import { resetAllPollsAction } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 export interface WorkshopControlsProps {
   workshopId: string;
+  workshopName: string;
   status: WorkshopStatus;
   settings: WorkshopSettings;
   onUpdateStatus: (id: string, status: WorkshopStatus) => Promise<void>;
   onUpdateSettings: (id: string, settings: WorkshopSettings) => Promise<void>;
+  onUpdateName?: (id: string, name: string) => Promise<void>;
   className?: string;
 }
 
@@ -74,15 +76,35 @@ function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
  */
 export function WorkshopControls({
   workshopId,
+  workshopName,
   status,
   settings,
   onUpdateStatus,
   onUpdateSettings,
+  onUpdateName,
   className,
 }: WorkshopControlsProps) {
   const [currentStatus, setCurrentStatus] = useState(status);
   const [currentSettings, setCurrentSettings] = useState(settings);
+  const [nameText, setNameText] = useState(workshopName);
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
   const [confirmResetAll, setConfirmResetAll] = useState(false);
+
+  async function handleSaveName() {
+    const trimmed = nameText.trim();
+    if (!trimmed || isSavingName || !onUpdateName) return;
+    setIsSavingName(true);
+    try {
+      await onUpdateName(workshopId, trimmed);
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2000);
+    } catch {
+      alert("Failed to update workshop name");
+    } finally {
+      setIsSavingName(false);
+    }
+  }
 
   async function changeStatus(next: WorkshopStatus) {
     setCurrentStatus(next);
@@ -105,6 +127,37 @@ export function WorkshopControls({
 
   return (
     <div className={`flex flex-col gap-5 ${className ?? ""}`}>
+      {/* Workshop Name Setting */}
+      <div>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+          Workshop Name
+        </h2>
+        <div className="flex flex-col gap-2">
+          <input
+            type="text"
+            value={nameText}
+            onChange={(e) => setNameText(e.target.value)}
+            placeholder="e.g. Startup Growth & GTM Sprint"
+            className="w-full rounded-xl border border-[var(--pulse-border)] bg-background px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-purple-500"
+          />
+          <div className="flex items-center justify-between">
+            {nameSaved ? (
+              <span className="text-[11px] font-semibold text-green-500">Name updated ✓</span>
+            ) : (
+              <span className="text-[10px] text-muted">Appears on presentation screen & reports</span>
+            )}
+            <button
+              type="button"
+              onClick={handleSaveName}
+              disabled={!nameText.trim() || nameText === workshopName || isSavingName}
+              className="pulse-btn px-3 py-1 text-xs font-semibold disabled:opacity-50"
+            >
+              {isSavingName ? "Saving…" : "Save Name"}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
           Workshop status

@@ -28,4 +28,21 @@ export async function updateSettings(id: string, settings: WorkshopSettings): Pr
 
   await setWorkshopSettings(id, settings);
   revalidatePath(`/workshops/${id}`);
+  revalidatePath(`/present/${id}`);
+}
+
+export async function updateWorkshopName(id: string, name: string): Promise<void> {
+  const session = await auth();
+  const workshop = await getWorkshopById(id);
+  if (!assertOwnership(session?.user?.id, workshop)) {
+    throw new Error("Not authorized to update this workshop.");
+  }
+
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("Workshop name cannot be empty.");
+
+  const { setWorkshopName } = await import("@/db/queries/admin");
+  await setWorkshopName(id, trimmed);
+  revalidatePath(`/workshops/${id}`);
+  revalidatePath(`/present/${id}`);
 }

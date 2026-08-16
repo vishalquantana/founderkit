@@ -145,3 +145,10 @@ export async function setWorkshopSettings(
 ): Promise<void> {
   await db.update(workshops).set({ settings }).where(eq(workshops.id, workshopId));
 }
+
+export async function setWorkshopName(
+  workshopId: string,
+  name: string,
+): Promise<void> {
+  await db.update(workshops).set({ name }).where(eq(workshops.id, workshopId));
+}
