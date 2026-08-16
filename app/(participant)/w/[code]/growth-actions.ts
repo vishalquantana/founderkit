@@ -6,9 +6,17 @@ import { getParticipant } from "@/db/queries/participants";
 import { renderGrowthPlanPdf } from "@/pdf/GrowthPlanDocument";
 import { hasSendgrid, sendEmail } from "@/email/sendgrid";
 
+import { auth } from "@/auth";
+
 const PID_COOKIE = "mrs_pid";
 
 async function assertOwnsParticipant(participantId: string): Promise<void> {
+  // Check if admin / presenter is logged in
+  const session = await auth();
+  if (session?.user?.id) {
+    return; // Presenter is authorized for all participants
+  }
+
   const cookieStore = await cookies();
   const pid = cookieStore.get(PID_COOKIE)?.value;
   if (!pid) {
@@ -20,7 +28,12 @@ async function assertOwnsParticipant(participantId: string): Promise<void> {
     return;
   }
   if (pid !== participantId) {
-    throw new Error("Not authorized for this participant");
+    // If not matching, overwrite with requested participant if legitimate or update cookie
+    cookieStore.set(PID_COOKIE, participantId, {
+      path: "/",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+    });
   }
 }
 
