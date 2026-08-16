@@ -4,9 +4,11 @@ import { auth } from "@/auth";
 import { getWorkshopById } from "@/db/queries/workshops";
 import { getWorkshopStats, listSubmissions } from "@/db/queries/admin";
 import { getResponses } from "@/db/queries/responses";
+import { listPolls } from "@/db/queries/polls";
 import { StatsPanel } from "@/components/admin/StatsPanel";
 import { SubmissionsTable, type SubmissionRow } from "@/components/admin/SubmissionsTable";
 import { WorkshopControls } from "@/components/admin/WorkshopControls";
+import { PollManager } from "@/components/admin/PollManager";
 import { assertOwnership } from "./ownership";
 import { updateStatus, updateSettings } from "./actions";
 import type { SectionKey, WorkshopStatus } from "@/db/schema";
@@ -25,9 +27,10 @@ export default async function WorkshopDetailPage({
     notFound();
   }
 
-  const [stats, submissions] = await Promise.all([
+  const [stats, submissions, polls] = await Promise.all([
     getWorkshopStats(id),
     listSubmissions(id),
+    listPolls(id),
   ]);
 
   const submissionRows: SubmissionRow[] = await Promise.all(
@@ -87,6 +90,13 @@ export default async function WorkshopDetailPage({
             onUpdateSettings={updateSettings}
           />
         </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+          Live polls
+        </h2>
+        <PollManager workshopId={id} polls={polls} />
       </div>
     </main>
   );
