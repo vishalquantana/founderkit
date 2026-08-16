@@ -10,7 +10,7 @@ import {
   lockParticipant,
   unlockParticipant,
   isParticipantLocked,
-  getMessages,
+  getRecentMessages,
 } from "@/db/queries/chat";
 import { classifyGuard, ABUSE_REPLY, INJECTION_REPLY, IDENTITY_REPLY } from "@/ai/guards";
 import { findBestFaqMatch } from "@/ai/faq-match";
@@ -157,11 +157,10 @@ export async function POST(
     });
     const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || new URL(request.url).origin;
     const replyUrl = `${base}/workshops/${workshop!.id}/chats/${esc.id}`;
-    const p = await getParticipant(participantId!).catch(() => null);
     void notifyEscalation({
       question,
-      founderName: p?.founderName,
-      startupName: p?.startupName,
+      founderName: participant?.founderName,
+      startupName: participant?.startupName,
       replyUrl,
     });
   }
@@ -169,9 +168,8 @@ export async function POST(
   let reply: string;
   let flagged: boolean;
   try {
-    const context = await buildFounderContext(participantId);
-    const history = (await getMessages(participantId))
-      .slice(-HISTORY_TURNS_FOR_LLM)
+    const context = await buildFounderContext(participantId, participant);
+    const history = (await getRecentMessages(participantId, HISTORY_TURNS_FOR_LLM))
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
     reply = await answerAsVamshi({ message: trimmed, context, history });

@@ -24,9 +24,19 @@ function truncate(text: string, max: number): string {
  * `participantId` — never any other founder's data. Returns "" if the
  * participant doesn't exist or has no data to show yet.
  */
-export async function buildFounderContext(participantId: string): Promise<string> {
-  const participant = await getParticipant(participantId);
+export async function buildFounderContext(
+  participantId: string,
+  preloaded?: Awaited<ReturnType<typeof getParticipant>>,
+): Promise<string> {
+  const participant = preloaded ?? (await getParticipant(participantId));
   if (!participant) return "";
+
+  // One round-trip: the three remaining reads are independent of each other.
+  const [responses, result, pollAnswers] = await Promise.all([
+    getResponses(participantId),
+    getResult(participantId),
+    getParticipantPollAnswers(participantId, participant.workshopId),
+  ]);
 
   const lines: string[] = [];
   lines.push(`Founder: ${participant.founderName} · Startup: ${participant.startupName}`);
@@ -40,7 +50,6 @@ export async function buildFounderContext(participantId: string): Promise<string
   ].filter((v): v is string => Boolean(v));
   if (meta.length > 0) lines.push(meta.join(" | "));
 
-  const responses = await getResponses(participantId);
   if (responses.length > 0) {
     const canvasLines: string[] = [];
     for (const section of SECTIONS) {
@@ -63,7 +72,6 @@ export async function buildFounderContext(participantId: string): Promise<string
     );
   }
 
-  const result = await getResult(participantId);
   if (result) {
     const stageLabel = STAGE_META[result.readinessStage]?.label ?? result.readinessStage;
     lines.push(
@@ -74,7 +82,6 @@ export async function buildFounderContext(participantId: string): Promise<string
     );
   }
 
-  const pollAnswers = await getParticipantPollAnswers(participantId, participant.workshopId);
   if (pollAnswers.length > 0) {
     lines.push(
       "",

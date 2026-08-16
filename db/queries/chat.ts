@@ -1,4 +1,4 @@
-import { eq, and, or, isNull, sql } from "drizzle-orm";
+import { eq, and, or, isNull, inArray, sql } from "drizzle-orm";
 import { db } from "../client";
 import { chatMessages, faqs, escalations, participants } from "../schema";
 import { newId } from "@/lib/ids";
@@ -34,6 +34,23 @@ export async function getMessages(participantId: string): Promise<ChatMessageRow
     where: eq(chatMessages.participantId, participantId),
     orderBy: (m, { asc }) => [asc(m.createdAt)],
   });
+}
+
+/**
+ * The most recent `limit` messages for a participant, returned in ascending
+ * (chronological) order — for feeding the LLM a bounded conversation window
+ * without loading the entire transcript every turn.
+ */
+export async function getRecentMessages(
+  participantId: string,
+  limit: number,
+): Promise<ChatMessageRow[]> {
+  const rows = await db.query.chatMessages.findMany({
+    where: eq(chatMessages.participantId, participantId),
+    orderBy: (m, { desc }) => [desc(m.createdAt)],
+    limit,
+  });
+  return rows.reverse();
 }
 
 export async function getWorkshopFaqs(workshopId: string): Promise<FaqRow[]> {
@@ -132,18 +149,31 @@ export async function getWorkshopConversations(
   const rows = await db.query.participants.findMany({
     where: eq(participants.workshopId, workshopId),
   });
+  if (rows.length === 0) return [];
 
-  const conversations = await Promise.all(
-    rows.map(async (p) => {
-      const messages = await getMessages(p.id);
-      return {
-        participant: { id: p.id, founderName: p.founderName, startupName: p.startupName },
-        messages,
-      };
-    }),
-  );
+  // Single query for every participant's messages (IN (...)) instead of one
+  // query per founder, then group in memory.
+  const allMessages = await db.query.chatMessages.findMany({
+    where: inArray(
+      chatMessages.participantId,
+      rows.map((p) => p.id),
+    ),
+    orderBy: (m, { asc }) => [asc(m.createdAt)],
+  });
 
-  return conversations.filter((c) => c.messages.length > 0);
+  const byParticipant = new Map<string, ChatMessageRow[]>();
+  for (const m of allMessages) {
+    const list = byParticipant.get(m.participantId);
+    if (list) list.push(m);
+    else byParticipant.set(m.participantId, [m]);
+  }
+
+  return rows
+    .map((p) => ({
+      participant: { id: p.id, founderName: p.founderName, startupName: p.startupName },
+      messages: byParticipant.get(p.id) ?? [],
+    }))
+    .filter((c) => c.messages.length > 0);
 }
 
 export async function lockParticipant(participantId: string): Promise<void> {
