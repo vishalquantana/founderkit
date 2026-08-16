@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ConsentGate } from "@/components/participant/ConsentGate";
 import { BasicsStep, type BasicsValues } from "@/components/participant/BasicsStep";
@@ -40,6 +40,42 @@ export function ParticipantWizard({ workshop }: ParticipantWizardProps) {
   const [participantId, setParticipantId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  const STORAGE_KEY = `mrs-progress-${workshop.joinCode}`;
+
+  // Restore in-progress state on mount so a refresh / lost connection resumes
+  // where the founder left off. The httpOnly mrs_pid cookie survives the refresh
+  // too, so autosave stays authorized.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw) as { step?: Step; participantId?: string; answers?: Record<string, string> };
+        if (s.participantId) {
+          setParticipantId(s.participantId);
+          setAnswers(s.answers ?? {});
+          setStep(typeof s.step === "number" ? s.step : "basics");
+        }
+      }
+    } catch {
+      /* ignore malformed storage */
+    }
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [STORAGE_KEY]);
+
+  // Persist progress whenever it changes (only once we're past basics).
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      if (participantId) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, participantId, answers }));
+      }
+    } catch {
+      /* storage full / unavailable — non-fatal */
+    }
+  }, [hydrated, step, participantId, answers, STORAGE_KEY]);
 
   async function handleBasicsSubmit(values: BasicsValues) {
     setSubmitting(true);
@@ -81,6 +117,11 @@ export function ParticipantWizard({ workshop }: ParticipantWizardProps) {
     const isLast = sectionIndex === SECTIONS.length - 1;
     if (isLast) {
       await finishParticipant(participantId);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
       router.push(`/w/${workshop.joinCode}/result/${participantId}`);
       return;
     }
