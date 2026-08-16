@@ -15,7 +15,44 @@ html {
 }
 
 :root {
-  /* Pulse design system tokens */
+  /* Pulse design system tokens — LIGHT is the default theme. */
+  --background: #f7f7fb;
+  --foreground: #17131f;
+  --muted: #5b5570;
+
+  --pulse-bg-gradient:
+    radial-gradient(100% 70% at 80% 0%, #efe6ff 0%, transparent 60%),
+    radial-gradient(90% 60% at 0% 100%, #ffe9f5 0%, transparent 60%),
+    #f7f7fb;
+
+  --pulse-surface: rgba(23, 19, 31, 0.03);
+  --pulse-surface-strong: rgba(23, 19, 31, 0.05);
+  --pulse-border: rgba(23, 19, 31, 0.10);
+  --pulse-border-strong: rgba(23, 19, 31, 0.16);
+
+  --pulse-violet: #8b5cf6;
+  --pulse-pink: #f472b6;
+  --pulse-gold: #f4c748;
+  --pulse-gradient: linear-gradient(135deg, #8b5cf6, #f472b6);
+
+  --pulse-text: #17131f;
+  --pulse-text-muted: #5b5570;
+  --pulse-kicker: #d1428a;
+
+  /* neutral track for progress bars on light */
+  --pulse-track: rgba(23, 19, 31, 0.08);
+
+  /* stage colors — deepened for AA contrast on white */
+  --stage-idea: #5b6472;
+  --stage-discovery: #2563eb;
+  --stage-mvp: #7c3aed;
+  --stage-pilot: #16a34a;
+  --stage-revenue: #b7860b;
+
+  --pulse-card-shadow: 0 18px 50px -28px rgba(23, 19, 31, 0.28);
+}
+
+[data-theme="dark"] {
   --background: #0a0a14;
   --foreground: #eceaf6;
   --muted: #a9a9c9;
@@ -30,21 +67,19 @@ html {
   --pulse-border: rgba(255, 255, 255, 0.09);
   --pulse-border-strong: rgba(255, 255, 255, 0.14);
 
-  --pulse-violet: #8b5cf6;
-  --pulse-pink: #f472b6;
-  --pulse-gold: #f4c748;
-  --pulse-gradient: linear-gradient(135deg, #8b5cf6, #f472b6);
-
   --pulse-text: #eceaf6;
   --pulse-text-muted: #a9a9c9;
   --pulse-kicker: #f472b6;
 
-  /* stage colors (semantic, glow tints on dark) */
+  --pulse-track: rgba(255, 255, 255, 0.08);
+
   --stage-idea: #94a3b8;
   --stage-discovery: #60a5fa;
   --stage-mvp: #a78bfa;
   --stage-pilot: #4ade80;
   --stage-revenue: #f4c748;
+
+  --pulse-card-shadow: 0 20px 60px -30px rgba(139, 92, 246, 0.35);
 }
 
 @theme inline {
@@ -61,6 +96,30 @@ body {
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-body), "Chakra Petch", sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Ambient animated gradient wash — pure CSS, GPU-cheap, sits behind content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--pulse-bg-gradient);
+  background-attachment: fixed;
+  opacity: 0.9;
+  animation: pulse-aurora 26s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-aurora {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-2%, 1.5%, 0) scale(1.06); }
+  100% { transform: translate3d(1.5%, -1%, 0) scale(1.03); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
 }
 
 @layer utilities {
@@ -81,7 +140,7 @@ body {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-radius: 1rem;
-    box-shadow: 0 20px 60px -30px rgba(139, 92, 246, 0.35);
+    box-shadow: var(--pulse-card-shadow);
   }
 
   .pulse-kicker {
@@ -111,6 +170,11 @@ body {
     box-shadow: 0 10px 36px -6px rgba(244, 114, 182, 0.65);
   }
 
+  .pulse-btn:active:not(:disabled),
+  .pulse-btn-secondary:active {
+    transform: scale(0.96);
+  }
+
   .pulse-btn:disabled {
     opacity: 0.5;
     box-shadow: none;
@@ -118,7 +182,7 @@ body {
 
   .pulse-btn-secondary {
     font-family: var(--font-body), "Chakra Petch", sans-serif;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--pulse-surface-strong);
     color: var(--pulse-text);
     border: 1px solid var(--pulse-border-strong);
     text-transform: uppercase;
@@ -131,13 +195,13 @@ body {
   }
 
   .pulse-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.24);
+    background: var(--pulse-border);
+    border-color: var(--pulse-border-strong);
   }
 
   .pulse-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: var(--pulse-surface-strong);
+    border: 1px solid var(--pulse-border-strong);
     color: var(--pulse-text);
     border-radius: 0.75rem;
     transition:
@@ -156,8 +220,8 @@ body {
   }
 
   .pulse-chip {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: var(--pulse-surface-strong);
+    border: 1px solid var(--pulse-border-strong);
     color: var(--pulse-text-muted);
     border-radius: 9999px;
     transition:
@@ -171,5 +235,16 @@ body {
     background: var(--pulse-gradient);
     border-color: transparent;
     color: #fff;
+  }
+
+  .pulse-hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  @media (hover: hover) {
+    .pulse-hover-lift:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--pulse-card-shadow);
+    }
   }
 }
