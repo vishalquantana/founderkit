@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { LEAN_CANVAS_BLOCKS, canvasCellTone, cellFeedback, type CellFeedback } from "@/lib/result-view";
 import { DIMENSION_MAX } from "@/lib/readiness";
 import { CanvasMiniMap, CanvasMiniMapLegend, type MiniMapTone } from "@/components/result/CanvasMiniMap";
+import { saveSectionAnswer } from "@/app/(participant)/w/[code]/actions";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey } from "@/db/schema";
 
@@ -12,6 +13,8 @@ export interface LeanCanvasExplorerProps {
   result: EvaluationResult;
   answers: Record<SectionKey, string>;
   className?: string;
+  editable?: boolean;
+  participantId?: string;
 }
 
 type Tone = MiniMapTone;
@@ -28,6 +31,7 @@ interface ResolvedBlock {
   title: string;
   helper: string;
   gridArea: string;
+  source: SectionKey | undefined;
   answer: string | null;
   score: number | undefined;
   max: number | undefined;
@@ -40,9 +44,11 @@ function resolveBlock(
   block: (typeof LEAN_CANVAS_BLOCKS)[number],
   answers: Record<SectionKey, string>,
   result: EvaluationResult,
+  overrides: Partial<Record<SectionKey, string>>,
 ): ResolvedBlock {
+  const overridden = block.source ? overrides[block.source] : undefined;
   const answer = block.source
-    ? (answers[block.source] ?? "").trim() || null
+    ? (overridden ?? answers[block.source] ?? "").trim() || null
     : block.pitchSource
       ? result.improvedPitch?.trim() || null
       : null;
@@ -57,6 +63,7 @@ function resolveBlock(
     title: block.title,
     helper: block.helper,
     gridArea: block.gridArea,
+    source: block.source,
     answer,
     score,
     max,
@@ -73,12 +80,23 @@ function resolveBlock(
  * explorer: tap the mini-map or use Prev/Next to move through blocks,
  * each card surfacing the full answer, score, and recommendations.
  */
-export function LeanCanvasExplorer({ result, answers, className }: LeanCanvasExplorerProps) {
+export function LeanCanvasExplorer({
+  result,
+  answers,
+  className,
+  editable = false,
+  participantId,
+}: LeanCanvasExplorerProps) {
   const shouldReduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [overrides, setOverrides] = useState<Partial<Record<SectionKey, string>>>({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, startSaving] = useTransition();
 
-  const blocks = LEAN_CANVAS_BLOCKS.map((block) => resolveBlock(block, answers, result));
+  const blocks = LEAN_CANVAS_BLOCKS.map((block) => resolveBlock(block, answers, result, overrides));
   const active = blocks[index];
   const feedback = active.score !== undefined && active.max ? cellFeedback(active.score, active.max) : null;
   const ratio =
@@ -88,6 +106,35 @@ export function LeanCanvasExplorer({ result, answers, className }: LeanCanvasExp
     const clamped = (next + blocks.length) % blocks.length;
     setDirection(clamped > index ? 1 : -1);
     setIndex(clamped);
+    setIsEditing(false);
+    setSaveError(null);
+  }
+
+  function startEditing() {
+    setDraft(active.answer ?? "");
+    setSaveError(null);
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setIsEditing(false);
+    setSaveError(null);
+  }
+
+  function saveEditing() {
+    if (!active.source || !participantId) return;
+    const section = active.source;
+    const value = draft;
+    startSaving(async () => {
+      try {
+        await saveSectionAnswer({ participantId, section, mainAnswer: value });
+        setOverrides((prev) => ({ ...prev, [section]: value }));
+        setIsEditing(false);
+        setSaveError(null);
+      } catch {
+        setSaveError("Couldn't save that change. Please try again.");
+      }
+    });
   }
 
   return (
@@ -126,16 +173,58 @@ export function LeanCanvasExplorer({ result, answers, className }: LeanCanvasExp
               >
                 {active.title}
               </h3>
-              {feedback ? (
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${PILL_TONE_CLASSES[feedback.tone]}`}
-                >
-                  {feedback.label}
-                </span>
-              ) : null}
+              <div className="flex shrink-0 items-center gap-2">
+                {feedback ? (
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${PILL_TONE_CLASSES[feedback.tone]}`}
+                  >
+                    {feedback.label}
+                  </span>
+                ) : null}
+                {editable && active.source && !isEditing ? (
+                  <button
+                    type="button"
+                    onClick={startEditing}
+                    className="pulse-btn-secondary px-2.5 py-1 text-[11px]"
+                  >
+                    Edit
+                  </button>
+                ) : null}
+              </div>
             </div>
 
-            {active.answer ? (
+            {editable && active.source && isEditing ? (
+              <div className="flex flex-col gap-2">
+                <textarea
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  rows={5}
+                  className="pulse-input w-full resize-none p-3 text-sm leading-relaxed outline-none"
+                  placeholder={active.helper}
+                  disabled={isSaving}
+                  autoFocus
+                />
+                {saveError ? <p className="text-xs text-red-500">{saveError}</p> : null}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={saveEditing}
+                    disabled={isSaving}
+                    className="pulse-btn px-3 py-1.5 text-xs disabled:opacity-60"
+                  >
+                    {isSaving ? "Saving…" : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelEditing}
+                    disabled={isSaving}
+                    className="pulse-btn-secondary px-3 py-1.5 text-xs disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : active.answer ? (
               <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "var(--pulse-text)" }}>
                 {active.answer}
               </p>

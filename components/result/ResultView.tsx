@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { StageReveal } from "@/components/motion/StageReveal";
 import { StageBadge } from "@/components/result/StageBadge";
 import { DimensionBars } from "@/components/result/DimensionBars";
 import { LeanCanvasExplorer } from "@/components/result/LeanCanvasExplorer";
+import { reevaluateParticipant } from "@/app/(participant)/w/[code]/actions";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey, ReadinessStage } from "@/db/schema";
 
@@ -25,6 +28,7 @@ export interface ResultViewProps {
   startupName: string;
   code: string;
   pid: string;
+  editable?: boolean;
 }
 
 const containerVariants: Variants = {
@@ -55,9 +59,32 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
  * always-visible detailed breakdown, and the interactive lean canvas
  * board. Warm, mobile-first, never leads with the number.
  */
-export function ResultView({ result, answers, founderName, startupName, code, pid }: ResultViewProps) {
+export function ResultView({
+  result,
+  answers,
+  founderName,
+  startupName,
+  code,
+  pid,
+  editable = false,
+}: ResultViewProps) {
   const shouldReduceMotion = useReducedMotion();
+  const router = useRouter();
   const glow = STAGE_GLOW_VAR[result.readinessStage];
+  const [isRescoring, startRescoring] = useTransition();
+  const [rescoreError, setRescoreError] = useState<string | null>(null);
+
+  function handleRescore() {
+    setRescoreError(null);
+    startRescoring(async () => {
+      try {
+        await reevaluateParticipant(pid);
+        router.refresh();
+      } catch {
+        setRescoreError("Couldn't re-score right now. Please try again.");
+      }
+    });
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-8 pb-10">
@@ -197,9 +224,30 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
       <div className="flex flex-col gap-3">
         <SectionLabel>Your lean canvas</SectionLabel>
-        <p className="text-xs text-muted">Tap a block on the map, or swipe through each area.</p>
-        <LeanCanvasExplorer result={result} answers={answers} />
+        <p className="text-xs text-muted">
+          {editable
+            ? "Tap a block on the map, or swipe through each area. Edit any answer to sharpen it."
+            : "Tap a block on the map, or swipe through each area."}
+        </p>
+        <LeanCanvasExplorer result={result} answers={answers} editable={editable} participantId={pid} />
       </div>
+
+      {editable ? (
+        <div className="flex flex-col items-start gap-2">
+          <button
+            type="button"
+            onClick={handleRescore}
+            disabled={isRescoring}
+            className="pulse-btn px-4 py-2 text-sm disabled:opacity-60"
+          >
+            {isRescoring ? "Re-scoring…" : "Re-score my startup"}
+          </button>
+          <p className="text-xs text-muted">
+            Edited a block? Re-score to update your readiness and AI feedback.
+          </p>
+          {rescoreError ? <p className="text-xs text-red-500">{rescoreError}</p> : null}
+        </div>
+      ) : null}
     </div>
   );
 }

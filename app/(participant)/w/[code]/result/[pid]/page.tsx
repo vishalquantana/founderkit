@@ -65,6 +65,7 @@ export default async function ResultPage({
       startupName={participant!.startupName}
       code={code}
       pid={pid}
+      editable
     />
   );
 }

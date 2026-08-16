@@ -5,6 +5,7 @@ import { saveResponse } from "@/db/queries/responses";
 import { getWorkshopById } from "@/db/queries/workshops";
 import { maybeEmailResult } from "@/email/send-result";
 import { probeSection } from "@/ai/probe";
+import { evaluateParticipant } from "@/ai/evaluate";
 import type { SectionKey } from "@/db/schema";
 
 const PID_COOKIE = "mrs_pid";
@@ -93,4 +94,9 @@ export async function finishParticipant(participantId: string): Promise<void> {
   await assertOwnsParticipant(participantId);
   await completeParticipant(participantId);
   await maybeEmailResult(participantId).catch(() => {});
+}
+
+export async function reevaluateParticipant(participantId: string): Promise<void> {
+  await assertOwnsParticipant(participantId);
+  await evaluateParticipant(participantId); // re-reads responses, regenerates result, upserts via saveResult
 }
