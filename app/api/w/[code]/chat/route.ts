@@ -16,6 +16,7 @@ import { classifyGuard, ABUSE_REPLY, INJECTION_REPLY, IDENTITY_REPLY } from "@/a
 import { findBestFaqMatch } from "@/ai/faq-match";
 import { estimateConfidence, LOW_CONFIDENCE } from "@/ai/confidence";
 import { GROWTH_FAQ_SEED } from "@/ai/persona";
+import { notifyEscalation } from "@/lib/slack";
 import { answerAsVamshi } from "@/ai/chat";
 import { buildFounderContext } from "@/ai/chat-context";
 
@@ -113,8 +114,11 @@ export async function POST(
     return Response.json(data);
   }
 
-  // Ensure the global seed FAQs exist (idempotent guard by count).
-  if ((await countFaqs(null)) === 0) {
+  // Ensure the global seed FAQs exist. Re-seed whenever the seed list has
+  // grown (e.g. after a deploy that adds deck-derived FAQs) — insertFaq uses
+  // onConflictDoNothing against the partial unique index on (question) where
+  // workshop_id IS NULL, so re-running is idempotent and won't duplicate rows.
+  if ((await countFaqs(null)) < GROWTH_FAQ_SEED.length) {
     for (const faq of GROWTH_FAQ_SEED) {
       await insertFaq({
         workshopId: null,
@@ -142,6 +146,26 @@ export async function POST(
     return Response.json(data);
   }
 
+  // Create an escalation and fire a best-effort Slack ping with a click-to-reply
+  // link. The Slack post never blocks the response and never throws.
+  async function escalate(questionMessageId: string, question: string): Promise<void> {
+    const esc = await createEscalation({
+      workshopId: workshop!.id,
+      participantId: participantId!,
+      questionMessageId,
+      question,
+    });
+    const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || new URL(request.url).origin;
+    const replyUrl = `${base}/workshops/${workshop!.id}/chats/${esc.id}`;
+    const p = await getParticipant(participantId!).catch(() => null);
+    void notifyEscalation({
+      question,
+      founderName: p?.founderName,
+      startupName: p?.startupName,
+      replyUrl,
+    });
+  }
+
   let reply: string;
   let flagged: boolean;
   try {
@@ -164,12 +188,7 @@ export async function POST(
     });
 
     if (flagged) {
-      await createEscalation({
-        workshopId: workshop.id,
-        participantId,
-        questionMessageId: userMsg.id,
-        question: trimmed,
-      });
+      await escalate(userMsg.id, trimmed);
     }
   } catch {
     reply = FALLBACK_REPLY;
@@ -181,12 +200,7 @@ export async function POST(
       content: reply,
       flagged: true,
     });
-    await createEscalation({
-      workshopId: workshop.id,
-      participantId,
-      questionMessageId: userMsg.id,
-      question: trimmed,
-    });
+    await escalate(userMsg.id, trimmed);
   }
 
   const data: ChatTurnResponse = { reply, flagged, locked: false };

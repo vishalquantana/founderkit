@@ -230,6 +230,9 @@ export function VamshiChat({ code, participantId }: VamshiChatProps) {
                 <Send className="h-4 w-4" />
               </button>
             </form>
+            <p className="px-3 pb-2 text-center text-[11px] text-muted">
+              AI can make mistakes. Please re-verify facts.
+            </p>
           </motion.div>
         ) : null}
       </AnimatePresence>

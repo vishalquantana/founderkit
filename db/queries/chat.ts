@@ -99,6 +99,10 @@ export async function getOpenEscalations(workshopId: string): Promise<Escalation
   });
 }
 
+export async function getEscalation(escalationId: string): Promise<EscalationRow | undefined> {
+  return db.query.escalations.findFirst({ where: eq(escalations.id, escalationId) });
+}
+
 export async function answerEscalation(input: {
   escalationId: string;
   presenterReply: string;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { MessageSquare, HelpCircle, ChevronDown, Send } from "lucide-react";
+import { MessageSquare, HelpCircle, ChevronDown, Send, Plus } from "lucide-react";
 
 export interface ChatsPanelProps {
   workshopId: string;
@@ -56,6 +56,8 @@ export function ChatsPanel({ workshopId }: ChatsPanelProps) {
 
   return (
     <div className="flex flex-col gap-8">
+      <AddFaqCard workshopId={workshopId} />
+
       <section>
         <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
           <HelpCircle className="h-4 w-4" />
@@ -106,6 +108,82 @@ export function ChatsPanel({ workshopId }: ChatsPanelProps) {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function AddFaqCard({ workshopId }: { workshopId: string }) {
+  const [open, setOpen] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!question.trim() || !answer.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/workshops/${workshopId}/faqs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: question.trim(), answer: answer.trim() }),
+      });
+      if (!res.ok) throw new Error("failed");
+      setQuestion("");
+      setAnswer("");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError("Couldn't save — try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="pulse-card p-4">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Plus className="h-4 w-4" />
+          Add a FAQ for Vamshi.AI
+        </span>
+        <ChevronDown className={`h-5 w-5 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open ? (
+        <div className="mt-3 flex flex-col gap-2">
+          <input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Question founders might ask…"
+            className="w-full rounded-xl border border-[var(--pulse-border)] bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            rows={3}
+            placeholder="The answer Vamshi.AI should give…"
+            className="w-full rounded-xl border border-[var(--pulse-border)] bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          {error ? <p className="text-xs text-red-500">{error}</p> : null}
+          <div className="flex items-center justify-end gap-3">
+            {saved ? <span className="text-xs font-semibold text-green-500">Saved ✓</span> : null}
+            <button
+              type="button"
+              onClick={submit}
+              disabled={!question.trim() || !answer.trim() || submitting}
+              className="pulse-btn px-4 py-2 text-sm font-semibold disabled:opacity-60"
+            >
+              {submitting ? "Saving…" : "Save FAQ"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

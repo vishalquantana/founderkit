@@ -9,8 +9,22 @@ export const IDENTITY_REPLY =
 
 const UNLOCK_RE = /^\s*quantana\s*unlock\s*$/i;
 
-const INJECTION_RE =
-  /(ignore|disregard).*(previous|prior|above).*(instruction|prompt)|reveal.*(system )?prompt|you are now|jailbreak/i;
+// Common prompt-injection / instruction-override phrasings. Kept deliberately
+// targeted at override/exfiltration intent (not generic role-play like "act as
+// an investor and critique my pitch", which is a legitimate founder request).
+const INJECTION_PATTERNS = [
+  /\b(ignore|disregard|forget|override)\b[^.]{0,40}\b(previous|prior|above|all|earlier|these|your)\b[^.]{0,25}\b(instruction|instructions|prompt|prompts|rules|guardrails|context|message)/i,
+  /\b(reveal|show|print|repeat|output|display|expose|leak)\b[^.]{0,30}\b(system\s*prompt|your\s*(prompt|instructions|rules)|the\s*(above|prompt|instructions))/i,
+  /\byou (are|will be) now\b|\byou must now\b|\bnew (system\s*)?(instruction|instructions|prompt|role|persona)\b/i,
+  /\b(pretend|act as if) (you (are|have)|to be)\b[^.]{0,30}\b(no|not|without|unrestricted|dan|jailbroken|unfiltered)\b/i,
+  /\bjailbreak\b|\bdeveloper mode\b|\bDAN\b|without any (restrictions|rules|filters|guardrails)/i,
+  /\b(system|developer)\s*(prompt|message|role)\s*[:=]/i,
+];
+
+const INJECTION_RE = new RegExp(
+  INJECTION_PATTERNS.map((r) => `(?:${r.source})`).join("|"),
+  "i",
+);
 
 const IDENTITY_RE =
   /\b(are you (a )?(real|human|bot|ai)|what (model|llm|ai) are you|who made you|system prompt)\b/i;
