@@ -157,28 +157,28 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         <span className="present-aurora-blob" />
       </div>
 
-      <header className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-4 pt-6 sm:px-8 sm:pt-8">
-        <div>
-          <div className="mb-1 flex items-center gap-2">
-            <Link
-              href={`/workshops/${workshopId}`}
-              className="inline-block text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+      <header className="relative z-10 flex flex-col gap-2 px-4 pt-4 sm:px-8 sm:pt-5">
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/workshops/${workshopId}`}
+            className="inline-block text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+          >
+            ← Dashboard
+          </Link>
+          {!sidebarOpen && (
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-expanded={sidebarOpen}
+              aria-label="Show controls sidebar"
+              className="flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2 py-0.5 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
             >
-              ← Dashboard
-            </Link>
-            {!sidebarOpen && (
-              <button
-                type="button"
-                onClick={() => setSidebarOpen(true)}
-                aria-expanded={sidebarOpen}
-                aria-label="Show controls sidebar"
-                className="flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2 py-0.5 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
-              >
-                <Menu aria-hidden className="h-4 w-4" /> Show controls
-              </button>
-            )}
-          </div>
-          <div className="mb-2 flex items-center gap-3">
+              <Menu aria-hidden className="h-4 w-4" /> Show controls
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex items-center gap-3">
             <Image
               src="/quantana-logo.svg"
               alt="Quantana"
@@ -188,49 +188,16 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
               priority
             />
             <span
-              className="pl-3 text-sm font-semibold tracking-wide text-[var(--pulse-text-muted)] sm:text-base"
+              className="pl-3 text-sm font-semibold tracking-wide text-[var(--pulse-text-muted)]"
               style={{ borderLeft: "1px solid var(--pulse-border-strong)" }}
             >
               AI Cofounder
             </span>
           </div>
-          <p className="pulse-kicker">Present Mode</p>
-          <h1 className="font-display text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">{workshopName}</h1>
-        </div>
-
-        <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:items-end">
-          <button
-            type="button"
-            onClick={() => setJoinOpen((open) => !open)}
-            aria-expanded={joinOpen}
-            aria-label={joinOpen ? "Hide join code" : "Show join code"}
-            className="rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2.5 py-1 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
-          >
-            {joinOpen ? "Hide" : "Show"} join code
-          </button>
-          {joinOpen && (
-            <div className="flex max-w-full flex-col items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface px-4 py-3 sm:flex-row">
-              <div className="rounded-lg bg-white p-2">
-                <QRCodeSVG value={joinUrl} size={140} level="M" />
-              </div>
-              <div className="flex flex-col items-center gap-1 text-center sm:items-end sm:text-right">
-                <span className="pulse-kicker">Join now</span>
-                <span className="font-display text-gradient text-2xl font-bold tracking-[0.2em]">{joinCode}</span>
-                <p className="text-xs text-[var(--pulse-text-muted)]">{joinUrl}</p>
-                <span className="flex items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="h-2 w-2 shrink-0 animate-pulse rounded-full"
-                    style={{ background: "var(--pulse-gold)" }}
-                  />
-                  <span className="font-display text-sm font-bold tabular-nums text-[var(--pulse-text)]">
-                    {presentData.total} joined
-                  </span>
-                  <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="min-w-0">
+            <p className="pulse-kicker leading-none">Present Mode</p>
+            <h1 className="font-display text-xl font-bold leading-tight tracking-tight sm:text-2xl">{workshopName}</h1>
+          </div>
         </div>
       </header>
 
@@ -416,6 +383,51 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
             )}
           </AnimatePresence>
         </main>
+
+        {joinOpen ? (
+          <aside className="flex w-full shrink-0 flex-col items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface p-4 text-center lg:w-[300px]">
+            <div className="flex w-full items-center justify-between gap-2">
+              <span className="pulse-kicker">Join now</span>
+              <button
+                type="button"
+                onClick={() => setJoinOpen(false)}
+                aria-expanded={joinOpen}
+                aria-label="Hide join code"
+                className="rounded-full border border-[var(--pulse-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+              >
+                Hide
+              </button>
+            </div>
+            <div className="rounded-xl bg-white p-3">
+              <QRCodeSVG value={joinUrl} size={180} level="M" />
+            </div>
+            <span className="font-display text-gradient text-3xl font-bold tracking-[0.2em]">{joinCode}</span>
+            <p className="break-all text-xs text-[var(--pulse-text-muted)]">{joinUrl}</p>
+            <span className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className="h-2 w-2 shrink-0 animate-pulse rounded-full"
+                style={{ background: "var(--pulse-gold)" }}
+              />
+              <span className="font-display text-sm font-bold tabular-nums text-[var(--pulse-text)]">
+                {presentData.total} joined
+              </span>
+              <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
+            </span>
+          </aside>
+        ) : (
+          <div className="shrink-0 lg:w-auto">
+            <button
+              type="button"
+              onClick={() => setJoinOpen(true)}
+              aria-expanded={joinOpen}
+              aria-label="Show join code"
+              className="flex w-full items-center justify-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-3 py-1.5 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)] lg:w-auto"
+            >
+              Show join code
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
