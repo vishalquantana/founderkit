@@ -46,7 +46,7 @@ export default async function WorkshopDetailPage({
   );
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-8 p-6 sm:p-10">
+    <main className="flex min-h-screen w-full flex-col gap-8 p-6 sm:p-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link href="/dashboard" className="text-sm text-muted transition-colors hover:text-foreground">
