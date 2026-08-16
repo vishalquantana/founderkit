@@ -2,7 +2,10 @@ import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: { signIn: "/login" },
-  session: { strategy: "jwt" },
+  // Keep presenters signed in as long as practical (180 days); the JWT is
+  // refreshed on activity (updateAge default 24h), so an active presenter
+  // effectively never gets logged out.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 180 },
   providers: [],
   callbacks: {
     authorized({ auth, request }) {
