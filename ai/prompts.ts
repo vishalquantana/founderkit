@@ -144,3 +144,35 @@ Return ONLY a single JSON object (no markdown, no code fences, no commentary) ma
   }
 }`;
 }
+
+const PROBE_SECTION_LABELS: Record<string, string> = {
+  problem: "the problem",
+  customer: "the customer and stakeholders",
+  value: "value and willingness to pay",
+  mvp: "the MVP experiment",
+  distribution: "distribution",
+  proof: "validation evidence",
+};
+
+export function buildProbePrompt(section: string, mainAnswer: string): string {
+  const label = PROBE_SECTION_LABELS[section] ?? section;
+
+  return `The founder just answered a question about ${label} in a startup readiness workshop.
+
+Their answer: "${mainAnswer}"
+
+Decide whether this answer is specific enough to evaluate, or whether it needs one short follow-up question.
+
+Rules:
+- Ask for evidence, not opinion — push for numbers, names, dates, or concrete facts instead of vague claims.
+- Ask about behaviour, not compliments — prefer "what did people actually do" over "what did people say they liked."
+- Ask at most ONE short, plain-language question. Do not ask multiple questions.
+- Do not sound like an investor grilling the founder — keep the tone warm, curious, and encouraging, like a helpful coach.
+- If the answer is already specific and concrete (names, numbers, dates, clear facts), do not ask a follow-up.
+
+Return ONLY a single JSON object (no markdown, no code fences, no commentary) matching exactly this shape:
+{
+  "needsProbe": boolean,
+  "question": string | null
+}`;
+}
