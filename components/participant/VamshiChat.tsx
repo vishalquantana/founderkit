@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
 import { Sparkles, Send, X } from "lucide-react";
@@ -59,7 +60,12 @@ function Avatar({ size = 40 }: { size?: number }) {
  * replies (delivered as assistant messages) arrive without a refresh. Sends
  * are optimistic; an abuse lock reloads into the app-wide lock screen.
  */
-export function VamshiChat({ code, participantId }: VamshiChatProps) {
+export function VamshiChat({ code, participantId: propPid }: VamshiChatProps) {
+  const pathname = usePathname();
+  // Extract pid from URL if cookie was missing during layout rendering (e.g. /w/[code]/home/[pid] or /feedback/[pid])
+  const urlPid = pathname.split("/").pop();
+  const participantId = propPid || (urlPid && urlPid.startsWith("p_") ? urlPid : "");
+
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState<ChatMessage[]>([]);
@@ -67,7 +73,7 @@ export function VamshiChat({ code, participantId }: VamshiChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data, mutate } = useSWR<{ messages: ChatMessage[]; locked: boolean }>(
-    open ? `/api/w/${code}/chat/history?participantId=${participantId}` : null,
+    open && participantId ? `/api/w/${code}/chat/history?participantId=${participantId}` : null,
     fetcher,
     { refreshInterval: 5000 },
   );
