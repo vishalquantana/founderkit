@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
@@ -14,6 +14,7 @@ import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
 import { PollResultsView } from "@/components/present/PollResultsView";
 import { ThemeControl } from "@/components/ThemeControl";
+import { activatePollAction, closePollAction } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 interface PollOverviewItem {
   id: string;
@@ -59,11 +60,14 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
     revalidateOnFocus: false,
   });
 
-  const { data: pollsOverview } = useSWR<PollsOverviewResponse>(
+  const { data: pollsOverview, mutate: mutatePollsOverview } = useSWR<PollsOverviewResponse>(
     `/api/workshops/${workshopId}/polls-overview`,
     fetcher,
     { refreshInterval: 4000, revalidateOnFocus: false },
   );
+
+  const [isPollActionPending, startPollActionTransition] = useTransition();
+  const [pendingPollId, setPendingPollId] = useState<string | null>(null);
 
   const presentData = data ?? initialData;
   const effectiveSettings = presentData.settings ?? settings;
@@ -116,6 +120,30 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
   const joinUrl = getJoinUrl(joinCode);
 
+  function handleGoLive(pollId: string) {
+    setPendingPollId(pollId);
+    startPollActionTransition(async () => {
+      try {
+        await activatePollAction(workshopId, pollId);
+        await mutatePollsOverview();
+      } finally {
+        setPendingPollId(null);
+      }
+    });
+  }
+
+  function handleDisable(pollId: string) {
+    setPendingPollId(pollId);
+    startPollActionTransition(async () => {
+      try {
+        await closePollAction(workshopId, pollId);
+        await mutatePollsOverview();
+      } finally {
+        setPendingPollId(null);
+      }
+    });
+  }
+
   return (
     <div
       className="flex min-h-screen flex-col text-[var(--pulse-text)]"
@@ -142,8 +170,30 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
           <p className="pulse-kicker">Present Mode</p>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
         </div>
-        <div>
+
+        <div className="flex flex-col items-end gap-3">
           <ThemeControl />
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface px-4 py-3">
+            <div className="rounded-lg bg-white p-2">
+              <QRCodeSVG value={joinUrl} size={140} level="M" />
+            </div>
+            <div className="flex flex-col items-end gap-1 text-right">
+              <span className="pulse-kicker">Join now</span>
+              <span className="font-display text-gradient text-2xl font-bold tracking-[0.2em]">{joinCode}</span>
+              <p className="text-xs text-[var(--pulse-text-muted)]">{joinUrl}</p>
+              <span className="flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 shrink-0 animate-pulse rounded-full"
+                  style={{ background: "var(--pulse-gold)" }}
+                />
+                <span className="font-display text-sm font-bold tabular-nums text-[var(--pulse-text)]">
+                  {presentData.total} joined
+                </span>
+                <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
+              </span>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -181,24 +231,51 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 {polls.map((poll) => {
                   const isSelected = selection.kind === "poll" && selection.pollId === poll.id;
                   const isLive = poll.id === activePollId;
+                  const isRowPending = isPollActionPending && pendingPollId === poll.id;
                   return (
-                    <button
+                    <div
                       key={poll.id}
-                      type="button"
-                      onClick={() => setSelection({ kind: "poll", pollId: poll.id })}
-                      aria-pressed={isSelected}
                       className={[
                         "flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold tracking-tight transition-colors duration-150",
                         isSelected ? "pulse-btn" : "pulse-btn-secondary",
                       ].join(" ")}
                     >
-                      <span className="truncate">{poll.question}</span>
-                      {isLive && (
-                        <span className="shrink-0 rounded-full bg-[var(--pulse-gold)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
-                          Live
-                        </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelection({ kind: "poll", pollId: poll.id })}
+                        aria-pressed={isSelected}
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        title="Project this poll"
+                      >
+                        <span className="truncate">{poll.question}</span>
+                        {isLive && (
+                          <span className="shrink-0 rounded-full bg-[var(--pulse-gold)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                            Live
+                          </span>
+                        )}
+                      </button>
+                      {isLive ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDisable(poll.id)}
+                          disabled={isRowPending}
+                          className="shrink-0 rounded-full border border-[var(--pulse-border-strong)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--pulse-text)] transition-opacity disabled:opacity-50"
+                          title="Stop founders from answering this poll"
+                        >
+                          {isRowPending ? "…" : "Disable"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleGoLive(poll.id)}
+                          disabled={isRowPending}
+                          className="shrink-0 rounded-full bg-[var(--pulse-gold)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black transition-opacity disabled:opacity-50"
+                          title="Let founders answer this poll"
+                        >
+                          {isRowPending ? "…" : "Go live"}
+                        </button>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </nav>
@@ -249,37 +326,6 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
           </AnimatePresence>
         </main>
       </div>
-
-      <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--pulse-border)] bg-surface-strong px-8 py-6">
-        <div className="flex items-center gap-4">
-          <div className="rounded-lg bg-white p-3">
-            <QRCodeSVG value={joinUrl} size={160} level="M" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="pulse-kicker">Join now</span>
-            <span className="font-display text-gradient text-xl font-bold tracking-[0.2em] sm:text-2xl">
-              {joinCode}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-1 text-right">
-          <p className="text-lg font-medium text-[var(--pulse-text-muted)] sm:text-xl">{joinUrl}</p>
-          <span className="flex items-center gap-2">
-            <span
-              aria-hidden
-              className="h-2 w-2 shrink-0 animate-pulse rounded-full"
-              style={{ background: "var(--pulse-gold)" }}
-            />
-            <span className="font-display text-base font-bold tabular-nums text-[var(--pulse-text)] sm:text-lg">
-              {presentData.total} joined
-            </span>
-            <span className="text-xs text-[var(--pulse-text-muted)]">· {presentData.completed} completed</span>
-          </span>
-          <p className="text-xs text-[var(--pulse-text-muted)]">
-            Use ← / → to switch views · {views.length} view{views.length === 1 ? "" : "s"} live
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
