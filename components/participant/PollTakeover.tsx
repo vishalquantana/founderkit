@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { motion, useReducedMotion, AnimatePresence } from "motion/react";
 import { hasVoted } from "@/lib/voting";
+import { optionColor } from "@/lib/poll-colors";
 
 export interface PollTakeoverProps {
   code: string;
@@ -17,6 +18,27 @@ interface ActivePoll {
 
 interface ActivePollResponse {
   poll: ActivePoll | null;
+}
+
+interface PollListItem {
+  id: string;
+  question: string;
+  options: string[];
+  status: string;
+  position: number;
+  counts: number[];
+  total: number;
+}
+
+interface FounderPollsResponse {
+  polls: PollListItem[];
+  activePollId: string | null;
+}
+
+interface OptimisticVote {
+  index: number;
+  counts: number[];
+  total: number;
 }
 
 const OPTION_LABELS = "ABCDEFGHIJ";
@@ -68,62 +90,104 @@ export function PollTakeover({ code }: PollTakeoverProps) {
     refreshInterval: 3000,
     revalidateOnFocus: false,
   });
+  const { data: pollsData } = useSWR<FounderPollsResponse>(`/api/w/${code}/polls`, fetcher, {
+    refreshInterval: 5000,
+  });
 
   const [votedIds, setVotedIds] = useState<string[]>([]);
   const [voterId, setVoterId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [thanks, setThanks] = useState(false);
-  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [phase, setPhase] = useState<"answering" | "results">("answering");
+  const [choiceIndex, setChoiceIndex] = useState<number | null>(null);
+  const [optimistic, setOptimistic] = useState<OptimisticVote | null>(null);
+  const [voteError, setVoteError] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const activePollId = useRef<string | null>(null);
 
   useEffect(() => {
     setVotedIds(readVotedIds());
     setVoterId(resolveVoterId(code));
   }, [code]);
 
-  useEffect(() => {
-    return () => {
-      if (dismissTimer.current) clearTimeout(dismissTimer.current);
-    };
-  }, []);
-
   const poll = data?.poll ?? null;
-  const alreadyResponded = poll ? hasVoted(votedIds, poll.id) : true;
-  const visible = Boolean(poll) && Boolean(voterId) && (!alreadyResponded || thanks);
+  const listPoll = poll ? (pollsData?.polls ?? []).find((p) => p.id === poll.id) ?? null : null;
 
-  async function handleVote(choiceIndex: number) {
-    if (!poll || !voterId || submitting) return;
-    setSubmitting(true);
-    try {
-      const res = await fetch(`/api/polls/${poll.id}/vote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ choiceIndex, voterId }),
-      });
-      if (!res.ok) {
-        setSubmitting(false);
-        return;
-      }
-      markVoted(poll.id);
-      setVotedIds(readVotedIds());
-      setThanks(true);
-      dismissTimer.current = setTimeout(() => {
-        setThanks(false);
-        setSubmitting(false);
-        void mutate();
-      }, 1200);
-    } catch {
-      setSubmitting(false);
+  // Whenever the active poll changes, reset per-poll local state. If the
+  // founder has already answered it (e.g. resumed mid-session), open
+  // straight into the results phase instead of the answering phase.
+  useEffect(() => {
+    if (!poll) return;
+    if (activePollId.current === poll.id) return;
+    activePollId.current = poll.id;
+    const answered = hasVoted(votedIds, poll.id);
+    setPhase(answered ? "results" : "answering");
+    setChoiceIndex(null);
+    setOptimistic(null);
+    setVoteError(false);
+    setDismissed(false);
+  }, [poll, votedIds]);
+
+  // Once the live tally catches up to (or passes) our optimistic bump,
+  // drop the optimistic overlay in favour of the real server counts.
+  useEffect(() => {
+    if (optimistic && listPoll && listPoll.total >= optimistic.total) {
+      setOptimistic(null);
     }
+  }, [optimistic, listPoll]);
+
+  const alreadyResponded = poll ? hasVoted(votedIds, poll.id) : true;
+  const visible =
+    Boolean(poll) &&
+    Boolean(voterId) &&
+    !dismissed &&
+    (phase === "results" || !alreadyResponded);
+
+  function handleVote(index: number) {
+    if (!poll || !voterId || phase === "results") return;
+
+    // Optimistic: flip to results instantly, mark voted immediately, and
+    // fire the network request in the background without awaiting it.
+    const baseCounts = listPoll?.counts ?? poll.options.map(() => 0);
+    const baseTotal = listPoll?.total ?? 0;
+    const nextCounts = baseCounts.slice();
+    nextCounts[index] = (nextCounts[index] ?? 0) + 1;
+
+    setChoiceIndex(index);
+    setOptimistic({ index, counts: nextCounts, total: baseTotal + 1 });
+    setPhase("results");
+    setVoteError(false);
+    markVoted(poll.id);
+    setVotedIds(readVotedIds());
+
+    fetch(`/api/polls/${poll.id}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ choiceIndex: index, voterId }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("vote failed");
+      })
+      .catch(() => {
+        setVoteError(true);
+      });
   }
 
   function handleSkip() {
     if (!poll) return;
     markVoted(poll.id);
     setVotedIds(readVotedIds());
+    setDismissed(true);
+    void mutate();
+  }
+
+  function handleDone() {
+    setDismissed(true);
     void mutate();
   }
 
   if (!visible || !poll) return null;
+
+  const counts = optimistic ? optimistic.counts : listPoll?.counts ?? poll.options.map(() => 0);
+  const total = optimistic ? optimistic.total : listPoll?.total ?? 0;
 
   return (
     <div
@@ -134,17 +198,69 @@ export function PollTakeover({ code }: PollTakeoverProps) {
       className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-gradient-to-b from-[#0a0a14] via-[#0e0e1c] to-[#0a0a14] px-6 py-10 text-[var(--pulse-text)]"
     >
       <AnimatePresence mode="wait">
-        {thanks ? (
+        {phase === "results" ? (
           <motion.div
-            key="thanks"
-            initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={shouldReduceMotion ? undefined : { opacity: 0 }}
-            className="text-center"
+            key="results"
+            initial={shouldReduceMotion ? undefined : { opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0, y: -24 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="flex w-full max-w-2xl flex-col items-center gap-8 text-center"
           >
-            <p className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-              Thanks — answer recorded ✓
+            <p className="pulse-kicker">Live results</p>
+            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              {poll.question}
+            </h2>
+            <div className="flex w-full flex-col gap-3 text-left">
+              {poll.options.map((option, i) => {
+                const count = counts[i] ?? 0;
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                const isChosen = choiceIndex === i;
+                return (
+                  <div key={i} className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span
+                        className="flex items-center gap-2 font-semibold"
+                        style={{ color: isChosen ? optionColor(i) : "var(--pulse-text)" }}
+                      >
+                        <span
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                          style={{
+                            background: isChosen ? optionColor(i) : "rgba(255,255,255,0.1)",
+                            color: isChosen ? "#0a0a14" : "var(--pulse-text)",
+                            boxShadow: isChosen ? `0 0 0 2px ${optionColor(i)}` : undefined,
+                          }}
+                        >
+                          {OPTION_LABELS[i] ?? i + 1}
+                        </span>
+                        {option}
+                        {isChosen ? " ✓" : ""}
+                      </span>
+                      <span className="tabular-nums text-[var(--pulse-text-muted)]">
+                        {count} · {pct}%
+                      </span>
+                    </div>
+                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full transition-[width] duration-300"
+                        style={{ width: `${pct}%`, background: optionColor(i) }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-sm font-semibold" style={{ color: "var(--pulse-violet)" }}>
+              You answered · {total} response{total === 1 ? "" : "s"}
             </p>
+            {voteError ? (
+              <p className="text-xs text-red-400">
+                Couldn&apos;t save your answer — results shown may not include it yet.
+              </p>
+            ) : null}
+            <button type="button" onClick={handleDone} className="pulse-btn-primary px-8 py-3 text-base font-semibold">
+              Done
+            </button>
           </motion.div>
         ) : (
           <motion.div
@@ -164,9 +280,8 @@ export function PollTakeover({ code }: PollTakeoverProps) {
                 <button
                   key={i}
                   type="button"
-                  disabled={submitting}
                   onClick={() => handleVote(i)}
-                  className="pulse-btn-secondary flex w-full items-center gap-4 rounded-2xl border border-[var(--pulse-border)] px-6 py-5 text-left text-lg font-semibold tracking-tight transition-colors duration-150 disabled:opacity-60"
+                  className="pulse-btn-secondary flex w-full items-center gap-4 rounded-2xl border border-[var(--pulse-border)] px-6 py-5 text-left text-lg font-semibold tracking-tight transition-colors duration-150"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold">
                     {OPTION_LABELS[i] ?? i + 1}
@@ -178,7 +293,6 @@ export function PollTakeover({ code }: PollTakeoverProps) {
             <button
               type="button"
               onClick={handleSkip}
-              disabled={submitting}
               className="text-sm text-[var(--pulse-text-muted)] underline-offset-4 hover:underline"
             >
               Skip
