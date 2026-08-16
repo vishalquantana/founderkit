@@ -6,7 +6,7 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 import { availableViews, VIEW_LABELS, type PresentView } from "@/components/present/views";
 import type { PresentData } from "@/components/present/types";
@@ -205,7 +205,19 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         {sidebarOpen && (
         <aside className="flex w-full shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-surface p-4 lg:w-[260px]">
           <div>
-            <p className="pulse-kicker mb-2 px-2 text-xs">Lean Canvas</p>
+            <div className="mb-2 flex items-center justify-between px-2">
+              <p className="pulse-kicker text-xs">Lean Canvas</p>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                aria-expanded={sidebarOpen}
+                aria-label="Hide controls sidebar"
+                title="Hide sidebar"
+                className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--pulse-border-strong)] text-[var(--pulse-text-muted)] transition-colors hover:bg-surface-strong hover:text-[var(--pulse-text)]"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
             <button
               type="button"
               disabled={optimisticCanvas !== null}
@@ -327,17 +339,9 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
             )}
           </div>
 
-          <div className="mt-auto flex items-center justify-between gap-2 border-t border-[var(--pulse-border)] pt-3">
+          <div className="mt-auto flex items-center justify-between border-t border-[var(--pulse-border)] pt-3">
+            <span className="text-xs text-[var(--pulse-text-muted)]">Theme</span>
             <ThemeControl />
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(false)}
-              aria-expanded={sidebarOpen}
-              aria-label="Hide controls sidebar"
-              className="rounded-full border border-[var(--pulse-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
-            >
-              Hide
-            </button>
           </div>
         </aside>
         )}
