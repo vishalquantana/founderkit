@@ -264,7 +264,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 }}
               >
                 <span
-                  className="h-3.5 w-3.5 rounded-full bg-[var(--pulse-bg)] transition-transform"
+                  className="h-3.5 w-3.5 rounded-full bg-white shadow-sm ring-1 ring-black/10 transition-transform"
                   style={{
                     transform: canvasUnlockedDisplayed ? "translateX(16px)" : "translateX(0)",
                   }}
