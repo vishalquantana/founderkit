@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { QRCodeSVG } from "qrcode.react";
 
 export interface WelcomeViewProps {
   workshopName: string;
@@ -42,6 +43,9 @@ export function WelcomeView({ workshopName, joinCode, joinUrl }: WelcomeViewProp
 
         <div className="flex flex-col items-center gap-3">
           <p className="pulse-kicker text-sm tracking-[0.4em] sm:text-base">Join the room</p>
+          <div className="rounded-lg bg-white p-2">
+            <QRCodeSVG value={joinUrl} size={160} level="M" />
+          </div>
           <span className="font-display text-gradient text-[5.5rem] font-black leading-none tracking-[0.28em] sm:text-[8rem]">
             {joinCode}
           </span>

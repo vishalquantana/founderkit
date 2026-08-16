@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
 import type { WorkshopSettings } from "@/db/queries/workshops";
@@ -158,15 +159,22 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--pulse-border)] bg-black/30 px-8 py-6">
         <div className="flex items-center gap-4">
-          <span className="pulse-kicker">Join now</span>
-          <span className="font-display text-gradient text-3xl font-bold tracking-[0.35em] sm:text-4xl">
-            {joinCode}
-          </span>
+          <div className="rounded-lg bg-white p-2">
+            <QRCodeSVG value={joinUrl} size={96} level="M" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="pulse-kicker">Join now</span>
+            <span className="font-display text-gradient text-3xl font-bold tracking-[0.35em] sm:text-4xl">
+              {joinCode}
+            </span>
+          </div>
         </div>
-        <p className="text-lg font-medium text-[var(--pulse-text-muted)] sm:text-xl">{joinUrl}</p>
-        <p className="text-xs text-[var(--pulse-text-muted)]">
-          Use ← / → to switch views · {views.length} view{views.length === 1 ? "" : "s"} live
-        </p>
+        <div className="flex flex-col items-end gap-1 text-right">
+          <p className="text-lg font-medium text-[var(--pulse-text-muted)] sm:text-xl">{joinUrl}</p>
+          <p className="text-xs text-[var(--pulse-text-muted)]">
+            Use ← / → to switch views · {views.length} view{views.length === 1 ? "" : "s"} live
+          </p>
+        </div>
       </footer>
     </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import useSWR from "swr";
+import { motion, useReducedMotion } from "motion/react";
 import type { Poll } from "@/db/queries/polls";
 import {
   createPollAction,
@@ -9,6 +11,60 @@ import {
   activatePollAction,
   closePollAction,
 } from "@/app/(admin)/workshops/[id]/poll-actions";
+
+interface PollResultsResponse {
+  poll: { id: string; question: string; options: string[] } | null;
+  tally: { counts: number[]; total: number } | null;
+}
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+function percentFor(count: number, total: number): number {
+  return total > 0 ? (count / total) * 100 : 0;
+}
+
+interface PollTallyProps {
+  options: string[];
+  counts: number[];
+  total: number;
+}
+
+function PollTally({ options, counts, total }: PollTallyProps) {
+  const shouldReduceMotion = useReducedMotion();
+
+  return (
+    <div className="mt-3 flex flex-col gap-2 border-t border-border-strong pt-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        Live responses · <span className="tabular-nums">{total}</span> total
+      </p>
+      {options.map((option, i) => {
+        const count = counts[i] ?? 0;
+        const pct = percentFor(count, total);
+        const label = String.fromCharCode(65 + i);
+        return (
+          <div key={i} className="flex items-center gap-2">
+            <span className="w-5 shrink-0 text-xs font-semibold text-muted">{label}</span>
+            <span className="w-24 shrink-0 truncate text-xs text-foreground" title={option}>
+              {option}
+            </span>
+            <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface-strong">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: "var(--pulse-gradient)" }}
+                initial={shouldReduceMotion ? { width: `${pct}%` } : { width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 140, damping: 24 }}
+              />
+            </div>
+            <span className="w-14 shrink-0 text-right text-xs font-semibold tabular-nums text-muted">
+              {count} ({Math.round(pct)}%)
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export interface PollManagerProps {
   workshopId: string;
@@ -139,9 +195,20 @@ function PollEditor({ editor, isPending, onChange, onSave, onCancel }: PollEdito
  * enforced server-side by `activatePoll`.
  */
 export function PollManager({ workshopId, polls, className }: PollManagerProps) {
-  const [isPending, startTransition] = useTransition();
+  // Editor save/cancel (create + update) has its own pending flag — it's a
+  // single form, never more than one in flight at a time.
+  const [editorPending, startEditorTransition] = useTransition();
+  // Row-level actions (activate/close/delete) are keyed to the specific poll
+  // id so clicking one row's button doesn't visually disable every other row.
+  const [pendingId, setPendingId] = useState<string | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const { data: pollResults } = useSWR<PollResultsResponse>(
+    `/api/workshops/${workshopId}/poll-results`,
+    fetcher,
+    { refreshInterval: 3000, revalidateOnFocus: false },
+  );
 
   const sortedPolls = [...polls].sort((a, b) => a.position - b.position);
 
@@ -170,7 +237,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
     if (!question || options.length === 0) return;
 
     const pollId = editor.pollId;
-    startTransition(async () => {
+    startEditorTransition(async () => {
       if (pollId) {
         await updatePollAction(workshopId, pollId, question, options);
       } else {
@@ -180,24 +247,33 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
     });
   }
 
-  function handleActivate(pollId: string) {
-    startTransition(async () => {
+  async function handleActivate(pollId: string) {
+    setPendingId(pollId);
+    try {
       await activatePollAction(workshopId, pollId);
-    });
+    } finally {
+      setPendingId(null);
+    }
   }
 
-  function handleClose(pollId: string) {
-    startTransition(async () => {
+  async function handleClose(pollId: string) {
+    setPendingId(pollId);
+    try {
       await closePollAction(workshopId, pollId);
-    });
+    } finally {
+      setPendingId(null);
+    }
   }
 
-  function handleDeleteClick(pollId: string) {
+  async function handleDeleteClick(pollId: string) {
     if (confirmDeleteId === pollId) {
-      startTransition(async () => {
+      setPendingId(pollId);
+      try {
         await deletePollAction(workshopId, pollId);
         setConfirmDeleteId(null);
-      });
+      } finally {
+        setPendingId(null);
+      }
     } else {
       setConfirmDeleteId(pollId);
     }
@@ -220,13 +296,16 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
             <PollEditor
               key={poll.id}
               editor={editor}
-              isPending={isPending}
+              isPending={editorPending}
               onChange={setEditor}
               onSave={saveEdit}
               onCancel={cancelEdit}
             />
           );
         }
+
+        const rowPending = pendingId === poll.id;
+        const showTally = isActive && pollResults?.poll?.id === poll.id;
 
         return (
           <div
@@ -251,13 +330,20 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                     </li>
                   ))}
                 </ul>
+                {showTally && pollResults?.poll ? (
+                  <PollTally
+                    options={pollResults.poll.options}
+                    counts={pollResults.tally?.counts ?? []}
+                    total={pollResults.tally?.total ?? 0}
+                  />
+                ) : null}
               </div>
 
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 {isActive ? (
                   <button
                     type="button"
-                    disabled={isPending}
+                    disabled={rowPending}
                     onClick={() => handleClose(poll.id)}
                     className="pulse-btn-secondary px-3 py-1.5 text-xs"
                   >
@@ -266,7 +352,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                 ) : (
                   <button
                     type="button"
-                    disabled={isPending}
+                    disabled={rowPending}
                     onClick={() => handleActivate(poll.id)}
                     className="pulse-btn px-3 py-1.5 text-xs"
                   >
@@ -275,7 +361,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                 )}
                 <button
                   type="button"
-                  disabled={isPending}
+                  disabled={rowPending}
                   onClick={() => startEdit(poll)}
                   className="pulse-btn-secondary px-3 py-1.5 text-xs"
                 >
@@ -283,7 +369,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                 </button>
                 <button
                   type="button"
-                  disabled={isPending}
+                  disabled={rowPending}
                   onClick={() => handleDeleteClick(poll.id)}
                   className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                     confirmDeleteId === poll.id
@@ -302,7 +388,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
       {editor && editor.pollId === null ? (
         <PollEditor
           editor={editor}
-          isPending={isPending}
+          isPending={editorPending}
           onChange={setEditor}
           onSave={saveEdit}
           onCancel={cancelEdit}
@@ -310,7 +396,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
       ) : (
         <button
           type="button"
-          disabled={isPending}
+          disabled={editorPending}
           onClick={startCreate}
           className="pulse-btn-secondary self-start px-4 py-2 text-sm"
         >
