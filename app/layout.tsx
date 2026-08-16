@@ -31,6 +31,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${orbitron.variable} ${chakraPetch.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("mrs-theme");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}var f=Number(localStorage.getItem("mrs-fontpx"));if(f>=14&&f<=24){document.documentElement.style.fontSize=f+"px";}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
