@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
 import type { WorkshopSettings } from "@/db/queries/workshops";
@@ -65,9 +66,22 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
   const joinUrl = getJoinUrl(joinCode);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a14] text-[var(--pulse-text)]">
+    <div data-theme="dark" className="flex min-h-screen flex-col bg-[#0a0a14] text-[var(--pulse-text)]">
       <header className="flex flex-wrap items-center justify-between gap-4 px-8 pt-8">
         <div>
+          <div className="mb-2 flex items-center gap-2.5">
+            <Image
+              src="/quantana-logo.svg"
+              alt="Quantana"
+              width={96}
+              height={22}
+              className="h-4 w-auto invert"
+              priority
+            />
+            <span className="border-l border-white/20 pl-2.5 text-xs font-semibold tracking-wide text-[var(--pulse-text-muted)]">
+              AI Cofounder
+            </span>
+          </div>
           <p className="pulse-kicker">Present Mode</p>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
         </div>
