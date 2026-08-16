@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   LEAN_CANVAS_BLOCKS,
@@ -154,9 +154,20 @@ export function LeanCanvasExplorer({
   editable = false,
   participantId,
 }: LeanCanvasExplorerProps) {
-  const shouldReduceMotion = useReducedMotion();
   const router = useRouter();
-  const [index, setIndex] = useState(0);
+  const shouldReduceMotion = useReducedMotion();
+  const searchParams = useSearchParams();
+  const initialBlock = searchParams?.get("block");
+  const parsedBlock = initialBlock ? parseInt(initialBlock, 10) : NaN;
+  const [index, setIndex] = useState(
+    !isNaN(parsedBlock) && parsedBlock >= 0 && parsedBlock < LEAN_CANVAS_BLOCKS.length ? parsedBlock : 0
+  );
+
+  useEffect(() => {
+    if (!isNaN(parsedBlock) && parsedBlock >= 0 && parsedBlock < LEAN_CANVAS_BLOCKS.length) {
+      setIndex(parsedBlock);
+    }
+  }, [parsedBlock]);
   const [direction, setDirection] = useState(0);
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
