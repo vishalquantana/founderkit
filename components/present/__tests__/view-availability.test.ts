@@ -4,10 +4,10 @@ import { availableViews } from "../views";
 describe("availableViews", () => {
   it("maps settings to enabled views", () => {
     expect(availableViews({ liveViews: { dashboard: true, wordCloud: true, progression: false }, leaderboard: false }))
-      .toEqual(["dashboard", "wordcloud"]);
+      .toEqual(["welcome", "dashboard", "wordcloud"]);
     expect(availableViews({ liveViews: { dashboard: true, wordCloud: false, progression: false }, leaderboard: true }))
-      .toEqual(["dashboard", "progression"]);
+      .toEqual(["welcome", "dashboard", "progression"]);
     expect(availableViews({ liveViews: { dashboard: false, wordCloud: false, progression: false }, leaderboard: false }))
-      .toEqual(["dashboard"]);
+      .toEqual(["welcome", "dashboard"]);
   });
 });

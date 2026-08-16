@@ -127,6 +127,55 @@ body::before {
   body::before { animation: none; }
 }
 
+/* Present-mode Welcome view: ambient rotating gradient ring behind the money-shot. */
+.present-welcome-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  width: min(90vw, 60rem);
+  height: min(90vw, 60rem);
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    #8b5cf6,
+    #f472b6,
+    #f4c748,
+    #8b5cf6
+  );
+  opacity: 0.22;
+  filter: blur(60px);
+  animation: present-welcome-spin 40s linear infinite;
+}
+
+.present-welcome-ring-core {
+  position: absolute;
+  inset: 12%;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: conic-gradient(
+    from 180deg,
+    transparent,
+    rgba(139, 92, 246, 0.35),
+    transparent 40%
+  );
+  animation: present-welcome-spin 26s linear infinite reverse;
+}
+
+@keyframes present-welcome-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .present-welcome-ring,
+  .present-welcome-ring-core {
+    animation: none;
+  }
+}
+
 @layer utilities {
   .font-display {
     font-family: var(--font-display), "Orbitron", sans-serif;

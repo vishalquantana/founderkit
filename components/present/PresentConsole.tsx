@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 import { availableViews, VIEW_LABELS, type PresentView } from "@/components/present/views";
 import type { PresentData } from "@/components/present/types";
+import { WelcomeView } from "@/components/present/WelcomeView";
 import { AggregateView } from "@/components/present/AggregateView";
 import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
@@ -144,6 +145,9 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="w-full max-w-6xl"
             >
+              {activeView === "welcome" && (
+                <WelcomeView workshopName={workshopName} joinCode={joinCode} joinUrl={joinUrl} />
+              )}
               {activeView === "dashboard" && <AggregateView data={presentData} />}
               {activeView === "wordcloud" && <WordCloudView data={presentData} />}
               {activeView === "progression" && <ProgressionView data={presentData} />}
