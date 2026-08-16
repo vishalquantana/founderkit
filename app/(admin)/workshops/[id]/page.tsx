@@ -74,7 +74,7 @@ export default async function WorkshopDetailPage({
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
               Submissions
             </h2>
-            <SubmissionsTable submissions={submissionRows} />
+            <SubmissionsTable submissions={submissionRows} workshopId={id} />
           </div>
         </div>
 
