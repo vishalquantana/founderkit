@@ -342,7 +342,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         </aside>
         )}
 
-        <main className="flex min-w-0 flex-1 items-center justify-center">
+        <main className="flex min-w-0 flex-1 items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
             {selection.kind === "poll" ? (
               <motion.div
