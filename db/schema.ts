@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export type WorkshopStatus = "draft" | "live" | "closed";
 export type SectionKey =
@@ -85,3 +85,26 @@ export const results = sqliteTable("results", {
   aiRaw: text("ai_raw", { mode: "json" }),
   createdAt: createdAt(),
 });
+
+export const polls = sqliteTable("polls", {
+  id: id(),
+  workshopId: text("workshop_id").notNull().references(() => workshops.id),
+  question: text("question").notNull(),
+  options: text("options", { mode: "json" }).notNull(),
+  position: integer("position").notNull(),
+  status: text("status").notNull().default("draft"), // "draft" | "active" | "closed"
+  createdAt: createdAt(),
+});
+
+export const pollVotes = sqliteTable("poll_votes", {
+  id: id(),
+  pollId: text("poll_id").notNull().references(() => polls.id),
+  voterId: text("voter_id").notNull(),
+  choiceIndex: integer("choice_index").notNull(),
+  createdAt: createdAt(),
+}, (table) => ({
+  pollVoterIdx: uniqueIndex("poll_votes_poll_id_voter_id_idx").on(table.pollId, table.voterId),
+}));
+
+export type Poll = typeof polls.$inferSelect;
+export type PollVote = typeof pollVotes.$inferSelect;
