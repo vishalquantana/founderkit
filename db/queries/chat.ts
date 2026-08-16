@@ -197,3 +197,14 @@ export async function isParticipantLocked(participantId: string): Promise<boolea
   });
   return !!row?.lockedAt;
 }
+
+export async function editChatMessage(messageId: string, content: string): Promise<void> {
+  await db
+    .update(chatMessages)
+    .set({ content })
+    .where(eq(chatMessages.id, messageId));
+}
+
+export async function deleteChatMessage(messageId: string): Promise<void> {
+  await db.delete(chatMessages).where(eq(chatMessages.id, messageId));
+}

@@ -3,6 +3,11 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { MessageSquare, HelpCircle, ChevronDown, Send, Plus } from "lucide-react";
+import {
+  presenterSendChatMessageAction,
+  presenterEditChatMessageAction,
+  presenterDeleteChatMessageAction,
+} from "@/app/(admin)/workshops/[id]/chat-actions";
 
 export interface ChatsPanelProps {
   workshopId: string;
@@ -103,7 +108,12 @@ export function ChatsPanel({ workshopId }: ChatsPanelProps) {
         ) : (
           <div className="flex flex-col gap-3">
             {conversations.map((c) => (
-              <ConversationCard key={c.participant.id} conversation={c} />
+              <ConversationCard
+                key={c.participant.id}
+                workshopId={workshopId}
+                conversation={c}
+                onRefresh={() => mutate()}
+              />
             ))}
           </div>
         )}
@@ -258,10 +268,74 @@ function EscalationCard({
   );
 }
 
-function ConversationCard({ conversation }: { conversation: Conversation }) {
+function ConversationCard({
+  workshopId,
+  conversation,
+  onRefresh,
+}: {
+  workshopId: string;
+  conversation: Conversation;
+  onRefresh: () => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const { participant, messages } = conversation;
   const last = messages[messages.length - 1];
+
+  async function handleSendReply() {
+    const text = replyText.trim();
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      await presenterSendChatMessageAction({
+        workshopId,
+        participantId: participant.id,
+        content: text,
+      });
+      setReplyText("");
+      onRefresh();
+    } catch {
+      alert("Failed to send reply");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function handleSaveEdit(messageId: string) {
+    const text = editText.trim();
+    if (!text || savingEdit) return;
+    setSavingEdit(true);
+    try {
+      await presenterEditChatMessageAction({
+        workshopId,
+        messageId,
+        content: text,
+      });
+      setEditingId(null);
+      onRefresh();
+    } catch {
+      alert("Failed to edit message");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  async function handleDelete(messageId: string) {
+    if (!confirm("Are you sure you want to delete this message?")) return;
+    try {
+      await presenterDeleteChatMessageAction({
+        workshopId,
+        messageId,
+      });
+      onRefresh();
+    } catch {
+      alert("Failed to delete message");
+    }
+  }
 
   return (
     <div className="pulse-card overflow-hidden">
@@ -284,21 +358,101 @@ function ConversationCard({ conversation }: { conversation: Conversation }) {
         />
       </button>
       {open ? (
-        <div className="flex flex-col gap-2 border-t border-[var(--pulse-border)] px-4 py-3">
-          {messages.map((m) => (
-            <div key={m.id} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-              <div
-                className="max-w-[85%] rounded-xl px-3 py-2 text-sm"
-                style={
-                  m.role === "user"
-                    ? { background: "var(--pulse-violet)", color: "#0a0a14" }
-                    : { background: "var(--pulse-surface-strong)", color: "var(--pulse-text)" }
-                }
-              >
-                {m.content}
+        <div className="flex flex-col gap-3 border-t border-[var(--pulse-border)] px-4 py-3">
+          <div className="flex flex-col gap-2">
+            {messages.map((m) => (
+              <div key={m.id} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                <div
+                  className="group relative max-w-[85%] rounded-xl px-3 py-2 text-sm"
+                  style={
+                    m.role === "user"
+                      ? { background: "var(--pulse-violet)", color: "#0a0a14" }
+                      : { background: "var(--pulse-surface-strong)", color: "var(--pulse-text)" }
+                  }
+                >
+                  {editingId === m.id ? (
+                    <div className="flex flex-col gap-2">
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        rows={2}
+                        className="w-full rounded-lg border border-purple-500 bg-background p-2 text-xs text-foreground focus:outline-none"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingId(null)}
+                          className="rounded px-2 py-1 text-[11px] font-semibold text-muted hover:text-foreground"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(m.id)}
+                          disabled={savingEdit || !editText.trim()}
+                          className="rounded bg-purple-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                        >
+                          {savingEdit ? "Saving…" : "Save"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>{m.content}</div>
+                      <div className="mt-1 flex items-center justify-between gap-3 text-[10px] opacity-60">
+                        <span>{m.role === "user" ? "Founder" : "Vamshi.AI / Presenter"}</span>
+                        <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingId(m.id);
+                              setEditText(m.content);
+                            }}
+                            className="hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <span>·</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(m.id)}
+                            className="hover:underline text-red-500"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Presenter direct reply box */}
+          <div className="mt-2 flex gap-2 border-t border-[var(--pulse-border)] pt-3">
+            <input
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendReply();
+                }
+              }}
+              placeholder={`Reply directly to ${participant.founderName} as Vamshi.AI…`}
+              className="flex-1 rounded-xl border border-[var(--pulse-border)] bg-background px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <button
+              type="button"
+              onClick={handleSendReply}
+              disabled={!replyText.trim() || sending}
+              className="pulse-btn inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold disabled:opacity-60"
+            >
+              <Send className="h-3.5 w-3.5" />
+              {sending ? "Sending…" : "Reply"}
+            </button>
+          </div>
         </div>
       ) : null}
     </div>
