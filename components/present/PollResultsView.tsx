@@ -24,7 +24,7 @@ export function PollResultsView({ question, options, counts, total, joinUrl }: P
       <div className="flex w-full flex-col items-center gap-6 sm:flex-row sm:justify-center sm:gap-10">
         <div className="text-center sm:text-left">
           <p className="pulse-kicker text-lg tracking-[0.3em]">Live poll</p>
-          <h2 className="font-display mt-2 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
+          <h2 className="font-display mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl md:text-5xl">
             {question}
           </h2>
           <p className="mt-3 text-lg font-medium text-[var(--pulse-text-muted)]">

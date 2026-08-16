@@ -149,10 +149,14 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
   return (
     <div
-      className="flex min-h-screen flex-col text-[var(--pulse-text)]"
+      className="relative flex min-h-screen flex-col overflow-x-hidden text-[var(--pulse-text)]"
       style={{ background: "var(--pulse-bg-gradient)" }}
     >
-      <header className="flex flex-wrap items-center justify-between gap-4 px-8 pt-8">
+      <div className="present-aurora" aria-hidden>
+        <span className="present-aurora-blob" />
+      </div>
+
+      <header className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-4 pt-6 sm:px-8 sm:pt-8">
         <div>
           <div className="mb-1 flex items-center gap-2">
             <Link
@@ -190,10 +194,10 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
             </span>
           </div>
           <p className="pulse-kicker">Present Mode</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
+          <h1 className="font-display text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">{workshopName}</h1>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:items-end">
           <button
             type="button"
             onClick={() => setJoinOpen((open) => !open)}
@@ -204,11 +208,11 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
             {joinOpen ? "Hide" : "Show"} join code
           </button>
           {joinOpen && (
-            <div className="flex items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface px-4 py-3">
+            <div className="flex max-w-full flex-col items-center gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface px-4 py-3 sm:flex-row">
               <div className="rounded-lg bg-white p-2">
                 <QRCodeSVG value={joinUrl} size={140} level="M" />
               </div>
-              <div className="flex flex-col items-end gap-1 text-right">
+              <div className="flex flex-col items-center gap-1 text-center sm:items-end sm:text-right">
                 <span className="pulse-kicker">Join now</span>
                 <span className="font-display text-gradient text-2xl font-bold tracking-[0.2em]">{joinCode}</span>
                 <p className="text-xs text-[var(--pulse-text-muted)]">{joinUrl}</p>
@@ -229,9 +233,9 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         </div>
       </header>
 
-      <div className="flex flex-1 gap-6 px-6 py-8 sm:px-10">
+      <div className="relative z-10 flex flex-1 flex-col gap-6 px-4 py-6 sm:px-10 sm:py-8 lg:flex-row">
         {sidebarOpen && (
-        <aside className="flex w-[260px] shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-surface p-4">
+        <aside className="flex w-full shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-surface p-4 lg:w-[260px]">
           <div>
             <p className="pulse-kicker mb-2 px-2 text-xs">Lean Canvas</p>
             <button
@@ -370,7 +374,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         </aside>
         )}
 
-        <main className="flex flex-1 items-center justify-center">
+        <main className="flex min-w-0 flex-1 items-center justify-center">
           <AnimatePresence mode="wait">
             {selection.kind === "poll" ? (
               <motion.div

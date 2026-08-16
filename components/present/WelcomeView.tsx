@@ -39,7 +39,7 @@ export function WelcomeView({ workshopName, joinCode, joinUrl }: WelcomeViewProp
             </span>
           </div>
           <p className="pulse-kicker text-base tracking-[0.4em] sm:text-lg">Welcome to</p>
-          <h1 className="font-display max-w-4xl text-4xl font-black leading-tight tracking-tight text-balance sm:text-6xl">
+          <h1 className="font-display max-w-4xl text-3xl font-black leading-tight tracking-tight text-balance sm:text-4xl md:text-6xl">
             {workshopName}
           </h1>
         </div>

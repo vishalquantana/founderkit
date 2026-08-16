@@ -225,6 +225,84 @@ body::before {
   }
 }
 
+/* Present-mode ambient aurora: 3 large blurred brand-color blobs drifting
+   slowly behind the console content. Sits at z-index 0 behind header/sidebar/
+   main (which establish their own stacking context via relative z-10+).
+   Kept low-opacity so text stays readable on a projector in both themes. */
+.present-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.present-aurora::before,
+.present-aurora::after,
+.present-aurora .present-aurora-blob {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.28;
+  will-change: transform;
+}
+
+.present-aurora::before {
+  top: -10%;
+  left: -10%;
+  width: min(60vw, 40rem);
+  height: min(60vw, 40rem);
+  background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+  animation: present-aurora-drift-a 24s ease-in-out infinite alternate;
+}
+
+.present-aurora::after {
+  bottom: -15%;
+  right: -10%;
+  width: min(55vw, 36rem);
+  height: min(55vw, 36rem);
+  background: radial-gradient(circle, #f472b6 0%, transparent 70%);
+  animation: present-aurora-drift-b 28s ease-in-out infinite alternate;
+  animation-delay: -6s;
+}
+
+.present-aurora .present-aurora-blob {
+  top: 40%;
+  left: 55%;
+  width: min(40vw, 28rem);
+  height: min(40vw, 28rem);
+  background: radial-gradient(circle, #f4c748 0%, transparent 70%);
+  animation: present-aurora-drift-c 32s ease-in-out infinite alternate;
+  animation-delay: -12s;
+}
+
+@keyframes present-aurora-drift-a {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(6%, 8%, 0) scale(1.12); }
+  100% { transform: translate3d(-4%, 4%, 0) scale(1.04); }
+}
+
+@keyframes present-aurora-drift-b {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-6%, -6%, 0) scale(1.08); }
+  100% { transform: translate3d(4%, -8%, 0) scale(1.1); }
+}
+
+@keyframes present-aurora-drift-c {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-8%, 5%, 0) scale(0.94); }
+  100% { transform: translate3d(5%, -5%, 0) scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .present-aurora::before,
+  .present-aurora::after,
+  .present-aurora .present-aurora-blob {
+    animation: none;
+  }
+}
+
 @layer utilities {
   .font-display {
     font-family: var(--font-display), "Orbitron", sans-serif;
