@@ -179,4 +179,82 @@ export const GROWTH_FAQ_SEED: { question: string; answer: string; topic: string 
     answer:
       "Most repetitive execution can eventually be automated, but early your leverage is judgment, narrative and trust — automation can't do those yet. Automate scheduling, follow-ups and reporting; keep first customer conversations, positioning and pricing manual and yours. Next step: automate one repetitive task this week and spend the saved time on a customer call.",
   },
+  {
+    topic: "no_money_budget",
+    question: "I have no money or capital. How do I start my startup?",
+    answer:
+      "Lack of money is an advantage early — it forces you to build proof instead of expensive software. Use no-code tools (WhatsApp catalogues, Google Forms, landing pages) or do the service manually by hand (concierge MVP). If you can't get someone to commit or pre-order when it's done manually, having money to build an app won't help. Next step: design a 0-rupee manual version of your service and offer it to 3 people this week.",
+  },
+  {
+    topic: "cofounder_finding",
+    question: "How do I find a co-founder / should I have a cofounder?",
+    answer:
+      "Pick someone whose skills complement yours (builder + seller), but more importantly, someone whose values and resilience you trust under stress. Start by working on a small 2-week validation sprint together before signing equity splits. Have the hard conversations upfront: commitment hours, runway, and vesting. Next step: write down the exact missing skill you need and invite one potential collaborator to run a 1-week experiment with you.",
+  },
+  {
+    topic: "student_college_startup",
+    question: "Can I build a startup while in college or with studies?",
+    answer:
+      "College is one of the best times to start: your living costs are covered, and you have access to peers, professors, and student networks for fast testing. Focus on problems you and your campus experience daily. Don't build in secret — test with classmates. Keep academic minimums safe while dedicating 10 focused hours a week to customer proof. Next step: interview 5 fellow students about a daily campus headache and write down their current workaround.",
+  },
+  {
+    topic: "protecting_ideas_nda",
+    question: "Will someone steal my idea? Should I make people sign an NDA?",
+    answer:
+      "Ideas are worthless without distribution and execution. No serious investor, mentor, or early customer will sign an NDA for an idea. The real risk is not that someone steals your idea — it is that nobody cares. Talk openly about the problem you are solving; you learn faster by sharing than hiding. Next step: pitch your core problem to 3 strangers today without worrying about secrecy.",
+  },
+  {
+    topic: "zero_budget_marketing",
+    question: "How do I market my product with zero budget?",
+    answer:
+      "Forget paid ads. Do unscalable, direct outreach: 1) Go directly to where your customers gather (WhatsApp groups, campus clubs, local markets), 2) Share your build journey and learnings publicly, 3) Offer free value first to build trust, then ask for a referral. chotu grew via WhatsApp networks, not ad spend. Next step: identify 2 community groups where your exact target audience talks and join the conversation today.",
+  },
+  {
+    topic: "non_tech_founder",
+    question: "I am a non-technical founder. How do I build software/app?",
+    answer:
+      "You don't need code to validate demand. Build a 'Wizard of Oz' or Concierge MVP: use WhatsApp, Google Sheets, Canva, and manual operations behind the scenes. When customers start paying or demanding faster service, you'll have the evidence to attract a technical cofounder or use AI tools like Cursor/v0. Next step: create a simple WhatsApp workflow for your service and test it with 5 users manually.",
+  },
+  {
+    topic: "mom_test_validation",
+    question: "How do I interview customers without getting fake compliments?",
+    answer:
+      "Follow The Mom Test rules: 1) Talk about their past behaviour and actual life, not your hypothetical idea. 2) Ask specific numbers: 'When did you last do this?' and 'What did you pay?' 3) Never ask 'Would you buy this?' (they'll say yes to be polite). Ask 'How do you solve this right now?' Next step: draft 3 questions about their past actions (not your product) and test them on your next user.",
+  },
+  {
+    topic: "choosing_between_ideas",
+    question: "I have multiple startup ideas. How do I pick which one to pursue?",
+    answer:
+      "Pick based on two filters: 1) High repeat frequency (a daily mildly annoying problem beats a rare painful one — habit beats intensity), and 2) Your unfair access to the first 100 customers. Whichever idea gives you direct access to users you can talk to tomorrow is the one to start. Next step: list your ideas, score them 1–5 on 'access to first 20 users', and test the top-ranked one for 7 days.",
+  },
+  {
+    topic: "when_to_pivot",
+    question: "When should I pivot versus keep persisting?",
+    answer:
+      "Persist on the customer and problem; pivot on the solution and channel. If after talking to 30 target users nobody feels the pain urgently or is willing to commit time or money, the problem isn't real — pivot. If they love the outcome but hate your app, change the delivery (e.g. deliver over WhatsApp instead of an app). Next step: review your last 10 customer conversations: did they express urgent pain or polite indifference?",
+  },
+  {
+    topic: "making_first_sale",
+    question: "How do I ask for money and close my first sale?",
+    answer:
+      "Keep it simple: 'We are launching with a small pilot batch of 10 clients next Monday at ₹X. Would you like one of the slots?' If they hesitate, ask: 'What is the biggest concern holding you back right now?' Listen to the objection — it's your best data. Next step: make a direct pre-order or pilot offer to your 2 warmest prospects before this weekend.",
+  },
+  {
+    topic: "pitch_deck_basics",
+    question: "What should be in my first pitch deck?",
+    answer:
+      "Keep it under 10 slides: 1) Problem with evidence, 2) Target customer/ICP portrait, 3) Your solution & why now, 4) Market evidence / traction proof (LOIs, pre-orders, repeat usage), 5) Business model (pricing arithmetic), 6) Distribution strategy, 7) Competitors & current workarounds, 8) Team & unfair advantage, 9) The Ask (runway & milestone). Evidence always beats formatting. Next step: write a 1-page summary covering these 9 points before opening PowerPoint.",
+  },
+  {
+    topic: "pricing_model_types",
+    question: "Subscription vs One-time vs Commission — which business model?",
+    answer:
+      "Match your pricing to how the customer naturally creates value. If they get ongoing daily benefit, use subscription. If it's transactional (e.g. commerce or booking), take a take-rate/commission. If it's a one-off setup, charge upfront. Never charge recurring fees for a tool they only open once a quarter. Next step: calculate your unit economics: Price minus Cost to Deliver = Gross Margin per order.",
+  },
+  {
+    topic: "customer_complaints",
+    question: "A customer complained or gave negative feedback. What do I do?",
+    answer:
+      "Negative feedback is gold — indifference is what kills startups. When someone complains, they cared enough to try. Call them within 1 hour: 'Thank you for calling this out. Tell me everything that went wrong so we can fix it.' Turn angry users into your strongest evangelists by fixing their issue personally. Next step: reach out immediately to any unhappy user and listen without defending.",
+  },
 ];
