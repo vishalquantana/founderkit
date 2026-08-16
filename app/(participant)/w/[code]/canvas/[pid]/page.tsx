@@ -3,6 +3,7 @@ import { getWorkshopByJoinCode, type WorkshopSettings } from "@/db/queries/works
 import { getParticipant } from "@/db/queries/participants";
 import { getResponses } from "@/db/queries/responses";
 import { CanvasWizard } from "@/components/participant/CanvasWizard";
+import { FounderTabBar } from "@/components/participant/FounderTabBar";
 import { resultAccessState } from "../../result/result-guard";
 import type { SectionKey } from "@/db/schema";
 
@@ -36,13 +37,18 @@ export default async function CanvasPage({
   }, {} as Record<SectionKey, string>);
 
   return (
-    <CanvasWizard
-      workshop={{
-        joinCode: workshop!.joinCode,
-        probeEnabled: Boolean((workshop!.settings as WorkshopSettings | null)?.probeEnabled),
-      }}
-      participantId={pid}
-      initialAnswers={initialAnswers}
-    />
+    <>
+      <div className="pb-24">
+        <CanvasWizard
+          workshop={{
+            joinCode: workshop!.joinCode,
+            probeEnabled: Boolean((workshop!.settings as WorkshopSettings | null)?.probeEnabled),
+          }}
+          participantId={pid}
+          initialAnswers={initialAnswers}
+        />
+      </div>
+      <FounderTabBar code={code} pid={pid} active="canvas" canvasUnlocked hasResult={false} />
+    </>
   );
 }

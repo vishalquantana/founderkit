@@ -16,7 +16,14 @@ export function AppNav() {
   if (pathname?.startsWith("/present")) return null;
 
   const segments = pathname?.split("/").filter(Boolean) ?? [];
-  const logoHref = segments[0] === "w" && segments[1] ? `/w/${segments[1]}` : "/";
+  // On a founder route: if a participant id is in the path (/w/{code}/{section}/{pid}),
+  // send the logo to that founder's home dashboard; otherwise to the workshop join.
+  const logoHref =
+    segments[0] === "w" && segments[1]
+      ? segments[3]
+        ? `/w/${segments[1]}/home/${segments[3]}`
+        : `/w/${segments[1]}`
+      : "/";
 
   return (
     <header
