@@ -2,18 +2,20 @@
 
 import { useState, type ReactNode } from "react";
 
-type Section = "submissions" | "polls" | "chats";
+type Section = "submissions" | "polls" | "chats" | "knowledge_base";
 
 const NAV: { key: Section; label: string }[] = [
   { key: "submissions", label: "Submissions" },
   { key: "polls", label: "Poll Questions" },
   { key: "chats", label: "Chats" },
+  { key: "knowledge_base", label: "Knowledge Base" },
 ];
 
 export interface WorkshopWorkspaceProps {
   submissions: ReactNode;
   polls: ReactNode;
   chats: ReactNode;
+  knowledgeBase: ReactNode;
   quickSettings: ReactNode;
 }
 
@@ -22,10 +24,21 @@ export interface WorkshopWorkspaceProps {
  * main panel between Submissions and Poll Questions, and a persistent right
  * "Quick settings" column (workshop controls) that's always visible.
  */
-export function WorkshopWorkspace({ submissions, polls, chats, quickSettings }: WorkshopWorkspaceProps) {
+export function WorkshopWorkspace({
+  submissions,
+  polls,
+  chats,
+  knowledgeBase,
+  quickSettings,
+}: WorkshopWorkspaceProps) {
   const [section, setSection] = useState<Section>("submissions");
 
-  const panels: Record<Section, ReactNode> = { submissions, polls, chats };
+  const panels: Record<Section, ReactNode> = {
+    submissions,
+    polls,
+    chats,
+    knowledge_base: knowledgeBase,
+  };
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[190px_minmax(0,1fr)_360px] lg:items-start">

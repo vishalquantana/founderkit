@@ -81,6 +81,26 @@ export async function insertFaq(input: {
   return { id };
 }
 
+export async function updateFaq(input: {
+  id: string;
+  question: string;
+  answer: string;
+  topic?: string;
+}): Promise<void> {
+  await db
+    .update(faqs)
+    .set({
+      question: input.question,
+      answer: input.answer,
+      topic: input.topic,
+    })
+    .where(eq(faqs.id, input.id));
+}
+
+export async function deleteFaq(id: string): Promise<void> {
+  await db.delete(faqs).where(eq(faqs.id, id));
+}
+
 export async function countFaqs(workshopId: string | null): Promise<number> {
   const where =
     workshopId === null ? isNull(faqs.workshopId) : eq(faqs.workshopId, workshopId);

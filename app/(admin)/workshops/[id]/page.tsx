@@ -11,6 +11,7 @@ import { WorkshopControls } from "@/components/admin/WorkshopControls";
 import { PollManager } from "@/components/admin/PollManager";
 import { WorkshopWorkspace } from "@/components/admin/WorkshopWorkspace";
 import { ChatsPanel } from "@/components/admin/ChatsPanel";
+import { KnowledgeBasePanel } from "@/components/admin/KnowledgeBasePanel";
 import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
 import { updateStatus, updateSettings } from "./actions";
@@ -99,6 +100,11 @@ export default async function WorkshopDetailPage({
               Vamshi.AI chats
             </h2>
             <ChatsPanel workshopId={id} />
+          </div>
+        }
+        knowledgeBase={
+          <div>
+            <KnowledgeBasePanel workshopId={id} />
           </div>
         }
         quickSettings={
