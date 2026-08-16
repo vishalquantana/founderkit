@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { motion } from "motion/react";
 import type { WorkshopStatus } from "@/db/schema";
 import type { WorkshopSettings } from "@/db/queries/workshops";
+import { resetAllPollsAction } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 export interface WorkshopControlsProps {
   workshopId: string;
@@ -69,6 +70,8 @@ export function WorkshopControls({
   const [currentStatus, setCurrentStatus] = useState(status);
   const [currentSettings, setCurrentSettings] = useState(settings);
   const [isPending, startTransition] = useTransition();
+  const [confirmResetAll, setConfirmResetAll] = useState(false);
+  const [isResettingAll, startResetAllTransition] = useTransition();
 
   function changeStatus(next: WorkshopStatus) {
     setCurrentStatus(next);
@@ -81,6 +84,17 @@ export function WorkshopControls({
     setCurrentSettings(next);
     startTransition(async () => {
       await onUpdateSettings(workshopId, next);
+    });
+  }
+
+  function handleResetAllClick() {
+    if (!confirmResetAll) {
+      setConfirmResetAll(true);
+      return;
+    }
+    startResetAllTransition(async () => {
+      await resetAllPollsAction(workshopId);
+      setConfirmResetAll(false);
     });
   }
 
@@ -119,7 +133,27 @@ export function WorkshopControls({
 
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-          Live views
+          Lean Canvas
+        </h2>
+        <div className="flex flex-col gap-2">
+          <ToggleRow
+            label="Unlock Lean Canvas"
+            checked={currentSettings.canvasUnlocked}
+            disabled={isPending}
+            onChange={(next) => changeSettings({ ...currentSettings, canvasUnlocked: next })}
+          />
+          <ToggleRow
+            label="AI Follow-up Questions"
+            checked={currentSettings.probeEnabled}
+            disabled={isPending}
+            onChange={(next) => changeSettings({ ...currentSettings, probeEnabled: next })}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+          Projected views
         </h2>
         <div className="flex flex-col gap-2">
           <ToggleRow
@@ -155,32 +189,37 @@ export function WorkshopControls({
               })
             }
           />
-        </div>
-      </div>
-
-      <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-          Other settings
-        </h2>
-        <div className="flex flex-col gap-2">
           <ToggleRow
             label="Leaderboard"
             checked={currentSettings.leaderboard}
             disabled={isPending}
             onChange={(next) => changeSettings({ ...currentSettings, leaderboard: next })}
           />
-          <ToggleRow
-            label="Probe questions"
-            checked={currentSettings.probeEnabled}
-            disabled={isPending}
-            onChange={(next) => changeSettings({ ...currentSettings, probeEnabled: next })}
-          />
-          <ToggleRow
-            label="Unlock Lean Canvas"
-            checked={currentSettings.canvasUnlocked}
-            disabled={isPending}
-            onChange={(next) => changeSettings({ ...currentSettings, canvasUnlocked: next })}
-          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Polls</h2>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-3">
+          <button
+            type="button"
+            disabled={isResettingAll}
+            onClick={handleResetAllClick}
+            className={`self-start rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              confirmResetAll
+                ? "bg-amber-500 text-white hover:bg-amber-400"
+                : "pulse-btn-secondary"
+            }`}
+          >
+            {isResettingAll
+              ? "Resetting…"
+              : confirmResetAll
+                ? "Confirm reset all?"
+                : "Reset all poll responses"}
+          </button>
+          <p className="text-xs text-muted">
+            Clears every vote across all questions so you can re-run them.
+          </p>
         </div>
       </div>
     </div>

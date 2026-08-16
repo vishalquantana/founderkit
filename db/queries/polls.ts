@@ -1,4 +1,4 @@
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, inArray } from "drizzle-orm";
 import { db } from "../client";
 import { polls, pollVotes } from "../schema";
 import { newId } from "@/lib/ids";
@@ -45,6 +45,19 @@ export async function deletePoll(pollId: string): Promise<void> {
 /** Delete all votes for a poll, resetting its tally to zero without deleting the poll itself. */
 export async function deletePollVotes(pollId: string): Promise<void> {
   await db.delete(pollVotes).where(eq(pollVotes.pollId, pollId));
+}
+
+/** Delete all votes across every poll in a workshop, resetting every tally to zero. */
+export async function deleteAllPollVotes(workshopId: string): Promise<void> {
+  const workshopPolls = await listPolls(workshopId);
+  if (workshopPolls.length === 0) return;
+
+  await db.delete(pollVotes).where(
+    inArray(
+      pollVotes.pollId,
+      workshopPolls.map((p) => p.id),
+    ),
+  );
 }
 
 export async function getPoll(pollId: string): Promise<Poll | undefined> {
