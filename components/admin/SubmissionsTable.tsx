@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
 import { STAGE_META } from "@/lib/readiness";
-import { LEAN_CANVAS_BLOCKS } from "@/lib/result-view";
 import type { EvaluationResult } from "@/ai/schema";
 import type { Participant } from "@/db/queries/participants";
 import type { ReadinessStage, SectionKey } from "@/db/schema";
@@ -48,7 +46,6 @@ function sortByReadiness(submissions: SubmissionRow[]): SubmissionRow[] {
  * the full founder result view.
  */
 export function SubmissionsTable({ submissions, workshopId, className }: SubmissionsTableProps) {
-  const [openId, setOpenId] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("recent");
 
   const orderedSubmissions = useMemo(
@@ -107,22 +104,19 @@ export function SubmissionsTable({ submissions, workshopId, className }: Submiss
         <span>Completed</span>
       </div>
 
-      {orderedSubmissions.map(({ participant, result, answers }) => {
-        const isOpen = openId === participant.id;
+      {orderedSubmissions.map(({ participant, result }) => {
         const stageColor = result ? STAGE_COLOR_VAR[result.readinessStage] : null;
 
         return (
-          <div
+          <Link
             key={participant.id}
-            className="overflow-hidden rounded-2xl border border-border bg-surface backdrop-blur-sm"
+            href={`/workshops/${workshopId}/submissions/${participant.id}`}
+            className="block overflow-hidden rounded-2xl border border-border bg-surface backdrop-blur-sm transition-colors hover:border-border-strong hover:bg-surface-strong"
           >
             <div className="grid w-full grid-cols-2 items-center gap-3 px-4 py-3 text-sm sm:grid-cols-[1.5fr_1.5fr_1fr_0.7fr_1fr_0.8fr]">
-              <Link
-                href={`/workshops/${workshopId}/submissions/${participant.id}`}
-                className="col-span-2 font-medium text-foreground transition-colors hover:text-accent hover:underline sm:col-span-1"
-              >
+              <span className="col-span-2 font-medium text-foreground sm:col-span-1">
                 {participant.founderName}
-              </Link>
+              </span>
               <span className="col-span-2 text-muted sm:col-span-1">{participant.startupName}</span>
               <span className="text-muted">{participant.sector ?? "—"}</span>
               <span className="tabular-nums text-muted">
@@ -148,58 +142,10 @@ export function SubmissionsTable({ submissions, workshopId, className }: Submiss
               </span>
               <span className="flex items-center justify-between gap-2 tabular-nums text-muted">
                 {formatCompletedAt(participant.completedAt)}
-                <button
-                  type="button"
-                  onClick={() => setOpenId(isOpen ? null : participant.id)}
-                  aria-expanded={isOpen}
-                  className="text-xs font-medium text-muted underline-offset-2 transition-colors hover:text-foreground hover:underline"
-                >
-                  {isOpen ? "Hide" : "Preview"}
-                </button>
+                <span className="text-xs font-semibold text-accent">View →</span>
               </span>
             </div>
-
-            <AnimatePresence initial={false}>
-              {isOpen ? (
-                <motion.div
-                  key="drill-in"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden border-t border-border"
-                >
-                  <div className="flex flex-col gap-4 px-4 py-4">
-                    {result ? (
-                      <p className="text-sm leading-relaxed text-muted">{result.summary}</p>
-                    ) : (
-                      <p className="text-sm italic text-muted">
-                        This participant has not completed the workshop yet.
-                      </p>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {LEAN_CANVAS_BLOCKS.filter((block) => block.source).map((block) => {
-                        const answer = answers[block.source!];
-                        if (!answer) return null;
-                        return (
-                          <div
-                            key={block.key}
-                            className="rounded-xl border border-border bg-surface p-3"
-                          >
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                              {block.title}
-                            </p>
-                            <p className="mt-1 text-sm leading-relaxed text-foreground">{answer}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </div>
+          </Link>
         );
       })}
     </div>

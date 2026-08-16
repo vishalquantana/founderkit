@@ -9,6 +9,7 @@ import { StatsPanel } from "@/components/admin/StatsPanel";
 import { SubmissionsTable, type SubmissionRow } from "@/components/admin/SubmissionsTable";
 import { WorkshopControls } from "@/components/admin/WorkshopControls";
 import { PollManager } from "@/components/admin/PollManager";
+import { WorkshopWorkspace } from "@/components/admin/WorkshopWorkspace";
 import { assertOwnership } from "./ownership";
 import { updateStatus, updateSettings } from "./actions";
 import type { SectionKey, WorkshopStatus } from "@/db/schema";
@@ -69,28 +70,27 @@ export default async function WorkshopDetailPage({
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-        {/* Main: stats + submissions */}
-        <div className="flex flex-col gap-8">
-          <StatsPanel workshopId={id} initialStats={stats} />
-
-          <div>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
-              Submissions
-            </h2>
-            <SubmissionsTable submissions={submissionRows} workshopId={id} />
+      <WorkshopWorkspace
+        submissions={
+          <div className="flex flex-col gap-8">
+            <StatsPanel workshopId={id} initialStats={stats} />
+            <div>
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                Submissions
+              </h2>
+              <SubmissionsTable submissions={submissionRows} workshopId={id} />
+            </div>
           </div>
-        </div>
-
-        {/* Sidebar: live polls (questions) + controls, sticky */}
-        <aside className="flex flex-col gap-6 lg:sticky lg:top-20">
+        }
+        polls={
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
-              Live polls
+              Poll questions
             </h2>
             <PollManager workshopId={id} polls={polls} />
           </div>
-
+        }
+        settings={
           <div className="pulse-card p-5">
             <WorkshopControls
               workshopId={id}
@@ -100,8 +100,8 @@ export default async function WorkshopDetailPage({
               onUpdateSettings={updateSettings}
             />
           </div>
-        </aside>
-      </div>
+        }
+      />
     </main>
   );
 }
