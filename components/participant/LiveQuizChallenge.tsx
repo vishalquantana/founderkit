@@ -28,12 +28,11 @@ export function LiveQuizChallenge({
   initialQuestions?: Question[];
   initialSubmission?: { score: number; badgeTitle: string; badgeKey: string } | null;
 }) {
+  const [mounted, setMounted] = useState(false);
   const [phase, setPhase] = useState<"intro" | "playing" | "submitting" | "result">(
     initialSubmission ? "result" : "intro",
   );
-  const [questions, setQuestions] = useState<Question[]>(
-    initialQuestions.length > 0 ? initialQuestions : buildQuizQuestions(),
-  );
+  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -46,7 +45,7 @@ export function LiveQuizChallenge({
   const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    // If questions were not available at initial render, generate them immediately
+    setMounted(true);
     if (questions.length === 0) {
       setQuestions(buildQuizQuestions());
     }

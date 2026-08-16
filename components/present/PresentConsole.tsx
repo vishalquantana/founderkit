@@ -198,7 +198,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
             </span>
           </div>
           <div className="flex flex-col items-center justify-center">
-            <p className="pulse-kicker text-xs font-bold tracking-[0.35em] uppercase">Present Mode</p>
+            <p className="pulse-kicker text-xs font-bold tracking-[0.35em] uppercase">PRESENTS</p>
             <h1 className="font-display text-2xl font-black leading-tight tracking-tight sm:text-4xl text-balance">
               {workshopName}
             </h1>
