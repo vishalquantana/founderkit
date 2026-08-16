@@ -164,7 +164,7 @@ export function CanvasBoard({ result, answers, suggestions, className }: CanvasB
 
             {/* Brand footer, echoing the template's wordmark corner */}
             <div className="pointer-events-none absolute bottom-1 right-1.5 flex items-center gap-1.5 opacity-80">
-              <Image src="/quantana-logo.png" alt="Quantana" width={54} height={12} className="h-3 w-auto" />
+              <Image src="/quantana-logo.svg" alt="Quantana" width={54} height={12} className="h-3 w-auto" />
               <span
                 className={`inline-flex items-center rounded-full px-1.5 py-[1px] text-[6px] font-semibold ${colors.badge}`}
               >

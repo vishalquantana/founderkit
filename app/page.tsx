@@ -7,7 +7,7 @@ export default function Home() {
       <div className="w-full max-w-md">
         <div className="mb-10 flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/quantana-logo.png" alt="Quantana" className="h-7 w-auto" />
+          <img src="/quantana-logo-white.svg" alt="Quantana" className="h-6 w-auto" />
         </div>
 
         <div className="pulse-card p-8">
