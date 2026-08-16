@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import {
   MessageSquare,
@@ -15,6 +16,7 @@ import {
   Check,
   X,
   Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import {
   presenterSendChatMessageAction,
@@ -314,9 +316,18 @@ function ChatPane({
             <p className="text-[11px] text-purple-400 font-medium">{participant.startupName}</p>
           </div>
         </div>
-        <span className="rounded-full bg-purple-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-purple-300">
-          Live Session
-        </span>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/workshops/${workshopId}/submissions/${participant.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pulse-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
+          >
+            <span>View Startup</span>
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </div>
       </div>
 
       {/* Messages Thread (Scroll Area) */}
