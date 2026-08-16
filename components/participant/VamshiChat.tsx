@@ -42,7 +42,7 @@ function Avatar({ size = 40 }: { size?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/vamshi-ai.png"
+      src="/vamshi-ai.jpeg"
       alt="Vamshi.AI"
       width={size}
       height={size}

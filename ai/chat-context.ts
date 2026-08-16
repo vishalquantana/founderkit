@@ -1,6 +1,7 @@
 import { getParticipant } from "@/db/queries/participants";
 import { getResponses } from "@/db/queries/responses";
 import { getResult } from "@/db/queries/results";
+import { getParticipantPollAnswers } from "@/db/queries/polls";
 import { SECTIONS } from "@/lib/sections";
 import { STAGE_META } from "@/lib/readiness";
 
@@ -73,9 +74,14 @@ export async function buildFounderContext(participantId: string): Promise<string
     );
   }
 
-  // No per-participant poll-vote lookup exists in db/queries/polls.ts (votes
-  // are keyed by voterId with no participant join helper), so poll answers
-  // are omitted here rather than guessed at.
+  const pollAnswers = await getParticipantPollAnswers(participantId, participant.workshopId);
+  if (pollAnswers.length > 0) {
+    lines.push(
+      "",
+      "Poll answers:",
+      ...pollAnswers.map((p) => `- ${truncate(p.question, 120)} → ${p.answer}`),
+    );
+  }
 
   const block = lines.join("\n").trim();
   if (block.length === 0) return "";

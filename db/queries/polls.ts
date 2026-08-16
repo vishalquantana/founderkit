@@ -140,6 +140,35 @@ export function tallyVotes(
   return { counts, total };
 }
 
+/**
+ * The poll answers a single participant gave, as question → chosen-option
+ * label pairs. Votes are keyed by `voterId`, which for signed-in founders is
+ * their participant id (see the founder poll UI). Scoped to one workshop's
+ * polls so it never surfaces another workshop's questions.
+ */
+export async function getParticipantPollAnswers(
+  participantId: string,
+  workshopId: string,
+): Promise<{ question: string; answer: string }[]> {
+  const votes = await db.query.pollVotes.findMany({ where: eq(pollVotes.voterId, participantId) });
+  if (votes.length === 0) return [];
+
+  const workshopPolls = await listPolls(workshopId);
+  const byId = new Map(workshopPolls.map((p) => [p.id, p]));
+
+  const answers: { question: string; answer: string }[] = [];
+  for (const vote of votes) {
+    const poll = byId.get(vote.pollId);
+    if (!poll) continue;
+    const options = poll.options as string[];
+    answers.push({
+      question: poll.question,
+      answer: options[vote.choiceIndex] ?? `Option ${vote.choiceIndex + 1}`,
+    });
+  }
+  return answers;
+}
+
 export async function getPollTally(pollId: string): Promise<{ counts: number[]; total: number }> {
   const poll = await getPoll(pollId);
   if (!poll) return { counts: [], total: 0 };
