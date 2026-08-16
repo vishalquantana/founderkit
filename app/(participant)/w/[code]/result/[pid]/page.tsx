@@ -3,6 +3,7 @@ import { getParticipant } from "@/db/queries/participants";
 import { getResponses } from "@/db/queries/responses";
 import { getOrCreateResult } from "@/ai/evaluate";
 import { ResultView } from "@/components/result/ResultView";
+import { FounderTabBar } from "@/components/participant/FounderTabBar";
 import { resultAccessState } from "../result-guard";
 import type { SectionKey } from "@/db/schema";
 
@@ -56,16 +57,24 @@ export default async function ResultPage({
   }, {} as Record<SectionKey, string>);
 
   const result = await getOrCreateResult(pid);
+  const canvasUnlocked = Boolean(
+    (workshop!.settings as import("@/db/queries/workshops").WorkshopSettings | null)?.canvasUnlocked,
+  );
 
   return (
-    <ResultView
-      result={result}
-      answers={answers}
-      founderName={participant!.founderName}
-      startupName={participant!.startupName}
-      code={code}
-      pid={pid}
-      editable
-    />
+    <>
+      <div className="pb-24">
+        <ResultView
+          result={result}
+          answers={answers}
+          founderName={participant!.founderName}
+          startupName={participant!.startupName}
+          code={code}
+          pid={pid}
+          editable
+        />
+      </div>
+      <FounderTabBar code={code} pid={pid} active="canvas" canvasUnlocked={canvasUnlocked} hasResult />
+    </>
   );
 }
