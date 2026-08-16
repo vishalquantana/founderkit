@@ -243,13 +243,19 @@ export function GrowthPlanView({
           </div>
         </div>
 
-        <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs font-medium text-amber-950 dark:text-amber-200">
-          <span className="font-bold block text-[10px] uppercase">Biggest Distribution Risk:</span>
+        <div
+          className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs font-medium text-amber-950 dark:text-amber-200"
+          style={{ color: "var(--testing-text, #78350f)" }}
+        >
+          <span className="font-bold block text-[10px] uppercase opacity-80">Biggest Distribution Risk:</span>
           {plan?.biggestRisk}
         </div>
 
-        <div className="mt-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-950 dark:text-emerald-200">
-          <span className="font-bold block text-[10px] uppercase">Low-Hanging Opportunity:</span>
+        <div
+          className="mt-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-950 dark:text-emerald-200"
+          style={{ color: "var(--strength-text, #064e3b)" }}
+        >
+          <span className="font-bold block text-[10px] uppercase opacity-80">Low-Hanging Opportunity:</span>
           {plan?.lowHangingOpportunity}
         </div>
       </div>
