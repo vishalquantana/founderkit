@@ -15,6 +15,9 @@ export function AppNav() {
   const pathname = usePathname();
   if (pathname?.startsWith("/present")) return null;
 
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const logoHref = segments[0] === "w" && segments[1] ? `/w/${segments[1]}` : "/";
+
   return (
     <header
       className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 backdrop-blur-md"
@@ -23,7 +26,7 @@ export function AppNav() {
         borderBottom: "1px solid var(--pulse-border)",
       }}
     >
-      <Link href="/" className="flex items-center gap-2.5">
+      <Link href={logoHref} className="flex items-center gap-2.5">
         <Image src="/quantana-logo.svg" alt="Quantana" width={82} height={18} className="nav-logo h-4 w-auto" priority />
         <span
           className="border-l pl-2.5 text-xs font-semibold tracking-wide"

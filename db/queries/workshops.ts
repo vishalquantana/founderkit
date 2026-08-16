@@ -8,6 +8,7 @@ export type WorkshopSettings = {
   liveViews: { dashboard: boolean; wordCloud: boolean; progression: boolean };
   leaderboard: boolean;
   probeEnabled: boolean;
+  canvasUnlocked: boolean;
 };
 
 export type Workshop = typeof workshops.$inferSelect;

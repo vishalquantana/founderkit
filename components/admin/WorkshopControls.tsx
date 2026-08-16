@@ -175,6 +175,12 @@ export function WorkshopControls({
             disabled={isPending}
             onChange={(next) => changeSettings({ ...currentSettings, probeEnabled: next })}
           />
+          <ToggleRow
+            label="Unlock Lean Canvas"
+            checked={currentSettings.canvasUnlocked}
+            disabled={isPending}
+            onChange={(next) => changeSettings({ ...currentSettings, canvasUnlocked: next })}
+          />
         </div>
       </div>
     </div>

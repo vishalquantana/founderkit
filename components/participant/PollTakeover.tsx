@@ -21,7 +21,6 @@ interface ActivePollResponse {
 
 const OPTION_LABELS = "ABCDEFGHIJ";
 const VOTED_KEY = "mrs-voted";
-const VOTER_KEY = "mrs-voter";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -47,7 +46,10 @@ function markVoted(pollId: string): void {
   }
 }
 
-function resolveVoterId(code: string): string {
+/** Only resolves a voter id for founders who have actually signed up — no
+ * anon-uuid fallback, so the takeover stays hidden for brand-new visitors
+ * still on the signup page. */
+function resolveVoterId(code: string): string | null {
   try {
     const progressRaw = localStorage.getItem(`mrs-progress-${code}`);
     if (progressRaw) {
@@ -57,16 +59,7 @@ function resolveVoterId(code: string): string {
   } catch {
     /* ignore malformed storage, fall through */
   }
-
-  try {
-    const existing = localStorage.getItem(VOTER_KEY);
-    if (existing) return existing;
-    const generated = crypto.randomUUID();
-    localStorage.setItem(VOTER_KEY, generated);
-    return generated;
-  } catch {
-    return crypto.randomUUID();
-  }
+  return null;
 }
 
 export function PollTakeover({ code }: PollTakeoverProps) {
@@ -95,7 +88,7 @@ export function PollTakeover({ code }: PollTakeoverProps) {
 
   const poll = data?.poll ?? null;
   const alreadyResponded = poll ? hasVoted(votedIds, poll.id) : true;
-  const visible = Boolean(poll) && (!alreadyResponded || thanks);
+  const visible = Boolean(poll) && Boolean(voterId) && (!alreadyResponded || thanks);
 
   async function handleVote(choiceIndex: number) {
     if (!poll || !voterId || submitting) return;

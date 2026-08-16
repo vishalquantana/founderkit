@@ -1,7 +1,7 @@
-import { getWorkshopByJoinCode } from "@/db/queries/workshops";
+import { getWorkshopByJoinCode, type WorkshopSettings } from "@/db/queries/workshops";
 import { getParticipant } from "@/db/queries/participants";
 import { getResponses } from "@/db/queries/responses";
-import { getOrCreateResult } from "@/ai/evaluate";
+import { getResult } from "@/db/queries/results";
 import { FounderHome } from "@/components/result/FounderHome";
 import { resultAccessState } from "../../result/result-guard";
 import type { SectionKey } from "@/db/schema";
@@ -55,7 +55,9 @@ export default async function FounderHomePage({
     return acc;
   }, {} as Record<SectionKey, string>);
 
-  const result = await getOrCreateResult(pid);
+  const result = (await getResult(pid)) ?? null;
+  const completed = Boolean(participant!.completedAt);
+  const canvasUnlocked = Boolean((workshop!.settings as WorkshopSettings | null)?.canvasUnlocked);
 
   return (
     <FounderHome
@@ -70,6 +72,8 @@ export default async function FounderHomePage({
         businessModel: participant!.businessModel,
       }}
       result={result}
+      completed={completed}
+      canvasUnlocked={canvasUnlocked}
       answers={answers}
       code={code}
       pid={pid}

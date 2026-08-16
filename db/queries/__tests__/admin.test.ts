@@ -98,6 +98,7 @@ describe("admin queries", () => {
       liveViews: { dashboard: false, wordCloud: false, progression: false },
       leaderboard: false,
       probeEnabled: false,
+      canvasUnlocked: false,
     });
     const row = await testDb.query.workshops.findFirst({ where: (w, { eq }) => eq(w.id, "w1") });
     expect(row?.status).toBe("live");
@@ -105,6 +106,7 @@ describe("admin queries", () => {
       liveViews: { dashboard: false, wordCloud: false, progression: false },
       leaderboard: false,
       probeEnabled: false,
+      canvasUnlocked: false,
     });
   });
 });
