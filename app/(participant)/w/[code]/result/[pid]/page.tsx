@@ -4,6 +4,8 @@ import { getResponses } from "@/db/queries/responses";
 import { getOrCreateResult } from "@/ai/evaluate";
 import { ResultView } from "@/components/result/ResultView";
 import { FounderTabBar } from "@/components/participant/FounderTabBar";
+import { LockScreen } from "@/components/participant/LockScreen";
+import { isParticipantLocked } from "@/db/queries/chat";
 import { resultAccessState } from "../result-guard";
 import type { SectionKey } from "@/db/schema";
 
@@ -13,6 +15,11 @@ export default async function ResultPage({
   params: Promise<{ code: string; pid: string }>;
 }) {
   const { code, pid } = await params;
+
+  if (await isParticipantLocked(pid)) {
+    return <LockScreen code={code} participantId={pid} />;
+  }
+
   const workshop = await getWorkshopByJoinCode(code);
   const participant = await getParticipant(pid);
 
