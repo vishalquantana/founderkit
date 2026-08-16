@@ -4,7 +4,7 @@ import { motion, useReducedMotion, type Variants } from "motion/react";
 import { StageReveal } from "@/components/motion/StageReveal";
 import { StageBadge } from "@/components/result/StageBadge";
 import { DimensionBars } from "@/components/result/DimensionBars";
-import { CanvasBoard } from "@/components/result/CanvasBoard";
+import { LeanCanvasExplorer } from "@/components/result/LeanCanvasExplorer";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey, ReadinessStage } from "@/db/schema";
 
@@ -189,10 +189,8 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
       <div className="flex flex-col gap-3">
         <SectionLabel>Your lean canvas</SectionLabel>
-        <p className="text-xs text-muted">Tap a tile to see the full answer and how it scored.</p>
-        <div className="pulse-card p-3 sm:p-5">
-          <CanvasBoard result={result} answers={answers} suggestions={result.sectionFeedback} />
-        </div>
+        <p className="text-xs text-muted">Tap a block on the map, or swipe through each area.</p>
+        <LeanCanvasExplorer result={result} answers={answers} />
       </div>
     </div>
   );

@@ -65,6 +65,15 @@ export function cellFeedback(score: number, max: number): CellFeedback {
   return { label: "Worth sharpening", tone: "sharpen" };
 }
 
+/** Mini-map cell tone: the feedback tone when scored, else "empty". */
+export function canvasCellTone(
+  score: number | undefined,
+  max: number | undefined,
+): "strong" | "growing" | "sharpen" | "empty" {
+  if (score === undefined || max === undefined || max <= 0) return "empty";
+  return cellFeedback(score, max).tone;
+}
+
 export interface LeanCanvasSubBlock {
   key: string;
   title: string;
