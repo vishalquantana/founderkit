@@ -1,32 +1,44 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { QRCodeSVG } from "qrcode.react";
 
 export interface PollResultsViewProps {
   question: string;
   options: string[];
   counts: number[];
   total: number;
+  joinUrl?: string;
 }
 
 function percentFor(count: number, total: number): number {
   return total > 0 ? (count / total) * 100 : 0;
 }
 
-export function PollResultsView({ question, options, counts, total }: PollResultsViewProps) {
+export function PollResultsView({ question, options, counts, total, joinUrl }: PollResultsViewProps) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
     <div className="flex flex-col items-center gap-10">
-      <div className="text-center">
-        <p className="pulse-kicker text-lg tracking-[0.3em]">Live poll</p>
-        <h2 className="font-display mt-2 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-          {question}
-        </h2>
-        <p className="mt-3 text-lg font-medium text-[var(--pulse-text-muted)]">
-          <span className="font-display font-bold tabular-nums text-[var(--pulse-gold)]">{total}</span>{" "}
-          response{total === 1 ? "" : "s"}
-        </p>
+      <div className="flex w-full flex-col items-center gap-6 sm:flex-row sm:justify-center sm:gap-10">
+        <div className="text-center sm:text-left">
+          <p className="pulse-kicker text-lg tracking-[0.3em]">Live poll</p>
+          <h2 className="font-display mt-2 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
+            {question}
+          </h2>
+          <p className="mt-3 text-lg font-medium text-[var(--pulse-text-muted)]">
+            <span className="font-display font-bold tabular-nums text-[var(--pulse-gold)]">{total}</span>{" "}
+            response{total === 1 ? "" : "s"}
+          </p>
+        </div>
+        {joinUrl ? (
+          <div className="flex shrink-0 flex-col items-center gap-2">
+            <div className="rounded-xl bg-white p-3">
+              <QRCodeSVG value={joinUrl} size={140} level="M" includeMargin />
+            </div>
+            <p className="text-sm font-medium text-[var(--pulse-text-muted)]">Scan to answer</p>
+          </div>
+        ) : null}
       </div>
 
       <div className="w-full max-w-4xl space-y-5">

@@ -213,6 +213,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                     options={pollResults.poll.options}
                     counts={pollResults.tally?.counts ?? []}
                     total={pollResults.tally?.total ?? 0}
+                    joinUrl={joinUrl}
                   />
                 ) : (
                   <p className="text-center text-[var(--pulse-text-muted)]">Loading poll…</p>
