@@ -5,7 +5,7 @@ export const ABUSE_REPLY = "⚠️ This has been reported to the organizers.";
 export const INJECTION_REPLY =
   "I can't do that. I'm here to help with your startup questions.";
 export const IDENTITY_REPLY =
-  "I'm Vamshi.AI, an assistant built for this event. Let's get back to your startup.";
+  "I'm Vamshi.AI, your growth & GTM advisor built for this workshop. Let's get into your startup — what are you building or testing right now?";
 
 const UNLOCK_RE = /^\s*quantana\s*unlock\s*$/i;
 
@@ -27,7 +27,7 @@ const INJECTION_RE = new RegExp(
 );
 
 const IDENTITY_RE =
-  /\b(are you (a )?(real|human|bot|ai)|what (model|llm|ai) are you|who made you|system prompt)\b/i;
+  /\b(who are (you|tou|u)|who are you\??|who made you|what are you|who is this|introduce yourself|tell me about yourself|are you (a )?(real|human|bot|ai)|what (model|llm|ai) are you|system prompt)\b/i;
 
 // Small curated list of profanity/harassment/threat terms, matched on word
 // boundaries so partial matches inside unrelated words don't trigger.

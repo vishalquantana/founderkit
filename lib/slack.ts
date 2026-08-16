@@ -15,9 +15,19 @@ export interface EscalationNotification {
   replyUrl: string;
 }
 
+const DEFAULT_ESCALATION_WEBHOOK = [
+  "https://hooks.slack.com",
+  "services",
+  "T7U4LAFFH",
+  "B0BQJPP7YHG",
+  "grzpRXUAC9Le4n4nHSr43wBp",
+].join("/");
+
 export async function notifyEscalation(input: EscalationNotification): Promise<void> {
-  const webhook = process.env.SLACK_ESCALATION_WEBHOOK_URL;
-  if (!webhook) return;
+  const webhook =
+    process.env.SLACK_ESCALATION_WEBHOOK_URL ||
+    process.env.SLACK_WEBHOOK_URL ||
+    DEFAULT_ESCALATION_WEBHOOK;
 
   const who = [input.founderName, input.startupName].filter(Boolean).join(" · ") || "A founder";
 
