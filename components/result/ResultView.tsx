@@ -174,11 +174,33 @@ export function ResultView({
       return;
     }
     try {
+      // Fonts must be ready or the first capture can come out blank.
+      if (typeof document !== "undefined" && document.fonts?.ready) {
+        await document.fonts.ready;
+      }
       const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(node, { cacheBust: true, pixelRatio: 1 });
+      const dataUrl = await toPng(node, { cacheBust: true, pixelRatio: 2 });
+
+      const fileName = "my-startup-readiness.png";
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      // iOS Safari ignores the <a download> attribute — use the native share
+      // sheet (Save to Photos) when the device can share files. Desktop falls
+      // back to a direct download.
+      const nav = typeof navigator !== "undefined" ? navigator : undefined;
+      if (nav?.canShare && nav.canShare({ files: [file] })) {
+        try {
+          await nav.share({ files: [file], title: `${startupName} · readiness` });
+          return;
+        } catch {
+          // user cancelled the share sheet, or it failed — fall through to download
+        }
+      }
+
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = "my-startup-readiness.png";
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -249,7 +271,7 @@ export function ResultView({
               pendingChildren={<>Sharing…</>}
             >
               <ShareIcon />
-              {linkCopied ? "Link copied!" : "Share / Save"}
+              {linkCopied ? "Link copied!" : "Share"}
             </ActionButton>
 
             <ActionButton
