@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
@@ -14,10 +14,25 @@ import { WordCloudView } from "@/components/present/WordCloudView";
 import { ProgressionView } from "@/components/present/ProgressionView";
 import { PollResultsView } from "@/components/present/PollResultsView";
 
+interface PollOverviewItem {
+  id: string;
+  question: string;
+  options: string[];
+  status: string;
+  position: number;
+}
+
+interface PollsOverviewResponse {
+  polls: PollOverviewItem[];
+  activePollId: string | null;
+}
+
 interface PollResultsResponse {
   poll: { id: string; question: string; options: string[] } | null;
   tally: { counts: number[]; total: number } | null;
 }
+
+type Selection = { kind: "view"; view: PresentView } | { kind: "poll"; pollId: string };
 
 export interface PresentConsoleProps {
   workshopId: string;
@@ -43,40 +58,61 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
     revalidateOnFocus: false,
   });
 
-  const { data: pollData } = useSWR<PollResultsResponse>(
-    `/api/workshops/${workshopId}/poll-results`,
+  const { data: pollsOverview } = useSWR<PollsOverviewResponse>(
+    `/api/workshops/${workshopId}/polls-overview`,
     fetcher,
-    { refreshInterval: 3000, revalidateOnFocus: false },
+    { refreshInterval: 4000, revalidateOnFocus: false },
   );
 
   const presentData = data ?? initialData;
   const effectiveSettings = presentData.settings ?? settings;
   const views = useMemo(() => availableViews(effectiveSettings), [effectiveSettings]);
 
-  const [index, setIndex] = useState(0);
+  const [selection, setSelection] = useState<Selection>({ kind: "view", view: "welcome" });
+
+  const polls = pollsOverview?.polls ?? [];
+  const activePollId = pollsOverview?.activePollId ?? null;
+  const previousActivePollId = useRef<string | null>(null);
+
+  // Auto-select a poll ONLY on the activePollId transition (null -> id, or
+  // id -> a different id) so the presenter isn't yanked back to it on every
+  // 4s refresh once they've navigated away.
+  useEffect(() => {
+    if (activePollId && activePollId !== previousActivePollId.current) {
+      setSelection({ kind: "poll", pollId: activePollId });
+    }
+    previousActivePollId.current = activePollId;
+  }, [activePollId]);
 
   useEffect(() => {
-    if (index >= views.length) setIndex(0);
-  }, [views, index]);
+    if (selection.kind === "view" && !views.includes(selection.view)) {
+      setSelection({ kind: "view", view: "welcome" });
+    }
+  }, [views, selection]);
 
-  const goPrev = useCallback(() => {
-    setIndex((i) => (i - 1 + views.length) % views.length);
-  }, [views.length]);
-
-  const goNext = useCallback(() => {
-    setIndex((i) => (i + 1) % views.length);
-  }, [views.length]);
+  const selectedPollId = selection.kind === "poll" ? selection.pollId : null;
+  const { data: pollResults } = useSWR<PollResultsResponse>(
+    selectedPollId ? `/api/polls/${selectedPollId}/results` : null,
+    fetcher,
+    { refreshInterval: 3000, revalidateOnFocus: false },
+  );
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "ArrowLeft") goPrev();
-      if (e.key === "ArrowRight") goNext();
+      if (selection.kind !== "view") return;
+      const i = views.indexOf(selection.view);
+      if (i === -1) return;
+      if (e.key === "ArrowLeft") {
+        setSelection({ kind: "view", view: views[(i - 1 + views.length) % views.length] });
+      }
+      if (e.key === "ArrowRight") {
+        setSelection({ kind: "view", view: views[(i + 1) % views.length] });
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [goPrev, goNext]);
+  }, [selection, views]);
 
-  const activeView: PresentView = views[index] ?? "dashboard";
   const joinUrl = getJoinUrl(joinCode);
 
   return (
@@ -99,63 +135,109 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
           <p className="pulse-kicker">Present Mode</p>
           <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{workshopName}</h1>
         </div>
-        <nav className="flex items-center gap-2" aria-label="View switcher">
-          {views.map((view, i) => (
-            <button
-              key={view}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-pressed={i === index}
-              className={[
-                "rounded-full px-5 py-2 text-sm font-semibold tracking-tight transition-colors duration-150",
-                i === index
-                  ? "pulse-btn"
-                  : "pulse-btn-secondary",
-              ].join(" ")}
-            >
-              {VIEW_LABELS[view]}
-            </button>
-          ))}
-        </nav>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-6 py-8 sm:px-10">
-        <AnimatePresence mode="wait">
-          {pollData?.poll ? (
-            <motion.div
-              key="poll-results"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="w-full max-w-6xl"
-            >
-              <PollResultsView
-                question={pollData.poll.question}
-                options={pollData.poll.options}
-                counts={pollData.tally?.counts ?? []}
-                total={pollData.tally?.total ?? 0}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key={activeView}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="w-full max-w-6xl"
-            >
-              {activeView === "welcome" && (
-                <WelcomeView workshopName={workshopName} joinCode={joinCode} joinUrl={joinUrl} />
-              )}
-              {activeView === "dashboard" && <AggregateView data={presentData} />}
-              {activeView === "wordcloud" && <WordCloudView data={presentData} />}
-              {activeView === "progression" && <ProgressionView data={presentData} />}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+      <div className="flex flex-1 gap-6 px-6 py-8 sm:px-10">
+        <aside className="flex w-[260px] shrink-0 flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--pulse-border)] bg-black/20 p-4">
+          <div>
+            <p className="pulse-kicker mb-2 px-2 text-xs">Views</p>
+            <nav className="flex flex-col gap-1" aria-label="View switcher">
+              {views.map((view) => {
+                const isSelected = selection.kind === "view" && selection.view === view;
+                return (
+                  <button
+                    key={view}
+                    type="button"
+                    onClick={() => setSelection({ kind: "view", view })}
+                    aria-pressed={isSelected}
+                    className={[
+                      "rounded-lg px-3 py-2 text-left text-sm font-semibold tracking-tight transition-colors duration-150",
+                      isSelected ? "pulse-btn" : "pulse-btn-secondary",
+                    ].join(" ")}
+                  >
+                    {VIEW_LABELS[view]}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          <div>
+            <p className="pulse-kicker mb-2 px-2 text-xs">Polls</p>
+            {polls.length === 0 ? (
+              <p className="px-2 text-xs text-[var(--pulse-text-muted)]">No polls yet</p>
+            ) : (
+              <nav className="flex flex-col gap-1" aria-label="Poll switcher">
+                {polls.map((poll) => {
+                  const isSelected = selection.kind === "poll" && selection.pollId === poll.id;
+                  const isLive = poll.id === activePollId;
+                  return (
+                    <button
+                      key={poll.id}
+                      type="button"
+                      onClick={() => setSelection({ kind: "poll", pollId: poll.id })}
+                      aria-pressed={isSelected}
+                      className={[
+                        "flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold tracking-tight transition-colors duration-150",
+                        isSelected ? "pulse-btn" : "pulse-btn-secondary",
+                      ].join(" ")}
+                    >
+                      <span className="truncate">{poll.question}</span>
+                      {isLive && (
+                        <span className="shrink-0 rounded-full bg-[var(--pulse-gold)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
+                          Live
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            )}
+          </div>
+        </aside>
+
+        <main className="flex flex-1 items-center justify-center">
+          <AnimatePresence mode="wait">
+            {selection.kind === "poll" ? (
+              <motion.div
+                key={`poll-${selection.pollId}`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="w-full max-w-6xl"
+              >
+                {pollResults?.poll ? (
+                  <PollResultsView
+                    question={pollResults.poll.question}
+                    options={pollResults.poll.options}
+                    counts={pollResults.tally?.counts ?? []}
+                    total={pollResults.tally?.total ?? 0}
+                  />
+                ) : (
+                  <p className="text-center text-[var(--pulse-text-muted)]">Loading poll…</p>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key={selection.view}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="w-full max-w-6xl"
+              >
+                {selection.view === "welcome" && (
+                  <WelcomeView workshopName={workshopName} joinCode={joinCode} joinUrl={joinUrl} />
+                )}
+                {selection.view === "dashboard" && <AggregateView data={presentData} />}
+                {selection.view === "wordcloud" && <WordCloudView data={presentData} />}
+                {selection.view === "progression" && <ProgressionView data={presentData} />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--pulse-border)] bg-black/30 px-8 py-6">
         <div className="flex items-center gap-4">
