@@ -36,9 +36,14 @@ export function DimensionBars({ scores, total, className }: DimensionBarsProps) 
     <div className={className}>
       <div className="mb-5 flex items-baseline justify-between">
         <h2 className="pulse-kicker">Readiness score</h2>
-        <p className="font-display text-2xl font-bold text-[#ECEAF6]">
+        <p className="font-display text-2xl font-bold" style={{ color: "var(--pulse-text)" }}>
           <AnimatedNumber value={overall} />
-          <span className="ml-1 text-sm font-medium text-[#A9A9C9]">/ 100</span>
+          <span
+            className="ml-1 text-sm font-medium"
+            style={{ color: "var(--pulse-text-muted)" }}
+          >
+            / 100
+          </span>
         </p>
       </div>
 
@@ -51,12 +56,20 @@ export function DimensionBars({ scores, total, className }: DimensionBarsProps) 
           return (
             <li key={dim} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-[#ECEAF6]">{DIMENSION_LABELS[dim]}</span>
-                <span className="tabular-nums text-[#A9A9C9]">
+                <span className="font-medium" style={{ color: "var(--pulse-text)" }}>
+                  {DIMENSION_LABELS[dim]}
+                </span>
+                <span
+                  className="tabular-nums"
+                  style={{ color: "var(--pulse-text-muted)" }}
+                >
                   {score}/{max}
                 </span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/[0.08]">
+              <div
+                className="h-2.5 w-full overflow-hidden rounded-full"
+                style={{ background: "var(--pulse-track)" }}
+              >
                 <motion.div
                   className="h-full rounded-full"
                   style={{ background: "var(--pulse-gradient)" }}

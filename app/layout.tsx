@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Orbitron, Chakra_Petch } from "next/font/google";
 import "./globals.css";
+import { ThemeControl } from "@/components/ThemeControl";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <ThemeControl />
+      </body>
     </html>
   );
 }

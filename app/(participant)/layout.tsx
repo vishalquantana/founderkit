@@ -6,7 +6,10 @@ export default function ParticipantLayout({ children }: { children: ReactNode })
   return (
     <MotionConfig>
       <div className="min-h-screen">
-        <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10 text-[#ECEAF6]">
+        <div
+          className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-10"
+          style={{ color: "var(--pulse-text)" }}
+        >
           {children}
         </div>
         <FontSizeControl />

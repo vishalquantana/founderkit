@@ -48,11 +48,15 @@ export function FontSizeControl() {
         onClick={() => change(-STEP)}
         disabled={px <= MIN}
         aria-label="Decrease text size"
-        className="flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-bold text-[#ECEAF6] transition active:scale-90 disabled:opacity-30"
+        className="flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-bold transition active:scale-90 disabled:opacity-30"
+        style={{ color: "var(--pulse-text)" }}
       >
         A−
       </button>
-      <span className="w-8 text-center text-[10px] font-semibold text-[#A9A9C9]">
+      <span
+        className="w-8 text-center text-[10px] font-semibold"
+        style={{ color: "var(--pulse-text-muted)" }}
+      >
         {Math.round((px / DEFAULT) * 100)}%
       </span>
       <button
@@ -60,7 +64,8 @@ export function FontSizeControl() {
         onClick={() => change(STEP)}
         disabled={px >= MAX}
         aria-label="Increase text size"
-        className="flex h-8 w-8 items-center justify-center rounded-full text-[17px] font-bold text-[#ECEAF6] transition active:scale-90 disabled:opacity-30"
+        className="flex h-8 w-8 items-center justify-center rounded-full text-[17px] font-bold transition active:scale-90 disabled:opacity-30"
+        style={{ color: "var(--pulse-text)" }}
       >
         A+
       </button>

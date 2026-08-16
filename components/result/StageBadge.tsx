@@ -48,7 +48,12 @@ export function StageBadge({ stage, className }: StageBadgeProps) {
       >
         {meta.label}
       </span>
-      <p className="max-w-sm text-sm leading-relaxed text-[#A9A9C9]">{meta.blurb}</p>
+      <p
+        className="max-w-sm text-sm leading-relaxed"
+        style={{ color: "var(--pulse-text-muted)" }}
+      >
+        {meta.blurb}
+      </p>
     </motion.div>
   );
 }
