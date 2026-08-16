@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
@@ -151,6 +152,12 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
     >
       <header className="flex flex-wrap items-center justify-between gap-4 px-8 pt-8">
         <div>
+          <Link
+            href={`/workshops/${workshopId}`}
+            className="mb-1 inline-block text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+          >
+            ← Dashboard
+          </Link>
           <div className="mb-2 flex items-center gap-2.5">
             <Image
               src="/quantana-logo.svg"
