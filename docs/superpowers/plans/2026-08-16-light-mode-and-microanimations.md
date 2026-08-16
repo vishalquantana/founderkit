@@ -16,7 +16,8 @@
 - **The Lean Canvas board stays a white "paper" artifact in BOTH themes** (`components/result/CanvasBoard.tsx` / `CanvasCell.tsx` are intentionally `bg-white`/`text-black` — do NOT theme them).
 - **All decorative motion uses transform/opacity only** and must auto-disable under `prefers-reduced-motion` (via `MotionConfig` or a CSS media query for pure-CSS motion).
 - **localStorage keys:** theme = `mrs-theme` (`"light"|"dark"`), font size = `mrs-fontpx` (already in use). Never throw if storage is unavailable.
-- Run the full suite with `npm run test` (vitest); it must stay green (67 existing tests).
+- Run the full suite with `npm run test` (vitest); it must stay green (106 existing tests).
+- **Test convention (binding):** vitest runs in the `node` environment; `@testing-library/react` and jsdom are NOT installed and must NOT be added. Do not write render-based `.test.tsx` tests. Follow the existing pattern (`components/motion/__tests__/animated-number.test.ts`): extract pure logic into a helper and unit-test the helper; verify components themselves via `npm run build` + manual check.
 
 ---
 
@@ -203,13 +204,13 @@ Add a pure, tested helper for resolving the initial theme, and a blocking inline
 - Modify: `app/layout.tsx`
 
 **Interfaces:**
-- Produces: `THEME_STORAGE_KEY = "mrs-theme"`, `FONT_STORAGE_KEY = "mrs-fontpx"`, `type Theme = "light" | "dark"`, `resolveInitialTheme(stored: string | null): Theme` (returns `"dark"` only when `stored === "dark"`, else `"light"`).
+- Produces: `THEME_STORAGE_KEY = "mrs-theme"`, `FONT_STORAGE_KEY = "mrs-fontpx"`, `type Theme = "light" | "dark"`, `resolveInitialTheme(stored: string | null): Theme` (returns `"dark"` only when `stored === "dark"`, else `"light"`), `nextTheme(prev: Theme): Theme` (flips light↔dark — consumed by `ThemeControl` in Task 3).
 
-- [ ] **Step 1: Write the failing test.** Create `lib/__tests__/theme.test.ts`:
+- [ ] **Step 1: Write the failing test** (pure logic, node env — matches `components/motion/__tests__/animated-number.test.ts`). Create `lib/__tests__/theme.test.ts`:
 
 ```ts
 import { describe, it, expect } from "vitest";
-import { resolveInitialTheme, THEME_STORAGE_KEY, FONT_STORAGE_KEY } from "@/lib/theme";
+import { resolveInitialTheme, nextTheme, THEME_STORAGE_KEY, FONT_STORAGE_KEY } from "@/lib/theme";
 
 describe("resolveInitialTheme", () => {
   it("defaults to light when nothing is stored", () => {
@@ -229,6 +230,13 @@ describe("resolveInitialTheme", () => {
   it("exposes the storage keys", () => {
     expect(THEME_STORAGE_KEY).toBe("mrs-theme");
     expect(FONT_STORAGE_KEY).toBe("mrs-fontpx");
+  });
+});
+
+describe("nextTheme", () => {
+  it("flips light to dark and back", () => {
+    expect(nextTheme("light")).toBe("dark");
+    expect(nextTheme("dark")).toBe("light");
   });
 });
 ```
@@ -253,12 +261,17 @@ export type Theme = "light" | "dark";
 export function resolveInitialTheme(stored: string | null): Theme {
   return stored === "dark" ? "dark" : "light";
 }
+
+/** Flip to the other theme. */
+export function nextTheme(prev: Theme): Theme {
+  return prev === "dark" ? "light" : "dark";
+}
 ```
 
 - [ ] **Step 4: Run the test to verify it passes.**
 
 Run: `npm run test -- lib/__tests__/theme.test.ts`
-Expected: PASS (4 tests).
+Expected: PASS (5 tests).
 
 - [ ] **Step 5: Add the blocking inline boot script to the root layout.** In `app/layout.tsx`, add a `<head>` with the script inside the `<html>` element, before `<body>`. The script is self-contained (runs pre-hydration, cannot import modules), using the literal key names:
 
@@ -298,75 +311,23 @@ git commit -m "feat: no-flash theme/font-size boot script + tested theme helper"
 
 ### Task 3: `ThemeControl` toggle component
 
-A client component mirroring `FontSizeControl`: a sun/moon pill that flips `data-theme` on `<html>` and persists to `localStorage`.
+A client component mirroring `FontSizeControl`: a sun/moon pill that flips `data-theme` on `<html>` and persists to `localStorage`. Its flip logic uses the `nextTheme` helper already unit-tested in Task 2; per the test convention the component itself is verified by build + manual check (no render test).
 
 **Files:**
 - Create: `components/ThemeControl.tsx`
-- Create: `components/__tests__/ThemeControl.test.tsx`
 
 **Interfaces:**
-- Consumes: `THEME_STORAGE_KEY`, `resolveInitialTheme`, `type Theme` from `lib/theme.ts` (Task 2).
+- Consumes: `THEME_STORAGE_KEY`, `resolveInitialTheme`, `nextTheme`, `type Theme` from `lib/theme.ts` (Task 2).
 - Produces: `ThemeControl` (default + named export), a fixed-position toggle rendering a `<button role="switch" aria-checked>` labeled "Toggle dark mode".
 
-- [ ] **Step 1: Write the failing test.** Create `components/__tests__/ThemeControl.test.tsx`:
-
-```tsx
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { ThemeControl } from "@/components/ThemeControl";
-
-describe("ThemeControl", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    document.documentElement.removeAttribute("data-theme");
-  });
-  afterEach(cleanup);
-
-  it("defaults to light (no data-theme, switch unchecked)", () => {
-    render(<ThemeControl />);
-    const btn = screen.getByRole("switch");
-    expect(btn.getAttribute("aria-checked")).toBe("false");
-    expect(document.documentElement.getAttribute("data-theme")).toBeNull();
-  });
-
-  it("toggling to dark sets data-theme and persists", () => {
-    render(<ThemeControl />);
-    fireEvent.click(screen.getByRole("switch"));
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-    expect(localStorage.getItem("mrs-theme")).toBe("dark");
-    expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("true");
-  });
-
-  it("initializes from a saved dark preference", () => {
-    localStorage.setItem("mrs-theme", "dark");
-    render(<ThemeControl />);
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-    expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("true");
-  });
-
-  it("toggling back to light removes data-theme and persists light", () => {
-    localStorage.setItem("mrs-theme", "dark");
-    render(<ThemeControl />);
-    fireEvent.click(screen.getByRole("switch"));
-    expect(document.documentElement.getAttribute("data-theme")).toBeNull();
-    expect(localStorage.getItem("mrs-theme")).toBe("light");
-  });
-});
-```
-
-- [ ] **Step 2: Run the test to verify it fails.**
-
-Run: `npm run test -- components/__tests__/ThemeControl.test.tsx`
-Expected: FAIL — cannot resolve `@/components/ThemeControl`.
-
-- [ ] **Step 3: Implement the component.** Create `components/ThemeControl.tsx`:
+- [ ] **Step 1: Implement the component.** Create `components/ThemeControl.tsx`:
 
 ```tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { THEME_STORAGE_KEY, resolveInitialTheme, type Theme } from "@/lib/theme";
+import { THEME_STORAGE_KEY, resolveInitialTheme, nextTheme, type Theme } from "@/lib/theme";
 
 function apply(theme: Theme) {
   const el = document.documentElement;
@@ -391,7 +352,7 @@ export function ThemeControl() {
 
   function toggle() {
     setTheme((prev) => {
-      const next: Theme = prev === "dark" ? "light" : "dark";
+      const next = nextTheme(prev);
       apply(next);
       try {
         localStorage.setItem(THEME_STORAGE_KEY, next);
@@ -443,16 +404,16 @@ export function ThemeControl() {
 export default ThemeControl;
 ```
 
-- [ ] **Step 4: Run the test to verify it passes.**
+- [ ] **Step 2: Verify the build compiles** (the flip logic is already covered by Task 2's `nextTheme` tests).
 
-Run: `npm run test -- components/__tests__/ThemeControl.test.tsx`
-Expected: PASS (4 tests).
+Run: `npm run test && npm run build`
+Expected: all tests PASS; build succeeds.
 
-- [ ] **Step 5: Commit.**
+- [ ] **Step 3: Commit.**
 
 ```bash
-git add components/ThemeControl.tsx components/__tests__/ThemeControl.test.tsx
-git commit -m "feat: add ThemeControl sun/moon toggle (persisted, tested)"
+git add components/ThemeControl.tsx
+git commit -m "feat: add ThemeControl sun/moon toggle (persisted)"
 ```
 
 ---
@@ -571,48 +532,35 @@ Add the remaining expressive touches: a direction-aware `StepTransition` (defaul
 
 **Files:**
 - Modify: `components/motion/StepTransition.tsx`
-- Modify: `components/motion/__tests__/StepTransition.test.tsx` (create if absent)
+- Create: `components/motion/__tests__/step-transition.test.ts`
 - Modify: `components/participant/ParticipantWizard.tsx`
 - Modify: `components/result/CanvasBoard.tsx`
 
 **Interfaces:**
 - Consumes: `.pulse-hover-lift` (Task 1).
-- Produces: `StepTransition` now accepts optional `direction?: "forward" | "back"` (default `"forward"`); existing `stepKey`/`children`/`className` props unchanged.
+- Produces: `StepTransition` now accepts optional `direction?: "forward" | "back"` (default `"forward"`); existing `stepKey`/`children`/`className` props unchanged. Exports pure helper `stepSlideOffset(direction: "forward" | "back"): number`.
 
-- [ ] **Step 1: Write the failing test** for the new prop. Create/append `components/motion/__tests__/StepTransition.test.tsx`:
+- [ ] **Step 1: Write the failing test** for the pure slide-offset helper (node env, matches repo convention). Create `components/motion/__tests__/step-transition.test.ts`:
 
-```tsx
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
-import { StepTransition } from "@/components/motion/StepTransition";
+```ts
+import { describe, it, expect } from "vitest";
+import { stepSlideOffset } from "@/components/motion/StepTransition";
 
-afterEach(cleanup);
-
-describe("StepTransition", () => {
-  it("renders children and accepts a direction without error", () => {
-    render(
-      <StepTransition stepKey="a" direction="back">
-        <p>hello</p>
-      </StepTransition>,
-    );
-    expect(screen.getByText("hello")).toBeTruthy();
+describe("stepSlideOffset", () => {
+  it("slides in from the right for forward", () => {
+    expect(stepSlideOffset("forward")).toBe(24);
   });
 
-  it("defaults direction to forward when omitted", () => {
-    render(
-      <StepTransition stepKey="b">
-        <p>world</p>
-      </StepTransition>,
-    );
-    expect(screen.getByText("world")).toBeTruthy();
+  it("slides in from the left for back", () => {
+    expect(stepSlideOffset("back")).toBe(-24);
   });
 });
 ```
 
 - [ ] **Step 2: Run the test to verify it fails.**
 
-Run: `npm run test -- components/motion/__tests__/StepTransition.test.tsx`
-Expected: FAIL — TypeScript rejects the unknown `direction` prop (or the file/assertion errors).
+Run: `npm run test -- components/motion/__tests__/step-transition.test.ts`
+Expected: FAIL — `stepSlideOffset` is not exported.
 
 - [ ] **Step 3: Implement direction-aware transitions.** Replace `components/motion/StepTransition.tsx` with:
 
@@ -622,12 +570,19 @@ Expected: FAIL — TypeScript rejects the unknown `direction` prop (or the file/
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 
+export type StepDirection = "forward" | "back";
+
+/** Horizontal enter offset (px) for a step slide. Forward enters from the right. */
+export function stepSlideOffset(direction: StepDirection): number {
+  return direction === "back" ? -24 : 24;
+}
+
 export interface StepTransitionProps {
   stepKey: string | number;
   children: ReactNode;
   className?: string;
   /** Slide direction; "forward" (default) slides in from the right. */
-  direction?: "forward" | "back";
+  direction?: StepDirection;
 }
 
 export function StepTransition({
@@ -636,7 +591,7 @@ export function StepTransition({
   className,
   direction = "forward",
 }: StepTransitionProps) {
-  const dx = direction === "back" ? -24 : 24;
+  const dx = stepSlideOffset(direction);
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
@@ -658,7 +613,7 @@ export default StepTransition;
 
 - [ ] **Step 4: Run the test to verify it passes.**
 
-Run: `npm run test -- components/motion/__tests__/StepTransition.test.tsx`
+Run: `npm run test -- components/motion/__tests__/step-transition.test.ts`
 Expected: PASS (2 tests).
 
 - [ ] **Step 5: Pass `direction="forward"` from the wizard.** In `components/participant/ParticipantWizard.tsx`, the wizard only advances forward, so make the intent explicit. Change line ~145 from:
@@ -745,7 +700,7 @@ Expected: all tests PASS; build succeeds. Manually confirm: canvas cells stagger
 - [ ] **Step 9: Commit.**
 
 ```bash
-git add components/motion/StepTransition.tsx components/motion/__tests__/StepTransition.test.tsx components/participant/ParticipantWizard.tsx components/result/CanvasBoard.tsx components/result/ResultView.tsx
+git add components/motion/StepTransition.tsx components/motion/__tests__/step-transition.test.ts components/participant/ParticipantWizard.tsx components/result/CanvasBoard.tsx components/result/ResultView.tsx
 git commit -m "feat: direction-aware step transitions, staggered canvas reveal, card hover-lift"
 ```
 
