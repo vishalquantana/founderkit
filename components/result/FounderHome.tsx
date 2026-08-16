@@ -360,13 +360,21 @@ export function FounderHome({
           <motion.div {...cardMotionProps} className="pulse-card p-4">
             <div className="flex items-center justify-between">
               <CardLabel>Your Lean Canvas</CardLabel>
-              <span className="text-[11px] text-muted">tap the full canvas →</span>
+              <Link href={`/w/${code}/result/${pid}`} className="text-[11px] font-medium" style={{ color: "var(--pulse-accent-text)" }}>
+                tap the full canvas →
+              </Link>
             </div>
-            <CanvasMiniMap cells={miniMapCells} />
+            <CanvasMiniMap
+              cells={miniMapCells}
+              onSelect={(index) => {
+                router.push(`/w/${code}/result/${pid}?block=${index}`);
+              }}
+              className="mt-1"
+            />
             <CanvasMiniMapLegend className="mt-2.5" />
             <Link
               href={`/w/${code}/result/${pid}`}
-              className="pulse-btn-secondary mt-3 flex w-full items-center justify-center px-4 py-2.5 text-xs"
+              className="pulse-btn-secondary mt-3 flex w-full items-center justify-center px-4 py-2.5 text-xs font-medium"
             >
               Open your Lean Canvas
             </Link>

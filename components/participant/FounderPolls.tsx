@@ -157,11 +157,9 @@ function LockedPollCard({ poll }: { poll: PollListItem }) {
           <LockIcon />
         </div>
         <div>
-          {/* Blur upcoming questions so founders can't read them ahead of time. */}
+          {/* Blur locked questions so founders can't read them ahead of time or when locked. */}
           <h2
-            className={`font-display text-base font-bold leading-snug ${
-              isUpcoming ? "select-none blur-[7px]" : ""
-            }`}
+            className="font-display select-none text-base font-bold leading-snug blur-[7px]"
             style={{ color: "var(--pulse-text)" }}
           >
             {poll.question}
