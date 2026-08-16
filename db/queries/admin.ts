@@ -102,6 +102,7 @@ export async function listSubmissions(
         sevenDayPlan: row.sevenDayPlan as EvaluationResult["sevenDayPlan"],
         improvedPitch: row.improvedPitch,
         reflectionQuestion: row.reflectionQuestion,
+        sectionFeedback: row.sectionFeedback as EvaluationResult["sectionFeedback"],
       };
       return { participant, result };
     }),

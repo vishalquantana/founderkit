@@ -16,6 +16,7 @@ export async function saveResult(participantId: string, r: EvaluationResult): Pr
     sevenDayPlan: r.sevenDayPlan,
     improvedPitch: r.improvedPitch,
     reflectionQuestion: r.reflectionQuestion,
+    sectionFeedback: r.sectionFeedback,
   };
   await db
     .insert(results)
@@ -40,5 +41,6 @@ export async function getResult(participantId: string): Promise<EvaluationResult
     sevenDayPlan: row.sevenDayPlan as EvaluationResult["sevenDayPlan"],
     improvedPitch: row.improvedPitch,
     reflectionQuestion: row.reflectionQuestion,
+    sectionFeedback: row.sectionFeedback as EvaluationResult["sectionFeedback"],
   };
 }

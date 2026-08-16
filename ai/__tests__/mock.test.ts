@@ -19,6 +19,13 @@ describe("mockEvaluate", () => {
     expect(a).toEqual(b);
     expect(a.strengths).toHaveLength(2);
     expect(a.backendScore).toBeGreaterThan(0);
+    expect(Object.keys(a.sectionFeedback).sort()).toEqual(
+      ["customer", "distribution", "mvp", "problem", "proof", "value"].sort()
+    );
+    for (const v of Object.values(a.sectionFeedback)) {
+      expect(typeof v).toBe("string");
+      expect(v.length).toBeGreaterThan(0);
+    }
   });
   it("empty answers score low → idea_clarity", () => {
     const r = mockEvaluate({ responses: [] });

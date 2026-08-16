@@ -46,7 +46,8 @@ Always produce:
 - Suggested MVP experiment
 - 7-day action plan
 - Improved one-line pitch
-- One founder reflection question`;
+- One founder reflection question
+- One encouraging, concrete improvement sentence per section (problem, customer, value, mvp, distribution, proof), tied to what the founder actually wrote`;
 
 export type ScoringPromptInput = {
   participant: {
@@ -106,6 +107,7 @@ Return:
 7. 7-day action plan
 8. Improved one-line pitch
 9. One founder reflection question
+10. Per-section improvement suggestions: for each of the 6 sections (problem, customer, value, mvp, distribution, proof), write one short, encouraging sentence on how to sharpen that specific answer — tied to what the founder actually wrote for that section, never harsh ("bad," "weak," "wrong").
 
 Tone should be founder-friendly, direct, and practical.
 
@@ -131,6 +133,14 @@ Return ONLY a single JSON object (no markdown, no code fences, no commentary) ma
   "mvpExperiment": string,
   "sevenDayPlan": [{ "day": string, "text": string }, ...],
   "improvedPitch": string,
-  "reflectionQuestion": string
+  "reflectionQuestion": string,
+  "sectionFeedback": {
+    "problem": string,
+    "customer": string,
+    "value": string,
+    "mvp": string,
+    "distribution": string,
+    "proof": string
+  }
 }`;
 }

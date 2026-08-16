@@ -1,0 +1,1 @@
+ALTER TABLE `results` ADD `section_feedback` text DEFAULT '{}' NOT NULL;

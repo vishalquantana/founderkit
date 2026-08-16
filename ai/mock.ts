@@ -78,6 +78,54 @@ function computeDimensionScores(responses: MockEvaluateInput["responses"]): Reco
   return scores;
 }
 
+const SECTION_LABEL: Record<SectionKey, string> = {
+  problem: "the problem",
+  customer: "your customer",
+  value: "value and payment",
+  mvp: "your MVP experiment",
+  distribution: "distribution",
+  proof: "your proof",
+};
+
+const SECTION_NEXT: Record<SectionKey, string> = {
+  problem: "the customer segment",
+  customer: "whether they will pay",
+  value: "the MVP experiment",
+  mvp: "your first distribution channel",
+  distribution: "repeat usage",
+  proof: "your next pilot",
+};
+
+/**
+ * Deterministic, band-based improvement sentence per section. Low sub-scores
+ * (< 50% of that dimension's max) get a "sharpen/clarify" nudge; high
+ * sub-scores get an encouraging "nailed it, validate next" nudge. Uses only
+ * the responses + already-computed dimensionScores — no randomness, no Date.
+ */
+function computeSectionFeedback(
+  dimensionScores: Record<Dimension, number>
+): EvaluationResult["sectionFeedback"] {
+  const band = (score: number, max: number): "low" | "high" =>
+    score / max >= 0.5 ? "high" : "low";
+
+  const feedbackFor = (section: SectionKey, score: number, max: number): string => {
+    const label = SECTION_LABEL[section];
+    if (band(score, max) === "low") {
+      return `Sharpen and clarify ${label} with a few concrete details before moving on.`;
+    }
+    return `You've nailed ${label} — next validate ${SECTION_NEXT[section]}.`;
+  };
+
+  return {
+    problem: feedbackFor("problem", dimensionScores.problemClarity, DIMENSION_MAX.problemClarity),
+    customer: feedbackFor("customer", dimensionScores.customerClarity, DIMENSION_MAX.customerClarity),
+    value: feedbackFor("value", dimensionScores.valuePayment, DIMENSION_MAX.valuePayment),
+    mvp: feedbackFor("mvp", dimensionScores.mvpQuality, DIMENSION_MAX.mvpQuality),
+    distribution: feedbackFor("distribution", dimensionScores.distribution, DIMENSION_MAX.distribution),
+    proof: feedbackFor("proof", dimensionScores.validation, DIMENSION_MAX.validation),
+  };
+}
+
 interface StageCopy {
   summary: string;
   strengths: [string, string];
@@ -232,6 +280,7 @@ export function mockEvaluate(input: MockEvaluateInput): EvaluationResult {
     sevenDayPlan: copy.sevenDayPlan.map((d) => ({ ...d })),
     improvedPitch: copy.improvedPitch,
     reflectionQuestion: copy.reflectionQuestion,
+    sectionFeedback: computeSectionFeedback(dimensionScores),
   };
 
   return EvaluationResultSchema.parse(result);

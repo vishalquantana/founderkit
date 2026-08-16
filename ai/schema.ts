@@ -20,6 +20,14 @@ export const EvaluationResultSchema = z.object({
   sevenDayPlan: z.array(z.object({ day: z.string(), text: z.string() })).min(1),
   improvedPitch: z.string(),
   reflectionQuestion: z.string(),
+  sectionFeedback: z.object({
+    problem: z.string(),
+    customer: z.string(),
+    value: z.string(),
+    mvp: z.string(),
+    distribution: z.string(),
+    proof: z.string(),
+  }),
 });
 
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;

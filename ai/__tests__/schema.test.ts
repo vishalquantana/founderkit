@@ -8,6 +8,14 @@ const valid = {
   summary: "s", strengths: ["a", "b"], assumptions: ["c", "d"],
   mvpExperiment: "m", sevenDayPlan: [{ day: "Day 1", text: "x" }],
   improvedPitch: "p", reflectionQuestion: "q",
+  sectionFeedback: {
+    problem: "Sharpen who exactly feels this pain most.",
+    customer: "Clarify who pays versus who uses.",
+    value: "Test whether customers will actually pay.",
+    mvp: "Keep the MVP manual for now.",
+    distribution: "Name your first repeatable channel.",
+    proof: "Collect a few more concrete data points.",
+  },
 };
 
 describe("EvaluationResultSchema", () => {
@@ -16,5 +24,12 @@ describe("EvaluationResultSchema", () => {
   });
   it("rejects wrong strengths length", () => {
     expect(EvaluationResultSchema.safeParse({ ...valid, strengths: ["only one"] }).success).toBe(false);
+  });
+  it("rejects a missing sectionFeedback key", () => {
+    const { proof, ...rest } = valid.sectionFeedback;
+    void proof;
+    expect(
+      EvaluationResultSchema.safeParse({ ...valid, sectionFeedback: rest }).success
+    ).toBe(false);
   });
 });

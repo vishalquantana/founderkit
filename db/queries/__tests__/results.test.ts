@@ -42,6 +42,14 @@ const RESULT: EvaluationResult = {
   ],
   improvedPitch: "We help X achieve Y without Z.",
   reflectionQuestion: "What can stay manual?",
+  sectionFeedback: {
+    problem: "Sharpen who exactly feels this pain most.",
+    customer: "Clarify who pays versus who uses.",
+    value: "Test whether customers will actually pay.",
+    mvp: "Keep the MVP manual for now.",
+    distribution: "Name your first repeatable channel.",
+    proof: "Collect a few more concrete data points.",
+  },
 };
 
 describe("results queries", () => {
@@ -83,6 +91,8 @@ describe("results queries", () => {
     expect(found!.assumptions).toEqual(RESULT.assumptions);
     expect(Array.isArray(found!.sevenDayPlan)).toBe(true);
     expect(found!.sevenDayPlan).toEqual(RESULT.sevenDayPlan);
+    expect(typeof found!.sectionFeedback).toBe("object");
+    expect(found!.sectionFeedback).toEqual(RESULT.sectionFeedback);
   });
 
   it("is idempotent: saving twice for the same participant replaces the row", async () => {

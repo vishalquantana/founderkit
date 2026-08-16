@@ -78,6 +78,7 @@ export const results = sqliteTable("results", {
   sevenDayPlan: text("seven_day_plan", { mode: "json" }).notNull(),
   improvedPitch: text("improved_pitch").notNull(),
   reflectionQuestion: text("reflection_question").notNull(),
+  sectionFeedback: text("section_feedback", { mode: "json" }).notNull().default("{}"),
   aiRaw: text("ai_raw", { mode: "json" }),
   createdAt: createdAt(),
 });
