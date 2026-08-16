@@ -93,11 +93,18 @@ export async function sendSlackErrorAlert(payload: SlackErrorPayload): Promise<v
     };
 
     if (typeof window !== "undefined") {
-      // Client-side fetch
-      void fetch(SLACK_HOOK_URL, {
+      // Dispatch through server proxy to bypass browser CORS restrictions
+      void fetch("/api/client-error", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(slackMessage),
+        body: JSON.stringify({
+          source: payload.source,
+          error: message,
+          stack,
+          url: payload.url || window.location.href,
+          digest: payload.digest,
+          context: payload.context,
+        }),
       }).catch(() => {});
     } else {
       // Server-side fetch
