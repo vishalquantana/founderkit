@@ -58,6 +58,19 @@ export async function markResultEmailed(id: string): Promise<void> {
   await db.update(participants).set({ resultEmailedAt: new Date() }).where(eq(participants.id, id));
 }
 
+export async function deleteParticipant(id: string): Promise<void> {
+  const { responses, results, growthPlans, feedbackSubmissions, escalations, chatMessages } = await import("../schema");
+  // Clean up dependent child tables first
+  await db.delete(escalations).where(eq(escalations.participantId, id));
+  await db.delete(chatMessages).where(eq(chatMessages.participantId, id));
+  await db.delete(growthPlans).where(eq(growthPlans.participantId, id));
+  await db.delete(feedbackSubmissions).where(eq(feedbackSubmissions.participantId, id));
+  await db.delete(results).where(eq(results.participantId, id));
+  await db.delete(responses).where(eq(responses.participantId, id));
+  // Delete participant
+  await db.delete(participants).where(eq(participants.id, id));
+}
+
 export async function countByWorkshop(workshopId: string): Promise<number> {
   const [row] = await db.select({ n: count() }).from(participants)
     .where(eq(participants.workshopId, workshopId));

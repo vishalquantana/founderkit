@@ -46,3 +46,16 @@ export async function updateWorkshopName(id: string, name: string): Promise<void
   revalidatePath(`/workshops/${id}`);
   revalidatePath(`/present/${id}`);
 }
+
+export async function deleteSubmissionAction(workshopId: string, participantId: string): Promise<void> {
+  const session = await auth();
+  const workshop = await getWorkshopById(workshopId);
+  if (!assertOwnership(session?.user?.id, workshop)) {
+    throw new Error("Not authorized to modify this workshop.");
+  }
+
+  const { deleteParticipant } = await import("@/db/queries/participants");
+  await deleteParticipant(participantId);
+  revalidatePath(`/workshops/${workshopId}`);
+  revalidatePath(`/present/${workshopId}`);
+}
