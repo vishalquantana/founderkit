@@ -42,6 +42,7 @@ export function SectionStep({
   const [saving, setSaving] = useState(false);
   const [probeQuestion, setProbeQuestion] = useState<string | null>(null);
   const [probeResolved, setProbeResolved] = useState(false);
+  const [probing, setProbing] = useState(false);
   const [probeAnswerValue, setProbeAnswerValue] = useState("");
   const [probeSaving, setProbeSaving] = useState(false);
   const [selectedChip, setSelectedChip] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export function SectionStep({
         return;
       }
 
+      setProbing(true);
       const { question } = await probeSectionAction({
         section: section.key,
         mainAnswer: composed,
@@ -87,6 +89,7 @@ export function SectionStep({
       setProbeResolved(true);
       onAdvance(composed);
     } finally {
+      setProbing(false);
       setSaving(false);
     }
   }
@@ -184,6 +187,31 @@ export function SectionStep({
           <span className="text-xs text-rose-400">This field is required.</span>
         )}
       </div>
+
+      {/* While the AI Coach probe is in flight, show the card shell in a
+          thinking/shimmer state so the founder sees feedback immediately
+          instead of a dead "Next" button. */}
+      <AnimatePresence>
+        {probing && !probeQuestion && (
+          <motion.div
+            key="ai-coach-thinking"
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
+            className="pulse-card relative flex flex-col gap-3 overflow-hidden border-l-2 border-l-[#8b5cf6] p-4"
+            aria-live="polite"
+          >
+            <span className="pulse-kicker text-[#c4b5fd]">⚡ Quick follow-up from AI Coach</span>
+            <div className="flex flex-col gap-2">
+              <div className="shimmer h-3 w-5/6 rounded-full bg-surface" />
+              <div className="shimmer h-3 w-2/3 rounded-full bg-surface" />
+              <div className="shimmer h-3 w-1/2 rounded-full bg-surface" />
+            </div>
+            <span className="text-xs text-muted">Thinking…</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* AI Coach probe card slot: a contextual follow-up question with
           Answer / Skip actions, shown at most once per section after the

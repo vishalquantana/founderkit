@@ -238,6 +238,7 @@ export function ResultView({
             type="button"
             onClick={handleRescore}
             disabled={isRescoring}
+            aria-busy={isRescoring || undefined}
             className="pulse-btn inline-flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-60"
           >
             {isRescoring ? (

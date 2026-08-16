@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SectionStep } from "@/components/participant/SectionStep";
+import { AnalyzingScreen } from "@/components/participant/AnalyzingScreen";
 import { ProgressBar } from "@/components/motion/ProgressBar";
 import { StepTransition } from "@/components/motion/StepTransition";
 import { SECTIONS } from "@/lib/sections";
@@ -30,6 +31,7 @@ export function CanvasWizard({ workshop, participantId, initialAnswers }: Canvas
   const router = useRouter();
   const [sectionIndex, setSectionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers ?? {});
+  const [finishing, setFinishing] = useState(false);
 
   function handleAutosave(sectionKey: (typeof SECTIONS)[number]["key"], value: string) {
     setAnswers((a) => ({ ...a, [sectionKey]: value }));
@@ -45,14 +47,22 @@ export function CanvasWizard({ workshop, participantId, initialAnswers }: Canvas
 
     const isLast = index === SECTIONS.length - 1;
     if (isLast) {
-      await finishParticipant(participantId);
-      router.push(`/w/${workshop.joinCode}/home/${participantId}`);
+      setFinishing(true);
+      try {
+        await finishParticipant(participantId);
+      } finally {
+        router.push(`/w/${workshop.joinCode}/home/${participantId}`);
+      }
       return;
     }
     setSectionIndex(index + 1);
   }
 
   const section = SECTIONS[sectionIndex];
+
+  if (finishing) {
+    return <AnalyzingScreen />;
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6">

@@ -193,8 +193,9 @@ export function ProfileEditForm({ pid, initial, onSaved, onCancel }: ProfileEdit
         <motion.button
           type="submit"
           disabled={isPending}
+          aria-busy={isPending || undefined}
           whileTap={{ scale: 0.97 }}
-          className="pulse-btn flex-1 px-4 py-2.5 text-sm"
+          className="pulse-btn flex-1 px-4 py-2.5 text-sm disabled:cursor-not-allowed"
         >
           {isPending ? "Saving…" : "Save"}
         </motion.button>
