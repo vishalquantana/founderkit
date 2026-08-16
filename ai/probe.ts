@@ -43,11 +43,11 @@ export async function openRouterProbe({ section, mainAnswer }: ProbeInput): Prom
   const response = await fetch(OPENROUTER_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY?.trim()}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_PROBE_MODEL,
+      model: process.env.OPENROUTER_PROBE_MODEL?.trim(),
       messages: [
         { role: "system", content: PROBE_SYSTEM_PROMPT },
         { role: "user", content: userPrompt },

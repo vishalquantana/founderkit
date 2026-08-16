@@ -17,11 +17,11 @@ async function callOpenRouter(messages: ChatMessage[]): Promise<unknown> {
   const response = await fetch(OPENROUTER_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY?.trim()}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_SCORE_MODEL,
+      model: process.env.OPENROUTER_SCORE_MODEL?.trim(),
       messages,
       response_format: { type: "json_object" },
     }),
