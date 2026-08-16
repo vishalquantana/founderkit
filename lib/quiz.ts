@@ -181,7 +181,15 @@ export const QUESTION_POOL: Question[] = [
   },
 ];
 
-export type BadgeKey = "prof" | "topper" | "glober" | "dcp";
+export type BadgeKey =
+  | "pioneer"
+  | "explorer"
+  | "learner"
+  | "starter"
+  | "prof"
+  | "topper"
+  | "glober"
+  | "dcp";
 
 export type Personality = {
   key: BadgeKey;
@@ -193,9 +201,9 @@ export type Personality = {
   color: string;
 };
 
-export const PERSONALITIES: Record<BadgeKey, Personality> = {
-  prof: {
-    key: "prof",
+export const PERSONALITIES: Record<string, Personality> = {
+  pioneer: {
+    key: "pioneer",
     emoji: "🏆",
     title: "AI Pioneers",
     description: "Deeply integrating AI workflows, reasoning models, and agents into startup execution.",
@@ -203,8 +211,8 @@ export const PERSONALITIES: Record<BadgeKey, Personality> = {
     opportunity: "Scale Multi-Agent Automations",
     color: "#f4c748",
   },
-  topper: {
-    key: "topper",
+  explorer: {
+    key: "explorer",
     emoji: "🚀",
     title: "AI Explorers",
     description: "Actively building prompt experiments, testing LLM tools, and shipping fast.",
@@ -212,8 +220,8 @@ export const PERSONALITIES: Record<BadgeKey, Personality> = {
     opportunity: "Deepen Systematic Workflows",
     color: "#34d399",
   },
-  glober: {
-    key: "glober",
+  learner: {
+    key: "learner",
     emoji: "💡",
     title: "AI Learners",
     description: "Strong understanding of core AI concepts. Turning knowledge into hands-on MVP prototypes.",
@@ -221,8 +229,8 @@ export const PERSONALITIES: Record<BadgeKey, Personality> = {
     opportunity: "Tighten MVP Feedback Loops",
     color: "#38bdf8",
   },
-  dcp: {
-    key: "dcp",
+  starter: {
+    key: "starter",
     emoji: "🌱",
     title: "AI Starters",
     description: "Beginning the AI journey. Exploring prompting fundamentals and modern AI tooling.",
@@ -231,6 +239,12 @@ export const PERSONALITIES: Record<BadgeKey, Personality> = {
     color: "#c084fc",
   },
 };
+
+// Backward-compatible legacy aliases for previously saved database records
+PERSONALITIES.prof = PERSONALITIES.pioneer;
+PERSONALITIES.topper = PERSONALITIES.explorer;
+PERSONALITIES.glober = PERSONALITIES.learner;
+PERSONALITIES.dcp = PERSONALITIES.starter;
 
 export const QUIZ_DURATION_SECONDS = 60;
 export const QUESTION_COUNT = 10;
@@ -251,8 +265,17 @@ export function calculateQuizScore(questions: Question[], answers: (number | nul
 }
 
 export function personalityForScore(score: number): Personality {
-  if (score >= 80) return PERSONALITIES.prof;
-  if (score >= 60) return PERSONALITIES.topper;
-  if (score >= 35) return PERSONALITIES.glober;
-  return PERSONALITIES.dcp;
+  if (score >= 80) return PERSONALITIES.pioneer;
+  if (score >= 60) return PERSONALITIES.explorer;
+  if (score >= 35) return PERSONALITIES.learner;
+  return PERSONALITIES.starter;
+}
+
+export function personalityForBadge(badgeKeyOrTitle: string): Personality {
+  const key = badgeKeyOrTitle?.toLowerCase()?.trim();
+  if (PERSONALITIES[key]) return PERSONALITIES[key];
+  const byTitle = Object.values(PERSONALITIES).find(
+    (p) => p.title.toLowerCase() === key,
+  );
+  return byTitle ?? PERSONALITIES.starter;
 }

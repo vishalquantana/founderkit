@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import { motion } from "motion/react";
 import { Trophy, Zap, Clock, Medal, Award } from "lucide-react";
-import { PERSONALITIES, type BadgeKey } from "@/lib/quiz";
+import { personalityForBadge } from "@/lib/quiz";
 
 interface LeaderboardEntry {
   id: string;
@@ -57,7 +57,7 @@ export function QuizLeaderboardView({ workshopId }: { workshopId: string }) {
           {/* Top 3 Podium Cards */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {leaderboard.slice(0, 3).map((entry, idx) => {
-              const personality = PERSONALITIES[entry.badgeKey as BadgeKey] ?? PERSONALITIES.dcp;
+              const personality = personalityForBadge(entry.badgeKey || entry.badgeTitle);
               const ranks = [
                 { label: "1st Place", border: "border-amber-400/50", bg: "bg-amber-400/10", text: "text-amber-400" },
                 { label: "2nd Place", border: "border-slate-300/40", bg: "bg-slate-300/10", text: "text-slate-200" },
@@ -106,7 +106,7 @@ export function QuizLeaderboardView({ workshopId }: { workshopId: string }) {
 
             <div className="divide-y divide-[var(--pulse-border)]">
               {leaderboard.map((item, index) => {
-                const personality = PERSONALITIES[item.badgeKey as BadgeKey] ?? PERSONALITIES.dcp;
+                const personality = personalityForBadge(item.badgeKey || item.badgeTitle);
                 return (
                   <div
                     key={item.id}

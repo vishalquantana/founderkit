@@ -45,8 +45,8 @@ export async function POST(
       workshopId: workshop.id,
       participantId,
       score: Number(score) || 0,
-      badgeTitle: String(badgeTitle || "DCP"),
-      badgeKey: String(badgeKey || "dcp"),
+      badgeTitle: String(badgeTitle || "AI Starters"),
+      badgeKey: String(badgeKey || "starter"),
       timeTakenSeconds: Number(timeTakenSeconds) || 60,
       responses: responses || [],
     });
