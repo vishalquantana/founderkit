@@ -13,6 +13,7 @@ import {
   activatePollAction,
   closePollAction,
   resetPollVotesAction,
+  resetAllPollsAction,
 } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 interface PollResultsResponse {
@@ -213,6 +214,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null);
+  const [confirmResetAll, setConfirmResetAll] = useState(false);
 
   const { data: pollResults } = useSWR<PollResultsResponse>(
     `/api/workshops/${workshopId}/poll-results`,
@@ -225,6 +227,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
   function startEdit(poll: Poll) {
     setConfirmDeleteId(null);
     setConfirmResetId(null);
+    setConfirmResetAll(false);
     setEditor({
       pollId: poll.id,
       question: poll.question,
@@ -235,6 +238,7 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
   function startCreate() {
     setConfirmDeleteId(null);
     setConfirmResetId(null);
+    setConfirmResetAll(false);
     setEditor({ pollId: null, question: "", options: ["", ""] });
   }
 
@@ -276,7 +280,19 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
       setConfirmResetId(null);
     } else {
       setConfirmDeleteId(null);
+      setConfirmResetAll(false);
       setConfirmResetId(pollId);
+    }
+  }
+
+  async function handleResetAllClick() {
+    if (confirmResetAll) {
+      await resetAllPollsAction(workshopId);
+      setConfirmResetAll(false);
+    } else {
+      setConfirmDeleteId(null);
+      setConfirmResetId(null);
+      setConfirmResetAll(true);
     }
   }
 
@@ -286,12 +302,46 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
       setConfirmDeleteId(null);
     } else {
       setConfirmResetId(null);
+      setConfirmResetAll(false);
       setConfirmDeleteId(pollId);
     }
   }
 
   return (
-    <div className={`flex flex-col gap-3 ${className ?? ""}`}>
+    <div className={`flex flex-col gap-4 ${className ?? ""}`}>
+      {/* Top Action Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--pulse-border)] bg-surface p-3 sm:px-4">
+        <div className="flex items-center gap-2">
+          {!editor && (
+            <button
+              type="button"
+              disabled={editorPending}
+              onClick={startCreate}
+              className="pulse-btn px-3.5 py-1.5 text-xs font-bold"
+            >
+              + Add Question
+            </button>
+          )}
+        </div>
+
+        {sortedPolls.length > 0 && (
+          <div className="flex items-center gap-2">
+            <ActionButton
+              type="button"
+              onAction={handleResetAllClick}
+              pendingChildren="Resetting all…"
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                confirmResetAll
+                  ? "bg-amber-500 text-white hover:bg-amber-400"
+                  : "pulse-btn-secondary"
+              }`}
+            >
+              {confirmResetAll ? "Confirm Reset All Polls?" : "Reset All Poll Responses"}
+            </ActionButton>
+          </div>
+        )}
+      </div>
+
       {sortedPolls.length === 0 && !editor ? (
         <div className="pulse-card border-dashed p-8 text-center text-sm text-muted">
           No poll questions yet. Add one to get started.

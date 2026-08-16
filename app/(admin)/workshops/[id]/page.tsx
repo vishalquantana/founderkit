@@ -107,17 +107,27 @@ export default async function WorkshopDetailPage({
             <KnowledgeBasePanel workshopId={id} />
           </div>
         }
-        quickSettings={
-          <div className="pulse-card p-5">
-            <WorkshopControls
-              workshopId={id}
-              workshopName={workshop!.name}
-              status={workshop!.status as WorkshopStatus}
-              settings={workshop!.settings as WorkshopSettings}
-              onUpdateStatus={updateStatus}
-              onUpdateSettings={updateSettings}
-              onUpdateName={updateWorkshopName}
-            />
+        settingsView={
+          <div className="flex flex-col gap-4 max-w-2xl">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                Workshop & Live Presentation Settings
+              </h2>
+              <p className="text-xs text-muted mt-0.5">
+                Configure workshop status, name, Lean Canvas lock state, and visible live projection tabs.
+              </p>
+            </div>
+            <div className="pulse-card p-6">
+              <WorkshopControls
+                workshopId={id}
+                workshopName={workshop!.name}
+                status={workshop!.status as WorkshopStatus}
+                settings={workshop!.settings as WorkshopSettings}
+                onUpdateStatus={updateStatus}
+                onUpdateSettings={updateSettings}
+                onUpdateName={updateWorkshopName}
+              />
+            </div>
           </div>
         }
       />

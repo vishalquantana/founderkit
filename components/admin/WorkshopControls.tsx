@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import type { WorkshopStatus } from "@/db/schema";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 import { ActionButton } from "@/components/ui/ActionButton";
-import { resetAllPollsAction } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 export interface WorkshopControlsProps {
   workshopId: string;
@@ -89,7 +88,6 @@ export function WorkshopControls({
   const [nameText, setNameText] = useState(workshopName);
   const [isSavingName, setIsSavingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
-  const [confirmResetAll, setConfirmResetAll] = useState(false);
 
   async function handleSaveName() {
     const trimmed = nameText.trim();
@@ -114,15 +112,6 @@ export function WorkshopControls({
   async function changeSettings(next: WorkshopSettings) {
     setCurrentSettings(next);
     await onUpdateSettings(workshopId, next);
-  }
-
-  async function handleResetAllClick() {
-    if (!confirmResetAll) {
-      setConfirmResetAll(true);
-      return;
-    }
-    await resetAllPollsAction(workshopId);
-    setConfirmResetAll(false);
   }
 
   return (
@@ -252,27 +241,6 @@ export function WorkshopControls({
             checked={currentSettings.leaderboard}
             onChange={(next) => changeSettings({ ...currentSettings, leaderboard: next })}
           />
-        </div>
-      </div>
-
-      <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Polls</h2>
-        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-3">
-          <ActionButton
-            type="button"
-            onAction={handleResetAllClick}
-            pendingChildren="Resetting…"
-            className={`self-start rounded-full px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-              confirmResetAll
-                ? "bg-amber-500 text-white hover:bg-amber-400"
-                : "pulse-btn-secondary"
-            }`}
-          >
-            {confirmResetAll ? "Confirm reset all?" : "Reset all poll responses"}
-          </ActionButton>
-          <p className="text-xs text-muted">
-            Clears every vote across all questions so you can re-run them.
-          </p>
         </div>
       </div>
     </div>
