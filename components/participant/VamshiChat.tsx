@@ -116,19 +116,28 @@ export function VamshiChat({ code, participantId }: VamshiChatProps) {
 
   return (
     <>
-      {/* Launcher bubble */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Close Vamshi.AI" : "Ask Vamshi.AI"}
-        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 shadow-lg transition-transform active:scale-95"
-        style={{ background: "var(--pulse-surface-strong)", border: "1px solid var(--pulse-border)" }}
-      >
-        <Avatar size={38} />
-        <span className="text-sm font-semibold" style={{ color: "var(--pulse-text)" }}>
-          Vamshi.AI
-        </span>
-      </button>
+      {/* Round floating action button (hidden while the panel is open). */}
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Ask Vamshi.AI"
+          className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full shadow-xl ring-2 ring-[var(--pulse-violet)] transition-transform active:scale-90"
+          style={{
+            bottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))",
+            background: "var(--pulse-surface-strong)",
+          }}
+        >
+          <Avatar size={56} />
+          <span
+            className="pointer-events-none absolute -top-1 right-0 flex h-3.5 w-3.5 items-center justify-center rounded-full"
+            style={{ background: "var(--pulse-violet)", border: "2px solid var(--background)" }}
+            aria-hidden="true"
+          >
+            <Sparkles className="h-2 w-2" style={{ color: "#0a0a14" }} />
+          </span>
+        </button>
+      ) : null}
 
       <AnimatePresence>
         {open ? (

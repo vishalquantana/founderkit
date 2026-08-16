@@ -311,7 +311,7 @@ export function ResultView({
             {result.strengths.map((strength) => (
               <li
                 key={strength}
-                className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium leading-relaxed text-emerald-950 dark:text-emerald-200"
+                className="rounded-2xl border border-emerald-600/30 bg-emerald-500/15 px-4 py-3 text-sm font-semibold leading-relaxed text-emerald-950 dark:text-emerald-200"
               >
                 {strength}
               </li>
@@ -377,7 +377,7 @@ export function ResultView({
             {result.assumptions.map((assumption) => (
               <li
                 key={assumption}
-                className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-medium leading-relaxed text-amber-950 dark:text-amber-200"
+                className="rounded-2xl border border-amber-600/30 bg-amber-500/15 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-950 dark:text-amber-200"
               >
                 {assumption}
               </li>
