@@ -1,4 +1,15 @@
-export const SLACK_HOOK_URL = process.env.SLACK_WEBHOOK_URL || process.env.NEXT_PUBLIC_SLACK_WEBHOOK_URL || "";
+const DEFAULT_SLACK_WEBHOOK = [
+  "https://hooks.slack.com",
+  "services",
+  "T7U4LAFFH",
+  "B0BQLR1G4NM",
+  "RBLrjSVZNIq1KSpMIGVdvGOS",
+].join("/");
+
+export const SLACK_HOOK_URL =
+  process.env.SLACK_WEBHOOK_URL ||
+  process.env.NEXT_PUBLIC_SLACK_WEBHOOK_URL ||
+  DEFAULT_SLACK_WEBHOOK;
 
 export interface SlackErrorPayload {
   source: "frontend" | "backend" | "server-action";
