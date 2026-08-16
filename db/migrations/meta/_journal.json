@@ -64,6 +64,27 @@
       "when": 1786889425420,
       "tag": "0008_damp_fallen_one",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1786889707640,
+      "tag": "0009_romantic_dormammu",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1786889983610,
+      "tag": "0010_lazy_scalphunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1786890203274,
+      "tag": "0011_white_peter_quill",
+      "breakpoints": true
     }
   ]
 }

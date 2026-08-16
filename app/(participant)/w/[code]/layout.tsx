@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { PollTakeover } from "@/components/participant/PollTakeover";
 import { FeedbackNotificationBanner } from "@/components/participant/FeedbackNotificationBanner";
 import { LockScreen } from "@/components/participant/LockScreen";
+import { VamshiChat } from "@/components/participant/VamshiChat";
 import { isParticipantLocked } from "@/db/queries/chat";
 
 export default async function WorkshopSessionLayout({
@@ -25,6 +26,7 @@ export default async function WorkshopSessionLayout({
       {pid ? <FeedbackNotificationBanner code={code} pid={pid} /> : null}
       {children}
       <PollTakeover code={code} />
+      {pid ? <VamshiChat code={code} participantId={pid} /> : null}
     </>
   );
 }

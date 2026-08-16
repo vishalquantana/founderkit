@@ -43,3 +43,6 @@ next-env.d.ts
 
 # SDD scratch (briefs, reports, ledger)
 .superpowers/
+
+# local sqlite scratch (drizzle/dev)
+local.db

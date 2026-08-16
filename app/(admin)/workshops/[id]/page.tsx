@@ -10,6 +10,7 @@ import { SubmissionsTable, type SubmissionRow } from "@/components/admin/Submiss
 import { WorkshopControls } from "@/components/admin/WorkshopControls";
 import { PollManager } from "@/components/admin/PollManager";
 import { WorkshopWorkspace } from "@/components/admin/WorkshopWorkspace";
+import { ChatsPanel } from "@/components/admin/ChatsPanel";
 import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
 import { updateStatus, updateSettings } from "./actions";
@@ -90,6 +91,14 @@ export default async function WorkshopDetailPage({
               Poll questions
             </h2>
             <PollManager workshopId={id} polls={polls} />
+          </div>
+        }
+        chats={
+          <div>
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+              Vamshi.AI chats
+            </h2>
+            <ChatsPanel workshopId={id} />
           </div>
         }
         quickSettings={
