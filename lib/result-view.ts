@@ -65,14 +65,33 @@ export function cellFeedback(score: number, max: number): CellFeedback {
   return { label: "Worth sharpening", tone: "sharpen" };
 }
 
-/** Mini-map cell tone: the feedback tone when scored, else "empty". */
+export type CanvasTone = "good" | "needs-work" | "bad" | "empty";
+
+/**
+ * Lean Canvas block tone (mini-map fill + card pill), 4-band:
+ * - no answer (empty) → "empty" (grey)
+ * - filled + scored: score/max ≥ 0.7 → "good", ≥ 0.4 → "needs-work", else "bad"
+ * - filled + unscored (template extras that can't be scored) → "good" (it's addressed)
+ */
 export function canvasCellTone(
-  score: number | undefined,
-  max: number | undefined,
-): "strong" | "growing" | "sharpen" | "empty" {
-  if (score === undefined || max === undefined || max <= 0) return "empty";
-  return cellFeedback(score, max).tone;
+  hasAnswer: boolean,
+  score?: number,
+  max?: number,
+): CanvasTone {
+  if (!hasAnswer) return "empty";
+  if (score === undefined || max === undefined || max <= 0) return "good";
+  const ratio = score / max;
+  if (ratio >= 0.7) return "good";
+  if (ratio >= 0.4) return "needs-work";
+  return "bad";
 }
+
+/** Human label for a canvas tone, shown as the card pill. */
+export const CANVAS_TONE_LABEL: Record<Exclude<CanvasTone, "empty">, string> = {
+  good: "Good",
+  "needs-work": "Needs work",
+  bad: "Bad",
+};
 
 export interface LeanCanvasSubBlock {
   key: string;

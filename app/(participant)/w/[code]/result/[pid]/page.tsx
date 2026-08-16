@@ -72,6 +72,7 @@ export default async function ResultPage({
           code={code}
           pid={pid}
           editable
+          canvasExtras={(participant!.canvasExtras as Record<string, string> | null) ?? undefined}
         />
       </div>
       <FounderTabBar code={code} pid={pid} active="canvas" canvasUnlocked={canvasUnlocked} hasResult />

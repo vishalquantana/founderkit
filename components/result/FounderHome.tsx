@@ -37,6 +37,7 @@ export interface FounderHomeProps {
   completed: boolean;
   canvasUnlocked: boolean;
   answers: Record<SectionKey, string>;
+  canvasExtras?: Record<string, string>;
   code: string;
   pid: string;
 }
@@ -162,6 +163,7 @@ export function FounderHome({
   completed,
   canvasUnlocked,
   answers,
+  canvasExtras,
   code,
   pid,
 }: FounderHomeProps) {
@@ -197,7 +199,7 @@ export function FounderHome({
   const percent = showResult ? gaugePercent(result.backendScore) : 0;
   const dims = showResult ? lowestScoringDimensions(result.dimensionScores) : [];
   const recommendations = showResult ? buildRecommendations(result) : [];
-  const miniMapCells = showResult ? resolveMiniMapCells(result, answers) : [];
+  const miniMapCells = showResult ? resolveMiniMapCells(result, answers, canvasExtras) : [];
 
   return (
     <div className="flex flex-1 flex-col gap-4 pb-20">

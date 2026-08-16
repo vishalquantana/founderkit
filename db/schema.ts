@@ -52,6 +52,9 @@ export const participants = sqliteTable("participants", {
   productType: text("product_type"),
   businessModel: text("business_model"),
   consentFollowup: integer("consent_followup", { mode: "boolean" }).notNull().default(false),
+  /** Free-text answers for Lean Canvas blocks that aren't backed by a questionnaire section
+   *  (e.g. unfairAdvantage, costStructure). Keyed by Lean Canvas block key. */
+  canvasExtras: text("canvas_extras", { mode: "json" }).$type<Record<string, string>>(),
   createdAt: createdAt(),
   completedAt: integer("completed_at", { mode: "timestamp" }),
   resultEmailedAt: integer("result_emailed_at", { mode: "timestamp" }),

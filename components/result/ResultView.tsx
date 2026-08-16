@@ -31,6 +31,7 @@ export interface ResultViewProps {
   code: string;
   pid: string;
   editable?: boolean;
+  canvasExtras?: Record<string, string>;
 }
 
 const containerVariants: Variants = {
@@ -114,6 +115,7 @@ export function ResultView({
   code,
   pid,
   editable = false,
+  canvasExtras,
 }: ResultViewProps) {
   const shouldReduceMotion = useReducedMotion();
   const router = useRouter();
@@ -302,7 +304,7 @@ export function ResultView({
               ? "Tap a block on the map, or swipe through each area. Edit any answer to sharpen it."
               : "Tap a block on the map, or swipe through each area."}
           </p>
-          <LeanCanvasExplorer result={result} answers={answers} editable={editable} participantId={pid} />
+          <LeanCanvasExplorer result={result} answers={answers} canvasExtras={canvasExtras} editable={editable} participantId={pid} />
         </RevealSection>
 
         <RevealSection>

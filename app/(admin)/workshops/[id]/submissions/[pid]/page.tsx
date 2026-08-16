@@ -50,6 +50,7 @@ export default async function PresenterSubmissionPage({
         startupName={participant.startupName}
         code={workshop!.joinCode}
         pid={pid}
+        canvasExtras={(participant.canvasExtras as Record<string, string> | null) ?? undefined}
       />
     </main>
   );

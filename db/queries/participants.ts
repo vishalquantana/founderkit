@@ -28,6 +28,28 @@ export async function updateParticipant(
   await db.update(participants).set(fields).where(eq(participants.id, id));
 }
 
+/**
+ * Merge a single Lean Canvas "extra" block answer into the participant's
+ * `canvasExtras` map. Empty text removes the key. Returns nothing.
+ */
+export async function updateCanvasExtra(
+  id: string,
+  blockKey: string,
+  text: string,
+): Promise<void> {
+  const participant = await getParticipant(id);
+  if (!participant) throw new Error("Participant not found");
+  const current: Record<string, string> = { ...(participant.canvasExtras ?? {}) };
+  const trimmed = text.trim();
+  if (trimmed) {
+    current[blockKey] = trimmed;
+  } else {
+    delete current[blockKey];
+  }
+  const next = Object.keys(current).length > 0 ? current : null;
+  await db.update(participants).set({ canvasExtras: next }).where(eq(participants.id, id));
+}
+
 export async function completeParticipant(id: string): Promise<void> {
   await db.update(participants).set({ completedAt: new Date() }).where(eq(participants.id, id));
 }

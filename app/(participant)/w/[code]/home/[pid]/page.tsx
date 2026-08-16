@@ -75,6 +75,7 @@ export default async function FounderHomePage({
       completed={completed}
       canvasUnlocked={canvasUnlocked}
       answers={answers}
+      canvasExtras={(participant!.canvasExtras as Record<string, string> | null) ?? undefined}
       code={code}
       pid={pid}
     />

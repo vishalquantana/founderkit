@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
-import { createParticipant, completeParticipant, updateParticipant } from "@/db/queries/participants";
+import { createParticipant, completeParticipant, updateParticipant, updateCanvasExtra } from "@/db/queries/participants";
 import { saveResponse } from "@/db/queries/responses";
 import { getWorkshopById } from "@/db/queries/workshops";
 import { maybeEmailResult } from "@/email/send-result";
@@ -76,6 +76,17 @@ export async function saveSectionAnswer(input: {
     throw new Error("mainAnswer is too long");
   }
   await saveResponse(input);
+}
+
+export async function saveCanvasBlock(input: {
+  participantId: string; blockKey: string; text: string;
+}): Promise<void> {
+  await assertOwnsParticipant(input.participantId);
+  if (!input.blockKey?.trim()) throw new Error("blockKey is required");
+  if (input.text.length > MAX_ANSWER_LENGTH) {
+    throw new Error("text is too long");
+  }
+  await updateCanvasExtra(input.participantId, input.blockKey, input.text);
 }
 
 export async function probeSectionAction(input: {

@@ -2,72 +2,130 @@
 
 import { useState, useTransition } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { LEAN_CANVAS_BLOCKS, canvasCellTone, cellFeedback, type CellFeedback } from "@/lib/result-view";
+import {
+  LEAN_CANVAS_BLOCKS,
+  canvasCellTone,
+  CANVAS_TONE_LABEL,
+  type CanvasTone,
+} from "@/lib/result-view";
 import { DIMENSION_MAX } from "@/lib/readiness";
-import { CanvasMiniMap, CanvasMiniMapLegend, type MiniMapTone } from "@/components/result/CanvasMiniMap";
-import { saveSectionAnswer } from "@/app/(participant)/w/[code]/actions";
+import { CanvasMiniMap, CanvasMiniMapLegend } from "@/components/result/CanvasMiniMap";
+import { saveSectionAnswer, saveCanvasBlock } from "@/app/(participant)/w/[code]/actions";
 import type { EvaluationResult } from "@/ai/schema";
 import type { SectionKey } from "@/db/schema";
 
 export interface LeanCanvasExplorerProps {
   result: EvaluationResult;
   answers: Record<SectionKey, string>;
+  canvasExtras?: Record<string, string>;
   className?: string;
   editable?: boolean;
   participantId?: string;
 }
 
-type Tone = MiniMapTone;
-
-/** Legend + card pill classes per tone, readable in both themes. */
-const PILL_TONE_CLASSES: Record<CellFeedback["tone"], string> = {
-  strong: "bg-green-500/15 text-green-700 border border-green-500/30 dark:text-green-300",
-  growing: "bg-blue-500/15 text-blue-700 border border-blue-500/30 dark:text-blue-300",
-  sharpen: "bg-amber-500/15 text-amber-700 border border-amber-500/30 dark:text-amber-300",
+/** Card pill classes per tone, readable in both light and dark. */
+const PILL_TONE_CLASSES: Record<Exclude<CanvasTone, "empty">, string> = {
+  good: "bg-green-500/15 text-green-700 border border-green-500/30 dark:text-green-300",
+  "needs-work": "bg-amber-500/15 text-amber-700 border border-amber-500/30 dark:text-amber-300",
+  bad: "bg-red-500/15 text-red-700 border border-red-500/30 dark:text-red-300",
 };
+
+/** A single editable Lean Canvas field — either backed by a questionnaire
+ *  section (`source`) or a free-text canvas extra (stored by `key`). */
+interface EditableField {
+  key: string;
+  title: string;
+  helper: string;
+  source: SectionKey | undefined;
+  value: string | null;
+}
 
 interface ResolvedBlock {
   key: string;
   title: string;
-  helper: string;
   gridArea: string;
-  source: SectionKey | undefined;
-  answer: string | null;
+  main: EditableField;
+  sub: EditableField | null;
   score: number | undefined;
   max: number | undefined;
-  tone: Tone;
+  tone: CanvasTone;
   recommendations: string[] | undefined;
   fallbackFeedback: string | undefined;
+}
+
+function resolveFieldValue(
+  key: string,
+  source: SectionKey | undefined,
+  pitchSource: boolean,
+  answers: Record<SectionKey, string>,
+  canvasExtras: Record<string, string> | undefined,
+  result: EvaluationResult,
+  overrides: Record<string, string>,
+): string | null {
+  const override = overrides[key];
+  if (override !== undefined) return override.trim() || null;
+  if (source) return (answers[source] ?? "").trim() || null;
+  const extra = canvasExtras?.[key];
+  if (extra != null && extra.trim()) return extra.trim();
+  if (pitchSource) return result.improvedPitch?.trim() || null;
+  return null;
 }
 
 function resolveBlock(
   block: (typeof LEAN_CANVAS_BLOCKS)[number],
   answers: Record<SectionKey, string>,
+  canvasExtras: Record<string, string> | undefined,
   result: EvaluationResult,
-  overrides: Partial<Record<SectionKey, string>>,
+  overrides: Record<string, string>,
 ): ResolvedBlock {
-  const overridden = block.source ? overrides[block.source] : undefined;
-  const answer = block.source
-    ? (overridden ?? answers[block.source] ?? "").trim() || null
-    : block.pitchSource
-      ? result.improvedPitch?.trim() || null
-      : null;
+  const mainValue = resolveFieldValue(
+    block.key,
+    block.source,
+    Boolean(block.pitchSource),
+    answers,
+    canvasExtras,
+    result,
+    overrides,
+  );
   const score = block.dimension ? result.dimensionScores[block.dimension] : undefined;
   const max = block.dimension ? DIMENSION_MAX[block.dimension] : undefined;
   const recommendations = block.source ? result.sectionRecommendations?.[block.source] : undefined;
   const fallbackFeedback =
     !recommendations && block.source ? result.sectionFeedback?.[block.source] : undefined;
 
+  const sub: EditableField | null = block.sub
+    ? {
+        key: block.sub.key,
+        title: block.sub.title,
+        helper: block.sub.helper,
+        source: block.sub.source,
+        value: resolveFieldValue(
+          block.sub.key,
+          block.sub.source,
+          Boolean(block.sub.pitchSource),
+          answers,
+          canvasExtras,
+          result,
+          overrides,
+        ),
+      }
+    : null;
+
   return {
     key: block.key,
     title: block.title,
-    helper: block.helper,
     gridArea: block.gridArea,
-    source: block.source,
-    answer,
+    main: {
+      key: block.key,
+      title: block.title,
+      helper: block.helper,
+      source: block.source,
+      value: mainValue,
+    },
+    sub,
     score,
     max,
-    tone: canvasCellTone(score, max),
+    tone: canvasCellTone(Boolean(mainValue), score, max),
     recommendations,
     fallbackFeedback,
   };
@@ -75,14 +133,15 @@ function resolveBlock(
 
 /**
  * "Option B" — a colour-coded, tappable mini-map of the 9 Lean Canvas
- * blocks paired with a swipeable card carousel. Replaces the tiny
- * scaled-down landscape canvas on mobile with a legible, theme-aware
- * explorer: tap the mini-map or use Prev/Next to move through blocks,
- * each card surfacing the full answer, score, and recommendations.
+ * blocks paired with a swipeable card carousel. Every block (and its
+ * sub-block) is editable: section-backed blocks save via
+ * `saveSectionAnswer`, template-only blocks via `saveCanvasBlock`
+ * (stored in `participant.canvasExtras`).
  */
 export function LeanCanvasExplorer({
   result,
   answers,
+  canvasExtras,
   className,
   editable = false,
   participantId,
@@ -90,51 +149,91 @@ export function LeanCanvasExplorer({
   const shouldReduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [overrides, setOverrides] = useState<Partial<Record<SectionKey, string>>>({});
-  const [isEditing, setIsEditing] = useState(false);
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
 
-  const blocks = LEAN_CANVAS_BLOCKS.map((block) => resolveBlock(block, answers, result, overrides));
+  const blocks = LEAN_CANVAS_BLOCKS.map((block) =>
+    resolveBlock(block, answers, canvasExtras, result, overrides),
+  );
   const active = blocks[index];
-  const feedback = active.score !== undefined && active.max ? cellFeedback(active.score, active.max) : null;
   const ratio =
     active.max && active.score !== undefined ? Math.min(1, Math.max(0, active.score / active.max)) : 0;
+  const canEdit = editable && Boolean(participantId);
 
   function goTo(next: number) {
     const clamped = (next + blocks.length) % blocks.length;
     setDirection(clamped > index ? 1 : -1);
     setIndex(clamped);
-    setIsEditing(false);
+    setEditingKey(null);
     setSaveError(null);
   }
 
-  function startEditing() {
-    setDraft(active.answer ?? "");
+  function startEditing(field: EditableField) {
+    setDraft(field.value ?? "");
     setSaveError(null);
-    setIsEditing(true);
+    setEditingKey(field.key);
   }
 
   function cancelEditing() {
-    setIsEditing(false);
+    setEditingKey(null);
     setSaveError(null);
   }
 
-  function saveEditing() {
-    if (!active.source || !participantId) return;
-    const section = active.source;
+  function saveEditing(field: EditableField) {
+    if (!participantId) return;
     const value = draft;
     startSaving(async () => {
       try {
-        await saveSectionAnswer({ participantId, section, mainAnswer: value });
-        setOverrides((prev) => ({ ...prev, [section]: value }));
-        setIsEditing(false);
+        if (field.source) {
+          await saveSectionAnswer({ participantId, section: field.source, mainAnswer: value });
+        } else {
+          await saveCanvasBlock({ participantId, blockKey: field.key, text: value });
+        }
+        setOverrides((prev) => ({ ...prev, [field.key]: value }));
+        setEditingKey(null);
         setSaveError(null);
       } catch {
         setSaveError("Couldn't save that change. Please try again.");
       }
     });
+  }
+
+  function renderFieldEditor(field: EditableField) {
+    return (
+      <div className="flex flex-col gap-2">
+        <textarea
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          rows={5}
+          className="pulse-input w-full resize-none p-3 text-sm leading-relaxed outline-none"
+          placeholder={field.helper}
+          disabled={isSaving}
+          autoFocus
+        />
+        {saveError ? <p className="text-xs text-red-500">{saveError}</p> : null}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => saveEditing(field)}
+            disabled={isSaving}
+            className="pulse-btn px-3 py-1.5 text-xs disabled:opacity-60"
+          >
+            {isSaving ? "Saving…" : "Save"}
+          </button>
+          <button
+            type="button"
+            onClick={cancelEditing}
+            disabled={isSaving}
+            className="pulse-btn-secondary px-3 py-1.5 text-xs disabled:opacity-60"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -174,17 +273,17 @@ export function LeanCanvasExplorer({
                 {active.title}
               </h3>
               <div className="flex shrink-0 items-center gap-2">
-                {feedback ? (
+                {active.tone !== "empty" ? (
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${PILL_TONE_CLASSES[feedback.tone]}`}
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${PILL_TONE_CLASSES[active.tone]}`}
                   >
-                    {feedback.label}
+                    {CANVAS_TONE_LABEL[active.tone]}
                   </span>
                 ) : null}
-                {editable && active.source && !isEditing ? (
+                {canEdit && editingKey !== active.main.key ? (
                   <button
                     type="button"
-                    onClick={startEditing}
+                    onClick={() => startEditing(active.main)}
                     className="pulse-btn-secondary px-2.5 py-1 text-[11px]"
                   >
                     Edit
@@ -193,43 +292,14 @@ export function LeanCanvasExplorer({
               </div>
             </div>
 
-            {editable && active.source && isEditing ? (
-              <div className="flex flex-col gap-2">
-                <textarea
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  rows={5}
-                  className="pulse-input w-full resize-none p-3 text-sm leading-relaxed outline-none"
-                  placeholder={active.helper}
-                  disabled={isSaving}
-                  autoFocus
-                />
-                {saveError ? <p className="text-xs text-red-500">{saveError}</p> : null}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={saveEditing}
-                    disabled={isSaving}
-                    className="pulse-btn px-3 py-1.5 text-xs disabled:opacity-60"
-                  >
-                    {isSaving ? "Saving…" : "Save"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelEditing}
-                    disabled={isSaving}
-                    className="pulse-btn-secondary px-3 py-1.5 text-xs disabled:opacity-60"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : active.answer ? (
+            {canEdit && editingKey === active.main.key ? (
+              renderFieldEditor(active.main)
+            ) : active.main.value ? (
               <p className="whitespace-pre-wrap text-sm leading-relaxed" style={{ color: "var(--pulse-text)" }}>
-                {active.answer}
+                {active.main.value}
               </p>
             ) : (
-              <p className="text-sm italic leading-relaxed text-muted">{active.helper}</p>
+              <p className="text-sm italic leading-relaxed text-muted">{active.main.helper}</p>
             )}
 
             {active.max !== undefined && active.score !== undefined ? (
@@ -256,6 +326,41 @@ export function LeanCanvasExplorer({
                     }
                   />
                 </div>
+              </div>
+            ) : null}
+
+            {/* Sub-block (e.g. Existing Alternatives, High-Level Concept) */}
+            {active.sub ? (
+              <div
+                className="flex flex-col gap-2 rounded-xl p-3"
+                style={{ background: "var(--pulse-surface-strong)", border: "1px solid var(--pulse-border)" }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                    {active.sub.title}
+                  </h4>
+                  {canEdit && editingKey !== active.sub.key ? (
+                    <button
+                      type="button"
+                      onClick={() => active.sub && startEditing(active.sub)}
+                      className="pulse-btn-secondary px-2 py-0.5 text-[10px]"
+                    >
+                      Edit
+                    </button>
+                  ) : null}
+                </div>
+                {canEdit && editingKey === active.sub.key ? (
+                  renderFieldEditor(active.sub)
+                ) : active.sub.value ? (
+                  <p
+                    className="whitespace-pre-wrap text-xs leading-relaxed"
+                    style={{ color: "var(--pulse-text)" }}
+                  >
+                    {active.sub.value}
+                  </p>
+                ) : (
+                  <p className="text-xs italic leading-relaxed text-muted">{active.sub.helper}</p>
+                )}
               </div>
             ) : null}
 
