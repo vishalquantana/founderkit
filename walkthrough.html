@@ -40,9 +40,8 @@
   .lead{color:var(--muted);max-width:680px;margin:0 0 22px;font-size:14.5px}
 
   /* phone rail */
-  .rail{display:flex;gap:22px;overflow-x:auto;padding:6px 2px 24px;scroll-snap-type:x mandatory}
-  .rail::-webkit-scrollbar{height:8px}.rail::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:9px}
-  .phone{scroll-snap-align:center;flex:0 0 306px}
+  .rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,306px));gap:24px;justify-content:center;padding:6px 0 24px}
+  .phone{width:100%;max-width:306px;margin:0 auto}
   .frame{background:#05050b;border:1px solid var(--bd2);border-radius:40px;padding:9px;box-shadow:0 30px 60px -30px rgba(139,92,246,.5)}
   .screen{position:relative;height:604px;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;
     background:radial-gradient(100% 45% at 80% 0%,#2a0f4d 0,transparent 55%),
@@ -164,7 +163,16 @@
   .foot{margin-top:22px;padding:14px 18px;background:var(--surf);border:1px solid var(--bd);border-radius:12px;display:flex;justify-content:space-between;align-items:center}
   .foot .code{font-family:'Orbitron';font-size:24px;font-weight:800}
   .note{margin-top:16px;font-size:12.5px;color:var(--muted);background:var(--surf);border:1px dashed var(--bd2);border-radius:12px;padding:12px 14px}
-  @media(max-width:640px){.grid3{grid-template-columns:1fr}.cols{grid-template-columns:1fr 1fr}}
+  .wsdetail{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px;align-items:start}
+  .tablewrap{overflow-x:auto}
+  @media(max-width:640px){
+    .grid3{grid-template-columns:1fr}
+    .cols{grid-template-columns:1fr}
+    .wsdetail{grid-template-columns:1fr}
+    .big{font-size:56px}
+    h3.sec{font-size:21px}
+    .bbody{padding:16px}
+  }
 </style>
 </head>
 <body>
@@ -407,8 +415,8 @@
         <div class="r"><span>Pilot Ready</span><div class="tk"><i style="width:22%;background:var(--pilot)"></i></div><b>4</b></div>
         <div class="r"><span>Revenue Ready</span><div class="tk"><i style="width:15%;background:var(--rev)"></i></div><b>3</b></div>
       </div>
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px;align-items:start">
-        <div>
+      <div class="wsdetail">
+        <div class="tablewrap">
           <table>
             <thead><tr><th>Founder</th><th>Startup</th><th>Sector</th><th>Stage</th><th>Done</th></tr></thead>
             <tbody>
