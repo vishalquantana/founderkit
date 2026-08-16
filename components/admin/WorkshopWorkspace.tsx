@@ -2,29 +2,29 @@
 
 import { useState, type ReactNode } from "react";
 
-type Section = "submissions" | "polls" | "settings";
+type Section = "submissions" | "polls";
 
 const NAV: { key: Section; label: string }[] = [
   { key: "submissions", label: "Submissions" },
   { key: "polls", label: "Poll Questions" },
-  { key: "settings", label: "Settings" },
 ];
 
 export interface WorkshopWorkspaceProps {
   submissions: ReactNode;
   polls: ReactNode;
-  settings: ReactNode;
+  quickSettings: ReactNode;
 }
 
 /**
- * Left-nav workspace for the workshop control page: a sidebar to switch the
- * main panel between Submissions, Poll Questions, and Settings.
+ * 3-column workspace for the workshop control page: a left nav to switch the
+ * main panel between Submissions and Poll Questions, and a persistent right
+ * "Quick settings" column (workshop controls) that's always visible.
  */
-export function WorkshopWorkspace({ submissions, polls, settings }: WorkshopWorkspaceProps) {
+export function WorkshopWorkspace({ submissions, polls, quickSettings }: WorkshopWorkspaceProps) {
   const [section, setSection] = useState<Section>("submissions");
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[210px_minmax(0,1fr)] lg:items-start">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[190px_minmax(0,1fr)_360px] lg:items-start">
       <aside
         className="flex flex-row gap-2 overflow-x-auto pb-1 lg:sticky lg:top-20 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0"
         aria-label="Workshop sections"
@@ -47,9 +47,14 @@ export function WorkshopWorkspace({ submissions, polls, settings }: WorkshopWork
         ))}
       </aside>
 
-      <div className="min-w-0">
-        {section === "submissions" ? submissions : section === "polls" ? polls : settings}
-      </div>
+      <div className="min-w-0">{section === "submissions" ? submissions : polls}</div>
+
+      <aside className="min-w-0 lg:sticky lg:top-20">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+          Quick settings
+        </h2>
+        {quickSettings}
+      </aside>
     </div>
   );
 }

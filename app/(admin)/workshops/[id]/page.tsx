@@ -10,6 +10,7 @@ import { SubmissionsTable, type SubmissionRow } from "@/components/admin/Submiss
 import { WorkshopControls } from "@/components/admin/WorkshopControls";
 import { PollManager } from "@/components/admin/PollManager";
 import { WorkshopWorkspace } from "@/components/admin/WorkshopWorkspace";
+import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
 import { updateStatus, updateSettings } from "./actions";
 import type { SectionKey, WorkshopStatus } from "@/db/schema";
@@ -61,6 +62,7 @@ export default async function WorkshopDetailPage({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <ActiveUsersBadge workshopId={id} initial={stats.total} />
           <a href={`/api/workshops/${id}/export`} className="pulse-btn-secondary px-4 py-2 text-sm">
             Download CSV
           </a>
@@ -90,7 +92,7 @@ export default async function WorkshopDetailPage({
             <PollManager workshopId={id} polls={polls} />
           </div>
         }
-        settings={
+        quickSettings={
           <div className="pulse-card p-5">
             <WorkshopControls
               workshopId={id}
