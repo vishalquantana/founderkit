@@ -31,7 +31,9 @@ type SortMode = "recent" | "readiness";
 
 function formatCompletedAt(date: Date | null | undefined): string {
   if (!date) return "—";
-  return new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function sortByReadiness(submissions: SubmissionRow[]): SubmissionRow[] {
@@ -140,7 +142,7 @@ export function SubmissionsTable({ submissions, workshopId, className }: Submiss
                   </span>
                 )}
               </span>
-              <span className="flex items-center justify-between gap-2 tabular-nums text-muted">
+              <span suppressHydrationWarning className="flex items-center justify-between gap-2 tabular-nums text-muted">
                 {formatCompletedAt(participant.completedAt)}
                 <span className="text-xs font-semibold text-accent">View →</span>
               </span>
