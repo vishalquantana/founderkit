@@ -160,23 +160,26 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
 
       <header className="relative z-10 flex flex-col items-center justify-center gap-4 px-4 pt-6 sm:px-8 sm:pt-8">
         <div className="flex w-full items-center justify-between">
-          <Link
-            href={`/workshops/${workshopId}`}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pulse-border)] bg-surface px-3.5 py-1.5 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
-          >
-            ← Back to Dashboard
-          </Link>
-          {!sidebarOpen && (
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              aria-expanded={sidebarOpen}
-              aria-label="Show controls sidebar"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-3.5 py-1.5 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={`/workshops/${workshopId}`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pulse-border)] bg-surface px-3.5 py-1.5 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
             >
-              <Menu aria-hidden className="h-4 w-4" /> Show controls
-            </button>
-          )}
+              ← Back to Dashboard
+            </Link>
+            {!sidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                aria-expanded={sidebarOpen}
+                aria-label="Show controls sidebar"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-3.5 py-1.5 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+              >
+                <Menu aria-hidden className="h-4 w-4" /> Show controls
+              </button>
+            )}
+          </div>
+          <div />
         </div>
 
         {/* Top Center-Aligned 2X Brand Logo & Workshop Title (shown on Canvas Statistics, Word Cloud, Progression, Quiz, and Poll views) */}
