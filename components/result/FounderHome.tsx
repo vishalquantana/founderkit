@@ -447,14 +447,14 @@ export function FounderHome({
 
       {/* Bottom tab bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t px-2 py-2.5 backdrop-blur-md"
+        className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t px-2 py-3 backdrop-blur-md"
         style={{
           background: "color-mix(in srgb, var(--background) 88%, transparent)",
           borderColor: "var(--pulse-border)",
         }}
       >
         <span className="flex flex-col items-center gap-1 text-[10px] font-semibold" style={{ color: "var(--pulse-kicker)" }}>
-          <span aria-hidden="true">⌂</span>
+          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">⌂</span>
           Home
         </span>
         {showResult ? (
@@ -462,7 +462,7 @@ export function FounderHome({
             href={`/w/${code}/result/${pid}`}
             className="flex flex-col items-center gap-1 text-[10px] text-muted"
           >
-            <span aria-hidden="true">◱</span>
+            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
             Canvas
           </Link>
         ) : canvasUnlocked ? (
@@ -470,23 +470,23 @@ export function FounderHome({
             href={`/w/${code}/canvas/${pid}`}
             className="flex flex-col items-center gap-1 text-[10px] text-muted"
           >
-            <span aria-hidden="true">◱</span>
+            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
             Canvas
           </Link>
         ) : (
           <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
-            <span aria-hidden="true">◱</span>
+            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◱</span>
             Canvas
           </span>
         )}
         {showResult ? (
           <a href="#plan-section" className="flex flex-col items-center gap-1 text-[10px] text-muted">
-            <span aria-hidden="true">◉</span>
+            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◉</span>
             Plan
           </a>
         ) : (
           <span className="flex flex-col items-center gap-1 text-[10px] text-muted opacity-50">
-            <span aria-hidden="true">◉</span>
+            <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">◉</span>
             Plan
           </span>
         )}
@@ -494,7 +494,7 @@ export function FounderHome({
           href={`/w/${code}/polls/${pid}`}
           className="flex flex-col items-center gap-1 text-[10px] text-muted"
         >
-          <span aria-hidden="true">📊</span>
+          <span aria-hidden="true" className="h-6 w-6 text-2xl leading-6">📊</span>
           Polls
         </Link>
       </nav>

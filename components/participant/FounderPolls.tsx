@@ -3,20 +3,26 @@
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { hasVoted } from "@/lib/voting";
+import { optionColor } from "@/lib/poll-colors";
 
 export interface FounderPollsProps {
   code: string;
   participantId: string;
 }
 
-interface ActivePoll {
+interface PollListItem {
   id: string;
   question: string;
   options: string[];
+  status: string;
+  position: number;
+  counts: number[];
+  total: number;
 }
 
-interface ActivePollResponse {
-  poll: ActivePoll | null;
+interface FounderPollsResponse {
+  polls: PollListItem[];
+  activePollId: string | null;
 }
 
 const OPTION_LABELS = "ABCDEFGHIJ";
@@ -46,145 +52,264 @@ function markVoted(pollId: string): void {
   }
 }
 
+function LockIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <rect x="4" y="10" width="16" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+interface OptimisticVote {
+  index: number;
+  counts: number[];
+  total: number;
+}
+
+function ResultsView({
+  poll,
+  optimistic,
+  captionOverride,
+}: {
+  poll: PollListItem;
+  optimistic: OptimisticVote | null;
+  captionOverride?: string;
+}) {
+  const counts = optimistic ? optimistic.counts : poll.counts;
+  const total = optimistic ? optimistic.total : poll.total;
+
+  return (
+    <div className="mt-4 flex flex-col gap-2">
+      {poll.options.map((option, i) => {
+        const count = counts[i] ?? 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const isChosen = optimistic?.index === i;
+        return (
+          <div key={i} className="flex flex-col gap-1">
+            <div className="flex items-center justify-between text-xs">
+              <span
+                className="font-semibold"
+                style={{ color: isChosen ? optionColor(i) : "var(--pulse-text)" }}
+              >
+                {OPTION_LABELS[i] ?? i + 1}. {option}
+                {isChosen ? " ✓" : ""}
+              </span>
+              <span className="tabular-nums text-muted">
+                {count} · {pct}%
+              </span>
+            </div>
+            <div
+              className="h-2 w-full overflow-hidden rounded-full"
+              style={{ background: "var(--pulse-track)" }}
+            >
+              <div
+                className="h-full rounded-full transition-[width] duration-300"
+                style={{ width: `${pct}%`, background: optionColor(i) }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      <p className="mt-1 text-xs font-semibold" style={{ color: "var(--pulse-violet)" }}>
+        {captionOverride ?? `Your response is in · ${total} response${total === 1 ? "" : "s"}`}
+      </p>
+    </div>
+  );
+}
+
+function LockedPollCard({ poll }: { poll: PollListItem }) {
+  const label =
+    poll.status === "draft"
+      ? "Opens when the presenter starts this question"
+      : "Closed";
+  return (
+    <div className="pulse-card p-4 opacity-60">
+      <div className="flex items-start gap-3">
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: "var(--pulse-surface-strong)", color: "var(--pulse-kicker)" }}
+        >
+          <LockIcon />
+        </div>
+        <div>
+          <h2 className="font-display text-base font-bold leading-snug" style={{ color: "var(--pulse-text)" }}>
+            {poll.question}
+          </h2>
+          <p className="mt-1 text-xs text-muted">{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
- * Founder "Polls" tab — a manual fallback to answer the current live poll if
- * the full-screen takeover overlay doesn't trigger. Reuses the same
- * active-poll / vote endpoints and voting helpers as PollTakeover, but as a
- * normal in-flow page rather than a modal.
+ * One poll's card. Its own local `optimistic` state (once set by a vote)
+ * always wins over the "answered" flag derived from localStorage, so the
+ * card never remounts/loses its optimistic result mid-flight even though
+ * the parent's `votedIds` list also flips to include this poll right after
+ * a tap (persisted via `markVoted`, then re-read into state).
+ */
+function PollCard({
+  poll,
+  isActive,
+  initiallyAnswered,
+  participantId,
+  onVoted,
+}: {
+  poll: PollListItem;
+  isActive: boolean;
+  initiallyAnswered: boolean;
+  participantId: string;
+  onVoted: (pollId: string) => void;
+}) {
+  const [optimistic, setOptimistic] = useState<OptimisticVote | null>(null);
+  const [error, setError] = useState(false);
+
+  const answered = initiallyAnswered || optimistic !== null;
+
+  function handleVote(index: number) {
+    if (optimistic) return;
+
+    // Optimistic: flip to results instantly, mark voted immediately, and
+    // fire the network request in the background without awaiting it.
+    const nextCounts = poll.counts.slice();
+    nextCounts[index] = (nextCounts[index] ?? 0) + 1;
+    const snapshot: OptimisticVote = { index, counts: nextCounts, total: poll.total + 1 };
+    setOptimistic(snapshot);
+    setError(false);
+    markVoted(poll.id);
+    onVoted(poll.id);
+
+    fetch(`/api/polls/${poll.id}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ choiceIndex: index, voterId: participantId }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("vote failed");
+      })
+      .catch(() => {
+        setOptimistic(null);
+        setError(true);
+      });
+  }
+
+  if (!answered && !isActive) {
+    return <LockedPollCard poll={poll} />;
+  }
+
+  return (
+    <div className="pulse-card p-4">
+      <h2 className="font-display text-base font-bold leading-snug" style={{ color: "var(--pulse-text)" }}>
+        {poll.question}
+      </h2>
+
+      {answered ? (
+        <ResultsView poll={poll} optimistic={optimistic} />
+      ) : (
+        <div className="mt-4 flex flex-col gap-2.5">
+          {poll.options.map((option, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleVote(i)}
+              className="pulse-chip flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-semibold tracking-tight"
+              style={{ borderRadius: "1rem" }}
+            >
+              <span
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                style={{ background: "var(--pulse-surface)", color: "var(--pulse-text)" }}
+              >
+                {OPTION_LABELS[i] ?? i + 1}
+              </span>
+              <span>{option}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {error ? (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2">
+          <p className="text-xs text-red-400">Couldn&apos;t save — tap to retry.</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Founder "Polls" tab — a full list of the workshop's questions, each in
+ * the right state: draft/not-open shown locked, the active question
+ * answerable (tap-to-vote, optimistic), and answered/closed questions shown
+ * as a results distribution. Backed by a 5s-cached aggregates endpoint.
  */
 export function FounderPolls({ code, participantId }: FounderPollsProps) {
-  const { data, isLoading } = useSWR<ActivePollResponse>(
-    `/api/w/${code}/active-poll`,
+  const { data, isLoading } = useSWR<FounderPollsResponse>(
+    `/api/w/${code}/polls`,
     fetcher,
-    { refreshInterval: 3000 },
+    { refreshInterval: 5000 },
   );
 
   const [votedIds, setVotedIds] = useState<string[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(false);
-
-  const poll = data?.poll ?? null;
 
   useEffect(() => {
     setVotedIds(readVotedIds());
   }, []);
 
-  // Reset per-poll UI state whenever the active poll changes.
-  useEffect(() => {
-    setSelectedIndex(null);
-    setPendingIndex(null);
-    setError(false);
-  }, [poll?.id]);
+  const polls = data?.polls ?? [];
+  const activePollId = data?.activePollId ?? null;
 
-  const alreadyVoted = poll ? hasVoted(votedIds, poll.id) : false;
-
-  async function handleVote(index: number) {
-    if (!poll || submitting) return;
-    setSubmitting(true);
-    setError(false);
-    setPendingIndex(index);
-    try {
-      const res = await fetch(`/api/polls/${poll.id}/vote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ choiceIndex: index, voterId: participantId }),
-      });
-      if (!res.ok) {
-        setError(true);
-        setSubmitting(false);
-        return;
-      }
-      markVoted(poll.id);
-      setVotedIds(readVotedIds());
-      setSelectedIndex(index);
-      setSubmitting(false);
-    } catch {
-      setError(true);
-      setSubmitting(false);
-    }
+  function handleVoted(_pollId: string) {
+    // markVoted() already persisted to localStorage synchronously; re-read
+    // to pick up the change and flip this card into the answered/results state.
+    setVotedIds(readVotedIds());
   }
 
   return (
     <div className="flex flex-1 flex-col gap-4 pb-20 pt-2">
       <div>
-        <p className="pulse-kicker">Live poll</p>
+        <p className="pulse-kicker">Polls</p>
         <h1 className="font-display mt-1 text-xl font-bold" style={{ color: "var(--pulse-text)" }}>
-          Answer the live question
+          Workshop questions
         </h1>
         <p className="mt-1 text-sm text-muted">
-          A manual fallback in case the pop-up doesn&apos;t appear.
+          Answer the live question, or check back once the presenter opens the next one.
         </p>
       </div>
 
       {isLoading ? (
         <div className="pulse-card p-4">
-          <p className="text-sm text-muted">Checking for a live poll…</p>
+          <p className="text-sm text-muted">Loading questions…</p>
         </div>
-      ) : !poll ? (
+      ) : polls.length === 0 ? (
         <div className="pulse-card p-4">
-          <p className="text-sm leading-relaxed text-foreground">
-            No live question right now. When the presenter starts one, it&apos;ll appear here.
-          </p>
+          <p className="text-sm leading-relaxed text-foreground">No questions yet.</p>
         </div>
       ) : (
-        <div className="pulse-card p-4">
-          <h2 className="font-display text-lg font-bold leading-snug" style={{ color: "var(--pulse-text)" }}>
-            {poll.question}
-          </h2>
-
-          <div className="mt-4 flex flex-col gap-2.5">
-            {poll.options.map((option, i) => {
-              const isSelected = selectedIndex === i;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => handleVote(i)}
-                  data-selected={isSelected}
-                  className="pulse-chip flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-semibold tracking-tight disabled:opacity-60"
-                  style={{ borderRadius: "1rem" }}
-                >
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                    style={{
-                      background: isSelected
-                        ? "rgba(255,255,255,0.25)"
-                        : "var(--pulse-surface)",
-                      color: isSelected ? "#fff" : "var(--pulse-text)",
-                    }}
-                  >
-                    {OPTION_LABELS[i] ?? i + 1}
-                  </span>
-                  <span>{option}</span>
-                  {isSelected ? <span className="ml-auto">✓</span> : null}
-                </button>
-              );
-            })}
-          </div>
-
-          {selectedIndex !== null || alreadyVoted ? (
-            <p className="mt-3 text-xs font-semibold" style={{ color: "var(--pulse-violet)" }}>
-              Answer recorded ✓{" "}
-              <span className="font-normal text-muted">— tap another option to change it.</span>
-            </p>
-          ) : null}
-
-          {error ? (
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2">
-              <p className="text-xs text-red-400">Couldn&apos;t save your answer.</p>
-              <button
-                type="button"
-                onClick={() => pendingIndex !== null && handleVote(pendingIndex)}
-                className="text-xs font-semibold underline underline-offset-4"
-                style={{ color: "var(--pulse-violet)" }}
-              >
-                Retry
-              </button>
-            </div>
-          ) : null}
+        <div className="flex flex-col gap-3">
+          {[...polls]
+            .sort((a, b) => a.position - b.position)
+            .map((poll) => (
+              <PollCard
+                key={poll.id}
+                poll={poll}
+                isActive={poll.id === activePollId}
+                initiallyAnswered={hasVoted(votedIds, poll.id)}
+                participantId={participantId}
+                onVoted={handleVoted}
+              />
+            ))}
         </div>
       )}
     </div>
