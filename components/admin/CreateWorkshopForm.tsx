@@ -36,7 +36,7 @@ export function CreateWorkshopForm() {
           name="name"
           type="text"
           required
-          placeholder="e.g. Founders Sprint — August"
+          placeholder="e.g. From Idea to MVP - Building Your First Product"
           className="pulse-input w-full px-3 py-2 text-sm outline-none"
         />
       </div>
