@@ -157,13 +157,13 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         <span className="present-aurora-blob" />
       </div>
 
-      <header className="relative z-10 flex flex-col gap-2 px-4 pt-4 sm:px-8 sm:pt-5">
-        <div className="flex items-center gap-2">
+      <header className="relative z-10 flex flex-col items-center justify-center gap-3 px-4 pt-5 sm:px-8 sm:pt-6">
+        <div className="flex w-full items-center justify-between">
           <Link
             href={`/workshops/${workshopId}`}
-            className="inline-block text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pulse-border)] bg-surface px-3 py-1 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
           >
-            ← Dashboard
+            ← Back to Dashboard
           </Link>
           {!sidebarOpen && (
             <button
@@ -171,32 +171,34 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
               onClick={() => setSidebarOpen(true)}
               aria-expanded={sidebarOpen}
               aria-label="Show controls sidebar"
-              className="flex items-center gap-1 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-2 py-0.5 text-xs font-medium text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+              className="flex items-center gap-1.5 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-3 py-1 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
             >
               <Menu aria-hidden className="h-4 w-4" /> Show controls
             </button>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+
+        {/* Top Middle-Aligned Brand & Presenter Header */}
+        <div className="flex flex-col items-center gap-3 text-center">
           <div className="flex items-center gap-3">
             <Image
               src="/quantana-logo.svg"
               alt="Quantana"
-              width={140}
-              height={32}
-              className="nav-logo h-6 w-auto sm:h-7"
+              width={280}
+              height={64}
+              className="nav-logo h-12 w-auto sm:h-14"
               priority
             />
             <span
-              className="pl-3 text-sm font-semibold tracking-wide text-[var(--pulse-text-muted)]"
-              style={{ borderLeft: "1px solid var(--pulse-border-strong)" }}
+              className="pl-3.5 text-lg font-bold tracking-wide text-[var(--pulse-text-muted)] sm:text-xl"
+              style={{ borderLeft: "2px solid var(--pulse-border-strong)" }}
             >
               AI Cofounder
             </span>
           </div>
-          <div className="min-w-0">
-            <p className="pulse-kicker leading-none">Present Mode</p>
-            <h1 className="font-display text-xl font-bold leading-tight tracking-tight sm:text-2xl">{workshopName}</h1>
+          <div className="flex flex-col items-center">
+            <p className="pulse-kicker text-xs tracking-[0.3em] uppercase">Present Mode</p>
+            <h1 className="font-display text-2xl font-black leading-tight tracking-tight sm:text-3xl">{workshopName}</h1>
           </div>
         </div>
       </header>
