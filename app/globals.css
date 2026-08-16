@@ -85,6 +85,11 @@ html {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--pulse-surface);
+  --color-surface-strong: var(--pulse-surface-strong);
+  --color-border: var(--pulse-border);
+  --color-border-strong: var(--pulse-border-strong);
   --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);

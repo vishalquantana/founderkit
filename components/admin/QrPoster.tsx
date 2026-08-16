@@ -57,7 +57,7 @@ export function QrPoster({ joinUrl, joinCode, workshopName }: QrPosterProps) {
         <QRCodeSVG value={joinUrl} size={QR_SIZE} level="M" includeMargin />
       </div>
       <p className="font-display text-gradient text-3xl font-bold tracking-[0.2em]">{joinCode}</p>
-      <p className="max-w-xs break-all text-xs text-[#A9A9C9]">{joinUrl}</p>
+      <p className="max-w-xs break-all text-xs text-muted">{joinUrl}</p>
       <button type="button" onClick={handleDownload} className="pulse-btn px-4 py-2 text-sm">
         Download QR (PNG)
       </button>

@@ -16,7 +16,7 @@ export function NotLive({ state }: { state: NotLiveState }) {
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-strong border border-border-strong">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -33,8 +33,8 @@ export function NotLive({ state }: { state: NotLiveState }) {
           <circle cx="12" cy="12" r="9" />
         </svg>
       </div>
-      <h1 className="font-display text-xl font-extrabold tracking-tight text-[#ECEAF6]">{title}</h1>
-      <p className="max-w-xs text-sm leading-relaxed text-[#A9A9C9]">{body}</p>
+      <h1 className="font-display text-xl font-extrabold tracking-tight text-foreground">{title}</h1>
+      <p className="max-w-xs text-sm leading-relaxed text-muted">{body}</p>
     </main>
   );
 }

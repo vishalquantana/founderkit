@@ -14,14 +14,14 @@ export function LoginTabs({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+      <div className="flex gap-1 rounded-full border border-border-strong bg-surface-strong p-1">
         <button
           type="button"
           onClick={() => setTab("password")}
           className={`flex-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
             tab === "password"
               ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow-[0_8px_24px_-8px_rgba(139,92,246,0.6)]"
-              : "text-[#A9A9C9] hover:text-[#ECEAF6]"
+              : "text-muted hover:text-foreground"
           }`}
         >
           Password
@@ -32,7 +32,7 @@ export function LoginTabs({
           className={`flex-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
             tab === "otp"
               ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)] text-white shadow-[0_8px_24px_-8px_rgba(139,92,246,0.6)]"
-              : "text-[#A9A9C9] hover:text-[#ECEAF6]"
+              : "text-muted hover:text-foreground"
           }`}
         >
           Email code
@@ -109,7 +109,7 @@ function OtpForm() {
         </button>
       ) : (
         <>
-          <p className="text-sm text-[#A9A9C9]">
+          <p className="text-sm text-muted">
             We sent a 6-digit code to {email} if an account exists. Check your inbox.
           </p>
           <input
@@ -129,7 +129,7 @@ function OtpForm() {
             type="button"
             onClick={handleSendCode}
             disabled={isPending}
-            className="text-sm font-medium text-[#A9A9C9] underline decoration-white/20 underline-offset-2 transition-colors hover:text-[#ECEAF6] disabled:opacity-50"
+            className="text-sm font-medium text-muted underline decoration-white/20 underline-offset-2 transition-colors hover:text-foreground disabled:opacity-50"
           >
             {isPending ? "Sending..." : "Resend code"}
           </button>

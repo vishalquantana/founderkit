@@ -17,7 +17,7 @@ export default async function DashboardPage() {
           <h1 className="font-display text-gradient text-2xl font-bold">
             Welcome, {session?.user?.name ?? "Presenter"}
           </h1>
-          <p className="text-sm text-[#A9A9C9]">Manage your workshops and share join codes.</p>
+          <p className="text-sm text-muted">Manage your workshops and share join codes.</p>
         </div>
         <SignOutButton />
       </header>
@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       <CreateWorkshopForm />
 
       {workshops.length === 0 ? (
-        <div className="pulse-card border-dashed p-10 text-center text-[#A9A9C9]">
+        <div className="pulse-card border-dashed p-10 text-center text-muted">
           No workshops yet. Create your first one above to get started.
         </div>
       ) : (

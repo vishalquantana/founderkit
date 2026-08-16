@@ -49,7 +49,7 @@ export function AggregateView({ data }: AggregateViewProps) {
               <span className="font-display w-44 shrink-0 text-right text-base font-semibold text-[var(--pulse-text)] sm:text-lg">
                 {meta.label}
               </span>
-              <div className="h-8 flex-1 overflow-hidden rounded-full bg-white/10">
+              <div className="h-8 flex-1 overflow-hidden rounded-full bg-surface-strong">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ background: stageColor, boxShadow: `0 0 16px -4px ${stageColor}` }}

@@ -41,14 +41,14 @@ export function StatsPanel({ workshopId, initialStats, className }: StatsPanelPr
     <div className={`flex flex-col gap-6 ${className ?? ""}`}>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
         <div className="pulse-card p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#A9A9C9]">Participants</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Participants</p>
           <AnimatedNumber
             value={stats.total}
             className="font-display text-gradient text-3xl font-bold"
           />
         </div>
         <div className="pulse-card p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#A9A9C9]">Completed</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Completed</p>
           <AnimatedNumber
             value={stats.completed}
             className="font-display text-gradient text-3xl font-bold"
@@ -60,14 +60,14 @@ export function StatsPanel({ workshopId, initialStats, className }: StatsPanelPr
 
       {stats.sectorBreakdown.length > 0 ? (
         <div>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
             Sectors
           </h2>
           <div className="flex flex-wrap gap-2">
             {stats.sectorBreakdown.map(({ sector, count }) => (
               <span key={sector} className="pulse-chip inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium">
                 {sector}
-                <span className="tabular-nums text-[#A9A9C9]">{count}</span>
+                <span className="tabular-nums text-muted">{count}</span>
               </span>
             ))}
           </div>

@@ -34,7 +34,7 @@ export function StageDistribution({ distribution, className }: StageDistribution
 
   return (
     <div className={className}>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
         Readiness stage distribution
       </h2>
       <div className="flex flex-col gap-3">
@@ -47,10 +47,10 @@ export function StageDistribution({ distribution, className }: StageDistribution
           return (
             <div key={stage} className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-[#ECEAF6]">{meta.label}</span>
-                <span className="tabular-nums text-[#A9A9C9]">{count}</span>
+                <span className="font-medium text-foreground">{meta.label}</span>
+                <span className="tabular-nums text-muted">{count}</span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/5">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-strong">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ backgroundColor: color, boxShadow: `0 0 12px -2px ${color}` }}

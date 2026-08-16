@@ -45,13 +45,13 @@ export default async function WorkshopDetailPage({
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 p-6 sm:p-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Link href="/dashboard" className="text-sm text-[#A9A9C9] transition-colors hover:text-[#ECEAF6]">
+          <Link href="/dashboard" className="text-sm text-muted transition-colors hover:text-foreground">
             ← Back to workshops
           </Link>
           <h1 className="font-display text-gradient mt-1 text-2xl font-bold">{workshop!.name}</h1>
-          <p className="text-sm text-[#A9A9C9]">
+          <p className="text-sm text-muted">
             Join code{" "}
-            <span className="font-mono font-semibold tracking-widest text-[#ECEAF6]">
+            <span className="font-mono font-semibold tracking-widest text-foreground">
               {workshop!.joinCode}
             </span>
           </p>
@@ -71,7 +71,7 @@ export default async function WorkshopDetailPage({
           <StatsPanel workshopId={id} initialStats={stats} />
 
           <div>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
               Submissions
             </h2>
             <SubmissionsTable submissions={submissionRows} />

@@ -19,7 +19,7 @@ export interface WorkshopCardProps {
 const STATUS_STYLES: Record<WorkshopStatus, string> = {
   draft: "border-amber-400/30 bg-amber-400/10 text-amber-300",
   live: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-  closed: "border-white/15 bg-white/5 text-[#A9A9C9]",
+  closed: "border-border-strong bg-surface-strong text-muted",
 };
 
 const STATUS_LABELS: Record<WorkshopStatus, string> = {
@@ -48,7 +48,7 @@ export function WorkshopCard({ id, name, status, joinCode, participantCount, ind
       <div className="flex items-start justify-between gap-3">
         <Link
           href={`/workshops/${id}`}
-          className="font-display font-semibold text-[#ECEAF6] transition-colors hover:text-gradient"
+          className="font-display font-semibold text-foreground transition-colors hover:text-gradient"
         >
           {name}
         </Link>
@@ -61,15 +61,15 @@ export function WorkshopCard({ id, name, status, joinCode, participantCount, ind
 
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-[#A9A9C9]">Participants</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Participants</p>
           <AnimatedNumber
             value={participantCount}
             className="font-display text-gradient text-2xl font-bold"
           />
         </div>
         <div className="text-right">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#A9A9C9]">Join code</p>
-          <p className="font-mono text-lg font-semibold tracking-widest text-[#ECEAF6]">{joinCode}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Join code</p>
+          <p className="font-mono text-lg font-semibold tracking-widest text-foreground">{joinCode}</p>
         </div>
       </div>
 

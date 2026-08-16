@@ -29,8 +29,8 @@ interface ToggleRowProps {
 
 function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.09] bg-white/[0.04] px-4 py-2.5 text-sm">
-      <span className="font-medium text-[#ECEAF6]">{label}</span>
+    <label className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm">
+      <span className="font-medium text-foreground">{label}</span>
       <button
         type="button"
         role="switch"
@@ -38,7 +38,7 @@ function ToggleRow({ label, checked, onChange, disabled }: ToggleRowProps) {
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-          checked ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)]" : "bg-white/10"
+          checked ? "bg-[linear-gradient(135deg,#8b5cf6,#f472b6)]" : "bg-surface-strong"
         }`}
       >
         <motion.span
@@ -87,7 +87,7 @@ export function WorkshopControls({
   return (
     <div className={`flex flex-col gap-5 ${className ?? ""}`}>
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
           Workshop status
         </h2>
         <div className="flex flex-wrap items-center gap-2">
@@ -110,15 +110,15 @@ export function WorkshopControls({
               Close workshop
             </button>
           )}
-          <span className="text-sm text-[#A9A9C9]">
+          <span className="text-sm text-muted">
             Current status:{" "}
-            <span className="font-medium text-[#ECEAF6]">{STATUS_LABELS[currentStatus]}</span>
+            <span className="font-medium text-foreground">{STATUS_LABELS[currentStatus]}</span>
           </span>
         </div>
       </div>
 
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
           Live views
         </h2>
         <div className="flex flex-col gap-2">
@@ -159,7 +159,7 @@ export function WorkshopControls({
       </div>
 
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
           Other settings
         </h2>
         <div className="flex flex-col gap-2">

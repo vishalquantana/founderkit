@@ -23,7 +23,7 @@ export function ProgressBar({ current, total, className }: ProgressBarProps) {
 
   return (
     <div className={className}>
-      <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-[#A9A9C9]">
+      <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-muted">
         <span>
           Step {current} of {total}
         </span>
@@ -34,7 +34,7 @@ export function ProgressBar({ current, total, className }: ProgressBarProps) {
         aria-valuenow={pct}
         aria-valuemin={0}
         aria-valuemax={100}
-        className="h-2 w-full overflow-hidden rounded-full bg-white/10"
+        className="h-2 w-full overflow-hidden rounded-full bg-surface-strong"
       >
         <motion.div
           className="h-full rounded-full"

@@ -28,7 +28,7 @@ export function CreateWorkshopForm() {
       className="pulse-card flex flex-col gap-3 p-5 sm:flex-row sm:items-end"
     >
       <div className="flex-1">
-        <label htmlFor="name" className="mb-1 block text-sm font-medium text-[#A9A9C9]">
+        <label htmlFor="name" className="mb-1 block text-sm font-medium text-muted">
           New workshop name
         </label>
         <input

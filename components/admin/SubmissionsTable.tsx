@@ -42,7 +42,7 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
   if (submissions.length === 0) {
     return (
       <div
-        className={`pulse-card border-dashed p-8 text-center text-sm text-[#A9A9C9] ${className ?? ""}`}
+        className={`pulse-card border-dashed p-8 text-center text-sm text-muted ${className ?? ""}`}
       >
         No submissions yet. They will appear here as participants complete the workshop.
       </div>
@@ -51,7 +51,7 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
 
   return (
     <div className={`flex flex-col gap-2 ${className ?? ""}`}>
-      <div className="hidden grid-cols-[1.5fr_1.5fr_1fr_1fr_0.8fr] gap-3 px-4 text-xs font-semibold uppercase tracking-wide text-[#A9A9C9] sm:grid">
+      <div className="hidden grid-cols-[1.5fr_1.5fr_1fr_1fr_0.8fr] gap-3 px-4 text-xs font-semibold uppercase tracking-wide text-muted sm:grid">
         <span>Founder</span>
         <span>Startup</span>
         <span>Sector</span>
@@ -66,19 +66,19 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
         return (
           <div
             key={participant.id}
-            className="overflow-hidden rounded-2xl border border-white/[0.09] bg-white/[0.04] backdrop-blur-sm"
+            className="overflow-hidden rounded-2xl border border-border bg-surface backdrop-blur-sm"
           >
             <button
               type="button"
               onClick={() => setOpenId(isOpen ? null : participant.id)}
               aria-expanded={isOpen}
-              className="grid w-full grid-cols-2 items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-white/[0.06] sm:grid-cols-[1.5fr_1.5fr_1fr_1fr_0.8fr]"
+              className="grid w-full grid-cols-2 items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-surface-strong sm:grid-cols-[1.5fr_1.5fr_1fr_1fr_0.8fr]"
             >
-              <span className="col-span-2 font-medium text-[#ECEAF6] sm:col-span-1">
+              <span className="col-span-2 font-medium text-foreground sm:col-span-1">
                 {participant.founderName}
               </span>
-              <span className="col-span-2 text-[#A9A9C9] sm:col-span-1">{participant.startupName}</span>
-              <span className="text-[#A9A9C9]">{participant.sector ?? "—"}</span>
+              <span className="col-span-2 text-muted sm:col-span-1">{participant.startupName}</span>
+              <span className="text-muted">{participant.sector ?? "—"}</span>
               <span>
                 {result ? (
                   <span
@@ -92,12 +92,12 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
                     {STAGE_META[result.readinessStage].label}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs font-medium text-[#A9A9C9]">
+                  <span className="inline-flex items-center rounded-full border border-border-strong bg-surface-strong px-2.5 py-0.5 text-xs font-medium text-muted">
                     In progress
                   </span>
                 )}
               </span>
-              <span className="tabular-nums text-[#A9A9C9]">
+              <span className="tabular-nums text-muted">
                 {formatCompletedAt(participant.completedAt)}
               </span>
             </button>
@@ -110,13 +110,13 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="overflow-hidden border-t border-white/[0.09]"
+                  className="overflow-hidden border-t border-border"
                 >
                   <div className="flex flex-col gap-4 px-4 py-4">
                     {result ? (
-                      <p className="text-sm leading-relaxed text-[#A9A9C9]">{result.summary}</p>
+                      <p className="text-sm leading-relaxed text-muted">{result.summary}</p>
                     ) : (
-                      <p className="text-sm italic text-[#A9A9C9]">
+                      <p className="text-sm italic text-muted">
                         This participant has not completed the workshop yet.
                       </p>
                     )}
@@ -128,12 +128,12 @@ export function SubmissionsTable({ submissions, className }: SubmissionsTablePro
                         return (
                           <div
                             key={block.key}
-                            className="rounded-xl border border-white/[0.09] bg-white/[0.03] p-3"
+                            className="rounded-xl border border-border bg-surface p-3"
                           >
-                            <p className="text-xs font-semibold uppercase tracking-wide text-[#A9A9C9]">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                               {block.title}
                             </p>
-                            <p className="mt-1 text-sm leading-relaxed text-[#ECEAF6]">{answer}</p>
+                            <p className="mt-1 text-sm leading-relaxed text-foreground">{answer}</p>
                           </div>
                         );
                       })}

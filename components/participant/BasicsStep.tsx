@@ -78,13 +78,13 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
       className="flex flex-1 flex-col gap-6"
     >
       <div className="flex flex-col gap-1 text-center">
-        <h1 className="font-display text-xl font-extrabold tracking-tight text-[#ECEAF6]">Let&apos;s start with the basics</h1>
-        <p className="text-sm text-[#A9A9C9]">A little about you and your startup.</p>
+        <h1 className="font-display text-xl font-extrabold tracking-tight text-foreground">Let&apos;s start with the basics</h1>
+        <p className="text-sm text-muted">A little about you and your startup.</p>
       </div>
 
       <div className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-[#A9A9C9]">Your name</span>
+          <span className="text-sm font-medium text-muted">Your name</span>
           <input
             type="text"
             value={values.founderName}
@@ -98,7 +98,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-[#A9A9C9]">Startup name</span>
+          <span className="text-sm font-medium text-muted">Startup name</span>
           <input
             type="text"
             value={values.startupName}
@@ -112,7 +112,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-[#A9A9C9]">Email</span>
+          <span className="text-sm font-medium text-muted">Email</span>
           <input
             type="email"
             inputMode="email"
@@ -128,7 +128,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-[#A9A9C9]">Mobile (optional)</span>
+          <span className="text-sm font-medium text-muted">Mobile (optional)</span>
           <input
             type="tel"
             inputMode="tel"
@@ -141,7 +141,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-[#A9A9C9]">Sector (optional)</span>
+          <span className="text-sm font-medium text-muted">Sector (optional)</span>
           <input
             type="text"
             value={values.sector}
@@ -152,7 +152,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </label>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-[#A9A9C9]">Stage</legend>
+          <legend className="text-sm font-medium text-muted">Stage</legend>
           <div className="flex flex-wrap gap-2">
             {STAGE_OPTIONS.map((opt) => (
               <Chip
@@ -167,7 +167,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-[#A9A9C9]">Product type</legend>
+          <legend className="text-sm font-medium text-muted">Product type</legend>
           <div className="flex flex-wrap gap-2">
             {PRODUCT_TYPE_OPTIONS.map((opt) => (
               <Chip
@@ -182,7 +182,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-[#A9A9C9]">Team size</legend>
+          <legend className="text-sm font-medium text-muted">Team size</legend>
           <div className="flex flex-wrap gap-2">
             {TEAM_SIZE_OPTIONS.map((opt) => (
               <Chip
@@ -197,7 +197,7 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-[#A9A9C9]">Business model</legend>
+          <legend className="text-sm font-medium text-muted">Business model</legend>
           <div className="flex flex-wrap gap-2">
             {BUSINESS_MODEL_OPTIONS.map((opt) => (
               <Chip
@@ -211,12 +211,12 @@ export function BasicsStep({ onSubmit, submitting }: BasicsStepProps) {
           </div>
         </fieldset>
 
-        <label className="flex items-start gap-3 rounded-xl bg-white/5 p-3 text-sm text-[#ECEAF6]">
+        <label className="flex items-start gap-3 rounded-xl bg-surface-strong p-3 text-sm text-foreground">
           <input
             type="checkbox"
             checked={values.consentFollowup}
             onChange={(e) => update("consentFollowup", e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 text-[#8b5cf6] focus:ring-[#8b5cf6]"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-surface-strong text-[#8b5cf6] focus:ring-[#8b5cf6]"
           />
           <span>You can follow up with me about my results or upcoming programs.</span>
         </label>

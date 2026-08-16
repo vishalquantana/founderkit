@@ -35,7 +35,7 @@ export function ConsentGate({ consentText, onStart }: ConsentGateProps) {
         className="flex flex-1 flex-col items-center justify-center gap-3 text-center"
       >
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#8b5cf6]/30 border-t-[#8b5cf6]" />
-        <p className="text-sm font-medium text-[#A9A9C9]">Starting your snapshot…</p>
+        <p className="text-sm font-medium text-muted">Starting your snapshot…</p>
       </motion.main>
     );
   }
@@ -52,25 +52,25 @@ export function ConsentGate({ consentText, onStart }: ConsentGateProps) {
           5-minute check-in
         </span>
         <h1 className="font-display text-2xl font-extrabold tracking-tight text-gradient">MVP Readiness Snapshot</h1>
-        <p className="text-base text-[#ECEAF6]">
+        <p className="text-base text-foreground">
           Find your next best MVP move in 5 minutes.
         </p>
-        <p className="text-sm leading-relaxed text-[#A9A9C9]">
+        <p className="text-sm leading-relaxed text-muted">
           This is not an exam. The goal is to help you identify what to validate before
           building too much.
         </p>
       </div>
 
       <div className="pulse-card p-4">
-        <p className="text-xs leading-relaxed text-[#A9A9C9]">{consentText}</p>
+        <p className="text-xs leading-relaxed text-muted">{consentText}</p>
       </div>
 
-      <label className="flex items-start gap-3 rounded-xl bg-white/5 p-3 text-sm text-[#ECEAF6]">
+      <label className="flex items-start gap-3 rounded-xl bg-surface-strong p-3 text-sm text-foreground">
         <input
           type="checkbox"
           checked={consented}
           onChange={(e) => setConsented(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-white/5 text-[#8b5cf6] focus:ring-[#8b5cf6]"
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-surface-strong text-[#8b5cf6] focus:ring-[#8b5cf6]"
         />
         <span>I understand and agree to continue.</span>
       </label>

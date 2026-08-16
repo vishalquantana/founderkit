@@ -74,7 +74,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
           />
         ) : null}
 
-        <p className="relative text-sm font-medium text-[#A9A9C9]">
+        <p className="relative text-sm font-medium text-muted">
           {founderName}, here&apos;s where {startupName} stands
         </p>
 
@@ -113,7 +113,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
       >
         <RevealSection>
           <SectionLabel>Your snapshot</SectionLabel>
-          <p className="text-sm leading-relaxed text-[#ECEAF6]">{result.summary}</p>
+          <p className="text-sm leading-relaxed text-foreground">{result.summary}</p>
         </RevealSection>
 
         <RevealSection>
@@ -146,7 +146,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
         <RevealSection>
           <SectionLabel>Your next MVP experiment</SectionLabel>
-          <p className="pulse-card px-4 py-3 text-sm leading-relaxed text-[#ECEAF6]">
+          <p className="pulse-card px-4 py-3 text-sm leading-relaxed text-foreground">
             {result.mvpExperiment}
           </p>
         </RevealSection>
@@ -157,9 +157,9 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
             {result.sevenDayPlan.map((day, index) => (
               <li
                 key={`${day.day}-${index}`}
-                className="pulse-card pulse-hover-lift flex gap-3 px-4 py-3 text-sm leading-relaxed text-[#ECEAF6]"
+                className="pulse-card pulse-hover-lift flex gap-3 px-4 py-3 text-sm leading-relaxed text-foreground"
               >
-                <span className="font-display shrink-0 font-semibold text-[#A9A9C9]">{day.day}</span>
+                <span className="font-display shrink-0 font-semibold text-muted">{day.day}</span>
                 <span>{day.text}</span>
               </li>
             ))}
@@ -175,7 +175,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
         <RevealSection>
           <SectionLabel>Something to sit with</SectionLabel>
-          <p className="text-sm italic leading-relaxed text-[#A9A9C9]">{result.reflectionQuestion}</p>
+          <p className="text-sm italic leading-relaxed text-muted">{result.reflectionQuestion}</p>
         </RevealSection>
       </motion.div>
 
@@ -183,7 +183,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
         <button
           type="button"
           onClick={() => setShowBreakdown((v) => !v)}
-          className="self-start text-sm font-semibold text-[#A9A9C9] underline-offset-4 transition hover:text-[#ECEAF6] hover:underline"
+          className="self-start text-sm font-semibold text-muted underline-offset-4 transition hover:text-foreground hover:underline"
           aria-expanded={showBreakdown}
         >
           {showBreakdown ? "Hide detailed breakdown" : "View detailed breakdown"}
@@ -207,7 +207,7 @@ export function ResultView({ result, answers, founderName, startupName, code, pi
 
       <div className="flex flex-col gap-3">
         <SectionLabel>Your lean canvas</SectionLabel>
-        <p className="text-xs text-[#A9A9C9]">Tap a tile to see the full answer and how it scored.</p>
+        <p className="text-xs text-muted">Tap a tile to see the full answer and how it scored.</p>
         <div className="pulse-card p-3 sm:p-5">
           <CanvasBoard result={result} answers={answers} suggestions={result.sectionFeedback} />
         </div>

@@ -131,13 +131,13 @@ export function SectionStep({
       className="flex flex-1 flex-col gap-5"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="font-display text-xl font-extrabold tracking-tight text-[#ECEAF6]">{section.heading}</h1>
-        <p className="text-sm leading-relaxed text-[#ECEAF6]">{section.mainQuestion}</p>
+        <h1 className="font-display text-xl font-extrabold tracking-tight text-foreground">{section.heading}</h1>
+        <p className="text-sm leading-relaxed text-foreground">{section.mainQuestion}</p>
         {section.promptHelp && (
-          <p className="text-xs leading-relaxed text-[#A9A9C9]">{section.promptHelp}</p>
+          <p className="text-xs leading-relaxed text-muted">{section.promptHelp}</p>
         )}
         {section.example && (
-          <p className="rounded-xl bg-white/5 p-3 text-xs italic leading-relaxed text-[#A9A9C9]">
+          <p className="rounded-xl bg-surface-strong p-3 text-xs italic leading-relaxed text-muted">
             e.g. {section.example}
           </p>
         )}
@@ -166,7 +166,7 @@ export function SectionStep({
           placeholder="Type your answer here…"
           className="pulse-input w-full resize-none p-4 text-sm leading-relaxed outline-none disabled:opacity-60"
         />
-        <div className="flex items-center justify-between text-xs text-[#A9A9C9]">
+        <div className="flex items-center justify-between text-xs text-muted">
           <span>Aim for around {SUGGESTED_LENGTH} words — a few honest sentences beat a polished paragraph.</span>
           <span className="tabular-nums">{wordCount}w</span>
         </div>
@@ -190,7 +190,7 @@ export function SectionStep({
             style={{ boxShadow: "0 0 0 1px rgba(139,92,246,0.25), 0 20px 60px -20px rgba(139,92,246,0.55)" }}
           >
             <span className="pulse-kicker text-[#c4b5fd]">⚡ Quick follow-up from AI Coach</span>
-            <p className="text-sm leading-relaxed text-[#ECEAF6]">{probeQuestion}</p>
+            <p className="text-sm leading-relaxed text-foreground">{probeQuestion}</p>
             <textarea
               value={probeAnswerValue}
               onChange={(e) => setProbeAnswerValue(e.target.value)}
