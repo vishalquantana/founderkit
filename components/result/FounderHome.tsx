@@ -432,6 +432,13 @@ export function FounderHome({
             Plan
           </span>
         )}
+        <Link
+          href={`/w/${code}/polls/${pid}`}
+          className="flex flex-col items-center gap-1 text-[10px] text-muted"
+        >
+          <span aria-hidden="true">📊</span>
+          Polls
+        </Link>
       </nav>
     </div>
   );
