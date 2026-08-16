@@ -179,31 +179,33 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
           )}
         </div>
 
-        {/* Top Center-Aligned 2X Brand Logo & Workshop Title */}
-        <div className="flex flex-col items-center justify-center gap-3 text-center">
-          <div className="flex items-center justify-center gap-4">
-            <Image
-              src="/quantana-logo.svg"
-              alt="Quantana"
-              width={340}
-              height={80}
-              className="nav-logo h-14 w-auto sm:h-16"
-              priority
-            />
-            <span
-              className="pl-4 text-xl font-bold tracking-wider text-[var(--pulse-text-muted)] sm:text-2xl"
-              style={{ borderLeft: "2px solid var(--pulse-border-strong)" }}
-            >
-              AI Cofounder
-            </span>
+        {/* Top Center-Aligned 2X Brand Logo & Workshop Title (shown on Canvas Statistics, Word Cloud, Progression, Quiz, and Poll views) */}
+        {!(selection.kind === "view" && selection.view === "welcome") && (
+          <div className="flex flex-col items-center justify-center gap-3 text-center">
+            <div className="flex items-center justify-center gap-4">
+              <Image
+                src="/quantana-logo.svg"
+                alt="Quantana"
+                width={340}
+                height={80}
+                className="nav-logo h-14 w-auto sm:h-16"
+                priority
+              />
+              <span
+                className="pl-4 text-xl font-bold tracking-wider text-[var(--pulse-text-muted)] sm:text-2xl"
+                style={{ borderLeft: "2px solid var(--pulse-border-strong)" }}
+              >
+                AI Cofounder
+              </span>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="pulse-kicker text-xs font-bold tracking-[0.35em] uppercase">PRESENTS</p>
+              <h1 className="font-display text-2xl font-black leading-tight tracking-tight sm:text-4xl text-balance">
+                {workshopName}
+              </h1>
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-center">
-            <p className="pulse-kicker text-xs font-bold tracking-[0.35em] uppercase">PRESENTS</p>
-            <h1 className="font-display text-2xl font-black leading-tight tracking-tight sm:text-4xl text-balance">
-              {workshopName}
-            </h1>
-          </div>
-        </div>
+        )}
       </header>
 
       <div className="relative z-10 flex flex-1 flex-col gap-6 px-4 py-6 sm:px-10 sm:py-8 lg:flex-row">
