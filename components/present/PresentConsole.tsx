@@ -6,7 +6,7 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import useSWR from "swr";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { Eye, EyeOff, Menu, X } from "lucide-react";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 import { availableViews, VIEW_LABELS, type PresentView } from "@/components/present/views";
 import type { PresentData } from "@/components/present/types";
@@ -75,6 +75,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
   const [, startPollActionTransition] = useTransition();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [joinOpen, setJoinOpen] = useState(true);
+  const [headerVisible, setHeaderVisible] = useState(true);
   // Optimistic canvas-unlock: flip the toggle instantly on tap, reconcile
   // when the present SWR catches up (see effect below).
   const [optimisticCanvas, setOptimisticCanvas] = useState<boolean | null>(null);
@@ -158,7 +159,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
         <span className="present-aurora-blob" />
       </div>
 
-      <header className="relative z-10 flex flex-col items-center justify-center gap-4 px-4 pt-6 sm:px-8 sm:pt-8">
+      <header className="relative z-10 flex flex-col items-center justify-center gap-4 px-4 pt-4 sm:px-8 sm:pt-6">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Link
@@ -178,13 +179,38 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 <Menu aria-hidden className="h-4 w-4" /> Show controls
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setHeaderVisible((prev) => !prev)}
+              aria-label={headerVisible ? "Hide title & logo" : "Show title & logo"}
+              title={headerVisible ? "Hide title & logo for maximum stage space" : "Show title & logo"}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--pulse-border-strong)] bg-surface px-3.5 py-1.5 text-xs font-semibold text-[var(--pulse-text-muted)] transition-colors hover:text-[var(--pulse-text)]"
+            >
+              {headerVisible ? (
+                <>
+                  <EyeOff aria-hidden className="h-3.5 w-3.5" />
+                  <span>Hide Title</span>
+                </>
+              ) : (
+                <>
+                  <Eye aria-hidden className="h-3.5 w-3.5" />
+                  <span>Show Title</span>
+                </>
+              )}
+            </button>
           </div>
           <div />
         </div>
 
-        {/* Top Center-Aligned 2X Brand Logo & Workshop Title (shown on Canvas Statistics, Word Cloud, Progression, Quiz, and Poll views) */}
-        {!(selection.kind === "view" && selection.view === "welcome") && (
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
+        {/* Top Center-Aligned 2X Brand Logo & Workshop Title (shown on Canvas Statistics, Word Cloud, Progression, Quiz, and Poll views when headerVisible is true) */}
+        {headerVisible && !(selection.kind === "view" && selection.view === "welcome") && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="flex flex-col items-center justify-center gap-3 text-center"
+          >
             <div className="flex items-center justify-center gap-4">
               <Image
                 src="/quantana-logo.svg"
@@ -207,7 +233,7 @@ export function PresentConsole({ workshopId, workshopName, joinCode, initialData
                 {workshopName}
               </h1>
             </div>
-          </div>
+          </motion.div>
         )}
       </header>
 
