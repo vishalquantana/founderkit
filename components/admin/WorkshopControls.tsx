@@ -15,6 +15,7 @@ export interface WorkshopControlsProps {
   onUpdateSettings: (id: string, settings: WorkshopSettings) => Promise<void>;
   onUpdateName?: (id: string, name: string) => Promise<void>;
   onResetQuiz?: (id: string) => Promise<void>;
+  onClearSubmissions?: (id: string) => Promise<void>;
   className?: string;
 }
 
@@ -83,6 +84,7 @@ export function WorkshopControls({
   onUpdateSettings,
   onUpdateName,
   onResetQuiz,
+  onClearSubmissions,
   className,
 }: WorkshopControlsProps) {
   const [currentStatus, setCurrentStatus] = useState(status);
@@ -91,6 +93,7 @@ export function WorkshopControls({
   const [isSavingName, setIsSavingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
   const [confirmResetQuiz, setConfirmResetQuiz] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   async function handleSaveName() {
     const trimmed = nameText.trim();
@@ -126,6 +129,17 @@ export function WorkshopControls({
       await onResetQuiz(workshopId);
     }
     setConfirmResetQuiz(false);
+  }
+
+  async function handleClearClick() {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      return;
+    }
+    if (onClearSubmissions) {
+      await onClearSubmissions(workshopId);
+    }
+    setConfirmClear(false);
   }
 
   return (
@@ -279,6 +293,33 @@ export function WorkshopControls({
             </ActionButton>
             <p className="text-xs text-muted">
               Clears all participant quiz scores, badges, and the live showdown leaderboard so founders can retake it freshly.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Danger zone — clear the whole room to start fresh */}
+      {onClearSubmissions && (
+        <div>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-500">
+            Danger zone
+          </h2>
+          <div className="flex flex-col gap-2 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3">
+            <ActionButton
+              type="button"
+              onAction={handleClearClick}
+              pendingChildren="Clearing all submissions…"
+              className={`self-start rounded-full px-4 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                confirmClear
+                  ? "bg-red-600 text-white hover:bg-red-500"
+                  : "border border-red-500/40 text-red-600 hover:bg-red-500/10 dark:text-red-400"
+              }`}
+            >
+              {confirmClear ? "Confirm — permanently delete ALL submissions?" : "Clear all submissions & start fresh"}
+            </ActionButton>
+            <p className="text-xs text-muted">
+              Permanently deletes every founder&apos;s submission for this workshop — profiles, canvas answers,
+              results, poll votes, quiz scores, and chats — so the room starts empty. This cannot be undone.
             </p>
           </div>
         </div>

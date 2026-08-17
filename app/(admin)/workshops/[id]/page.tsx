@@ -15,7 +15,7 @@ import { KnowledgeBasePanel } from "@/components/admin/KnowledgeBasePanel";
 import { FeedbackPanel } from "@/components/admin/FeedbackPanel";
 import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
-import { updateStatus, updateSettings, updateWorkshopName, resetAllQuizSubmissionsAction } from "./actions";
+import { updateStatus, updateSettings, updateWorkshopName, resetAllQuizSubmissionsAction, clearAllSubmissionsAction } from "./actions";
 import type { SectionKey, WorkshopStatus } from "@/db/schema";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 
@@ -136,6 +136,7 @@ export default async function WorkshopDetailPage({
                 onUpdateSettings={updateSettings}
                 onUpdateName={updateWorkshopName}
                 onResetQuiz={resetAllQuizSubmissionsAction}
+                onClearSubmissions={clearAllSubmissionsAction}
               />
             </div>
           </div>

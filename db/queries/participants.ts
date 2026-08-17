@@ -71,6 +71,38 @@ export async function deleteParticipant(id: string): Promise<void> {
   await db.delete(participants).where(eq(participants.id, id));
 }
 
+/**
+ * Delete EVERY submission for a workshop — all participants and their
+ * dependent rows across every child table — so the presenter can start the
+ * room fresh. FK-safe order: children before parents. poll_votes.voter_id is
+ * the participant id for signed-in founders.
+ */
+export async function deleteAllWorkshopSubmissions(workshopId: string): Promise<number> {
+  const { inArray } = await import("drizzle-orm");
+  const {
+    responses, results, growthPlans, feedbackSubmissions, escalations,
+    chatMessages, quizSubmissions, pollVotes,
+  } = await import("../schema");
+
+  const parts = await db
+    .select({ id: participants.id })
+    .from(participants)
+    .where(eq(participants.workshopId, workshopId));
+  const ids = parts.map((p) => p.id);
+  if (ids.length === 0) return 0;
+
+  await db.delete(escalations).where(inArray(escalations.participantId, ids));
+  await db.delete(chatMessages).where(inArray(chatMessages.participantId, ids));
+  await db.delete(quizSubmissions).where(inArray(quizSubmissions.participantId, ids));
+  await db.delete(feedbackSubmissions).where(inArray(feedbackSubmissions.participantId, ids));
+  await db.delete(growthPlans).where(inArray(growthPlans.participantId, ids));
+  await db.delete(results).where(inArray(results.participantId, ids));
+  await db.delete(responses).where(inArray(responses.participantId, ids));
+  await db.delete(pollVotes).where(inArray(pollVotes.voterId, ids));
+  await db.delete(participants).where(inArray(participants.id, ids));
+  return ids.length;
+}
+
 export async function countByWorkshop(workshopId: string): Promise<number> {
   const [row] = await db.select({ n: count() }).from(participants)
     .where(eq(participants.workshopId, workshopId));

@@ -72,3 +72,17 @@ export async function resetAllQuizSubmissionsAction(workshopId: string): Promise
   revalidatePath(`/workshops/${workshopId}`);
   revalidatePath(`/present/${workshopId}`);
 }
+
+/** Wipe EVERY submission for the workshop so the presenter can start fresh. */
+export async function clearAllSubmissionsAction(workshopId: string): Promise<void> {
+  const session = await auth();
+  const workshop = await getWorkshopById(workshopId);
+  if (!assertOwnership(session?.user?.id, workshop)) {
+    throw new Error("Not authorized to modify this workshop.");
+  }
+
+  const { deleteAllWorkshopSubmissions } = await import("@/db/queries/participants");
+  await deleteAllWorkshopSubmissions(workshopId);
+  revalidatePath(`/workshops/${workshopId}`);
+  revalidatePath(`/present/${workshopId}`);
+}
