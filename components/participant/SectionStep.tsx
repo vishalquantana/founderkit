@@ -6,6 +6,7 @@ import { Sparkles } from "lucide-react";
 import { Chip } from "@/components/motion/Chip";
 import type { Section } from "@/lib/sections";
 import { saveSectionAnswer, probeSectionAction } from "@/app/(participant)/w/[code]/actions";
+import { recoverFromActionError } from "@/lib/action-recovery";
 import { composeSectionAnswer } from "@/lib/section-answer";
 
 const SUGGESTED_LENGTH = 40; // words — a gentle nudge, not a hard rule
@@ -89,6 +90,12 @@ export function SectionStep({
 
       setProbeResolved(true);
       onAdvance(composed);
+    } catch (err) {
+      // Deployment skew → reload onto the fresh bundle; otherwise advance so a
+      // transient save hiccup doesn't trap the founder (their answer is also
+      // autosaved on blur).
+      if (recoverFromActionError(err)) return;
+      onAdvance(composed);
     } finally {
       setProbing(false);
       setSaving(false);
@@ -108,6 +115,9 @@ export function SectionStep({
       });
       setProbeResolved(true);
       onAdvance(composed);
+    } catch (err) {
+      if (recoverFromActionError(err)) return;
+      onAdvance(composed);
     } finally {
       setProbeSaving(false);
     }
@@ -123,6 +133,8 @@ export function SectionStep({
         mainAnswer: composed,
         probeQuestion,
       });
+    } catch (err) {
+      recoverFromActionError(err); // swallow (or reload on skew) — never unhandled
     } finally {
       // Skipping never blocks progress, even if the save is slow or fails.
       setProbeSaving(false);

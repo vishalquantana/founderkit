@@ -54,6 +54,7 @@ export async function startParticipant(input: {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
+    maxAge: 60 * 60 * 12, // 12h — survive a browser restart during the workshop
   });
 
   return { participantId: p.id };

@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/motion/ProgressBar";
 import { StepTransition } from "@/components/motion/StepTransition";
 import { SECTIONS } from "@/lib/sections";
 import { saveSectionAnswer, finishParticipant } from "@/app/(participant)/w/[code]/actions";
+import { recoverFromActionError } from "@/lib/action-recovery";
 import type { SectionKey } from "@/db/schema";
 
 export interface CanvasWizardWorkshop {
@@ -35,7 +36,10 @@ export function CanvasWizard({ workshop, participantId, initialAnswers }: Canvas
 
   function handleAutosave(sectionKey: (typeof SECTIONS)[number]["key"], value: string) {
     setAnswers((a) => ({ ...a, [sectionKey]: value }));
-    void saveSectionAnswer({ participantId, section: sectionKey, mainAnswer: value });
+    // Catch so a deployment-skew rejection never becomes an unhandled #441.
+    void saveSectionAnswer({ participantId, section: sectionKey, mainAnswer: value }).catch(
+      recoverFromActionError,
+    );
   }
 
   // The main answer (and, if the coach probes, the follow-up Q&A) is
@@ -50,9 +54,10 @@ export function CanvasWizard({ workshop, participantId, initialAnswers }: Canvas
       setFinishing(true);
       try {
         await finishParticipant(participantId);
-      } finally {
-        router.push(`/w/${workshop.joinCode}/home/${participantId}`);
+      } catch (err) {
+        if (recoverFromActionError(err)) return; // deployment skew — reloading, skip nav
       }
+      router.push(`/w/${workshop.joinCode}/home/${participantId}`);
       return;
     }
     setSectionIndex(index + 1);
