@@ -74,10 +74,9 @@ export interface CanvasMiniMapProps {
 export function CanvasMiniMap({ cells, activeIndex, onSelect, className }: CanvasMiniMapProps) {
   return (
     <div
-      className={`grid gap-[3px] rounded-lg border p-1 ${className ?? ""}`}
+      className={`grid gap-[4px] rounded-xl border p-1 sm:p-1.5 ${className ?? ""}`}
       style={{
         gridTemplateColumns: "repeat(10, minmax(0, 1fr))",
-        gridTemplateRows: "repeat(3, 18px)",
         borderColor: "var(--pulse-border-strong)",
         background: "var(--pulse-surface-strong)",
       }}
@@ -93,10 +92,19 @@ export function CanvasMiniMap({ cells, activeIndex, onSelect, className }: Canva
             disabled={!interactive}
             onClick={interactive ? () => onSelect(i) : undefined}
             style={{ gridArea: cell.gridArea }}
-            className={`rounded-[3px] transition ${MINI_MAP_TONE_CLASSES[cell.tone]} ${
-              activeIndex === i ? "outline outline-2 outline-offset-1 outline-[var(--pulse-violet)]" : ""
-            } ${interactive ? "" : "cursor-default"}`}
-          />
+            className={`group relative flex min-h-[22px] sm:min-h-[46px] items-center justify-center rounded-[4px] sm:rounded-md p-1 transition-all ${
+              MINI_MAP_TONE_CLASSES[cell.tone]
+            } ${
+              activeIndex === i
+                ? "ring-2 ring-[var(--pulse-violet)] shadow-sm scale-[1.01]"
+                : "hover:opacity-90"
+            } ${interactive ? "cursor-pointer" : "cursor-default"}`}
+          >
+            {/* Desktop Category Name: hidden on mobile, visible on desktop/tablets */}
+            <span className="hidden sm:line-clamp-2 text-center text-[10px] sm:text-[11px] font-bold leading-tight tracking-tight text-foreground/80 group-hover:text-foreground">
+              {cell.title}
+            </span>
+          </button>
         );
       })}
     </div>
