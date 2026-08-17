@@ -26,6 +26,14 @@ const CACHE_HEADERS = {
 const CACHE_TTL_MS = 5000;
 const cache = new Map<string, { at: number; data: FounderPollsResponse }>();
 
+export function invalidatePollsCache(code?: string) {
+  if (code) {
+    cache.delete(code);
+  } else {
+    cache.clear();
+  }
+}
+
 async function computePolls(code: string): Promise<FounderPollsResponse> {
   const workshop = await getWorkshopByJoinCode(code);
   if (!workshop) {

@@ -42,6 +42,17 @@ export async function deletePoll(pollId: string): Promise<void> {
   await db.delete(polls).where(eq(polls.id, pollId));
 }
 
+export async function reorderPolls(workshopId: string, orderedPollIds: string[]): Promise<void> {
+  await Promise.all(
+    orderedPollIds.map((pollId, index) =>
+      db
+        .update(polls)
+        .set({ position: index + 1 })
+        .where(and(eq(polls.id, pollId), eq(polls.workshopId, workshopId))),
+    ),
+  );
+}
+
 /** Delete all votes for a poll, resetting its tally to zero without deleting the poll itself. */
 export async function deletePollVotes(pollId: string): Promise<void> {
   await db.delete(pollVotes).where(eq(pollVotes.pollId, pollId));

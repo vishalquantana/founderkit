@@ -60,6 +60,19 @@ export async function deletePollAction(id: string, pollId: string): Promise<void
   revalidatePath(`/workshops/${id}`);
 }
 
+export async function reorderPollsAction(id: string, orderedPollIds: string[]): Promise<void> {
+  await assertWorkshopAccess(id);
+
+  const { reorderPolls } = await import("@/db/queries/polls");
+  await reorderPolls(id, orderedPollIds);
+
+  const { invalidatePollsCache } = await import("@/app/api/w/[code]/polls/route");
+  invalidatePollsCache();
+
+  revalidatePath(`/workshops/${id}`);
+  revalidatePath(`/present/${id}`);
+}
+
 export async function activatePollAction(id: string, pollId: string): Promise<void> {
   await assertWorkshopAccess(id);
 

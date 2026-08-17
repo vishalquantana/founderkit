@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { motion, useReducedMotion } from "motion/react";
+import { GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import type { Poll } from "@/db/queries/polls";
 import { optionColor } from "@/lib/poll-colors";
 import { ActionButton } from "@/components/ui/ActionButton";
@@ -14,6 +15,7 @@ import {
   closePollAction,
   resetPollVotesAction,
   resetAllPollsAction,
+  reorderPollsAction,
 } from "@/app/(admin)/workshops/[id]/poll-actions";
 
 interface PollResultsResponse {
@@ -215,6 +217,15 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmResetId, setConfirmResetId] = useState<string | null>(null);
   const [confirmResetAll, setConfirmResetAll] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [localPolls, setLocalPolls] = useState<Poll[]>(() =>
+    [...polls].sort((a, b) => a.position - b.position),
+  );
+
+  useEffect(() => {
+    setLocalPolls([...polls].sort((a, b) => a.position - b.position));
+  }, [polls]);
 
   const { data: pollResults } = useSWR<PollResultsResponse>(
     `/api/workshops/${workshopId}/poll-results`,
@@ -222,7 +233,26 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
     { refreshInterval: 3000, revalidateOnFocus: false },
   );
 
-  const sortedPolls = [...polls].sort((a, b) => a.position - b.position);
+  async function handleReorder(newOrder: Poll[]) {
+    setLocalPolls(newOrder);
+    try {
+      await reorderPollsAction(
+        workshopId,
+        newOrder.map((p) => p.id),
+      );
+    } catch (err) {
+      console.error("Failed to reorder polls:", err);
+      setLocalPolls([...polls].sort((a, b) => a.position - b.position));
+    }
+  }
+
+  function movePoll(fromIndex: number, toIndex: number) {
+    if (toIndex < 0 || toIndex >= localPolls.length || fromIndex === toIndex) return;
+    const reordered = [...localPolls];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    handleReorder(reordered);
+  }
 
   function startEdit(poll: Poll) {
     setConfirmDeleteId(null);
@@ -322,9 +352,14 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
               + Add Question
             </button>
           )}
+          {localPolls.length > 1 && (
+            <span className="hidden sm:inline text-xs text-muted">
+              Tip: Drag cards or use ↑↓ arrows to reorder questions
+            </span>
+          )}
         </div>
 
-        {sortedPolls.length > 0 && (
+        {localPolls.length > 0 && (
           <div className="flex items-center gap-2">
             <ActionButton
               type="button"
@@ -342,13 +377,13 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
         )}
       </div>
 
-      {sortedPolls.length === 0 && !editor ? (
+      {localPolls.length === 0 && !editor ? (
         <div className="pulse-card border-dashed p-8 text-center text-sm text-muted">
           No poll questions yet. Add one to get started.
         </div>
       ) : null}
 
-      {sortedPolls.map((poll) => {
+      {localPolls.map((poll, index) => {
         const isActive = poll.status === "active";
         const isEditingThis = editor?.pollId === poll.id;
 
@@ -366,15 +401,86 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
         }
 
         const showTally = isActive && pollResults?.poll?.id === poll.id;
+        const isDragging = draggedIndex === index;
+        const isDragOver = dragOverIndex === index;
 
         return (
           <div
             key={poll.id}
-            className={`pulse-card p-4 ${isActive ? "border-emerald-500/50" : ""}`}
+            draggable
+            onDragStart={(e) => {
+              setDraggedIndex(index);
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", `${index}`);
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (dragOverIndex !== index) {
+                setDragOverIndex(index);
+              }
+            }}
+            onDragLeave={() => {
+              if (dragOverIndex === index) {
+                setDragOverIndex(null);
+              }
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (draggedIndex !== null && draggedIndex !== index) {
+                movePoll(draggedIndex, index);
+              }
+              setDraggedIndex(null);
+              setDragOverIndex(null);
+            }}
+            onDragEnd={() => {
+              setDraggedIndex(null);
+              setDragOverIndex(null);
+            }}
+            className={`pulse-card relative flex items-start gap-3 p-4 transition-all duration-150 ${
+              isActive ? "border-emerald-500/50" : ""
+            } ${isDragging ? "opacity-40 scale-[0.98] border-dashed border-purple-500" : ""} ${
+              isDragOver && !isDragging
+                ? "border-t-2 border-t-purple-500 bg-purple-500/5 shadow-md"
+                : ""
+            }`}
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            {/* Drag Handle & Up/Down Arrows */}
+            <div className="flex flex-col items-center gap-1 self-stretch justify-center pr-1 border-r border-[var(--pulse-border)]">
+              <div
+                title="Drag to reorder"
+                className="cursor-grab active:cursor-grabbing p-1 text-muted hover:text-foreground rounded transition"
+              >
+                <GripVertical className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => movePoll(index, index - 1)}
+                  title="Move up"
+                  className="rounded p-0.5 text-muted hover:text-foreground hover:bg-surface-strong disabled:opacity-20 disabled:cursor-not-allowed"
+                >
+                  <ArrowUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  disabled={index === localPolls.length - 1}
+                  onClick={() => movePoll(index, index + 1)}
+                  title="Move down"
+                  className="rounded p-0.5 text-muted hover:text-foreground hover:bg-surface-strong disabled:opacity-20 disabled:cursor-not-allowed"
+                >
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Poll Content & Actions */}
+            <div className="flex flex-1 flex-wrap items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-muted">
+                    #{index + 1}
+                  </span>
                   <span
                     className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[poll.status]}`}
                   >
@@ -383,9 +489,9 @@ export function PollManager({ workshopId, polls, className }: PollManagerProps) 
                 </div>
                 <p className="mt-2 font-medium text-foreground">{poll.question}</p>
                 <ul className="mt-2 flex flex-col gap-1">
-                  {(poll.options as string[]).map((option, index) => (
-                    <li key={index} className="text-sm text-muted">
-                      <span className="mr-1.5 font-semibold">{OPTION_LABELS[index] ?? index + 1}.</span>
+                  {(poll.options as string[]).map((option, optIdx) => (
+                    <li key={optIdx} className="text-sm text-muted">
+                      <span className="mr-1.5 font-semibold">{OPTION_LABELS[optIdx] ?? optIdx + 1}.</span>
                       {option}
                     </li>
                   ))}
