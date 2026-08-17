@@ -30,8 +30,8 @@ export default async function WorkshopSessionLayout({
     <>
       {pid ? <FeedbackNotificationBanner code={code} pid={pid} /> : null}
       {children}
-      <PollTakeover code={code} />
-      <VamshiChat code={code} participantId={pid ?? ""} />
+      {pid ? <PollTakeover code={code} /> : null}
+      {pid ? <VamshiChat code={code} participantId={pid} /> : null}
     </>
   );
 }

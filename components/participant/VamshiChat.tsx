@@ -67,6 +67,9 @@ export function VamshiChat({ code, participantId: propPid }: VamshiChatProps) {
   const urlPid = segments.length >= 4 ? segments[3] : undefined;
   const participantId = propPid || urlPid || "";
 
+  // If user is on the initial intake form (/w/[code]) or has no participant ID, do not render chat FAB
+  const isIntakeForm = segments.length === 2 && segments[0] === "w" && segments[1] === code;
+
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState<ChatMessage[]>([]);
@@ -90,6 +93,10 @@ export function VamshiChat({ code, participantId: propPid }: VamshiChatProps) {
   useEffect(() => {
     if (open) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, open, sending]);
+
+  if (!participantId || isIntakeForm) {
+    return null;
+  }
 
   async function send(text: string) {
     const message = text.trim();
