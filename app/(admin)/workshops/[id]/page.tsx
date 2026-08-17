@@ -12,6 +12,7 @@ import { PollManager } from "@/components/admin/PollManager";
 import { WorkshopWorkspace } from "@/components/admin/WorkshopWorkspace";
 import { ChatsPanel } from "@/components/admin/ChatsPanel";
 import { KnowledgeBasePanel } from "@/components/admin/KnowledgeBasePanel";
+import { FeedbackPanel } from "@/components/admin/FeedbackPanel";
 import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
 import { updateStatus, updateSettings, updateWorkshopName, resetAllQuizSubmissionsAction } from "./actions";
@@ -100,6 +101,14 @@ export default async function WorkshopDetailPage({
               Vamshi.AI chats
             </h2>
             <ChatsPanel workshopId={id} />
+          </div>
+        }
+        feedback={
+          <div>
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+              Founder Session Feedback
+            </h2>
+            <FeedbackPanel workshopId={id} />
           </div>
         }
         knowledgeBase={

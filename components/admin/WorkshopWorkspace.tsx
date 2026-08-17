@@ -2,12 +2,13 @@
 
 import { useState, type ReactNode } from "react";
 
-type Section = "submissions" | "polls" | "chats" | "knowledge_base" | "settings";
+type Section = "submissions" | "polls" | "chats" | "feedback" | "knowledge_base" | "settings";
 
 const NAV: { key: Section; label: string }[] = [
   { key: "submissions", label: "Submissions" },
   { key: "polls", label: "Poll Questions" },
   { key: "chats", label: "Chats" },
+  { key: "feedback", label: "Feedback" },
   { key: "knowledge_base", label: "Knowledge Base" },
   { key: "settings", label: "Settings" },
 ];
@@ -16,18 +17,20 @@ export interface WorkshopWorkspaceProps {
   submissions: ReactNode;
   polls: ReactNode;
   chats: ReactNode;
+  feedback: ReactNode;
   knowledgeBase: ReactNode;
   settingsView: ReactNode;
 }
 
 /**
  * 2-column workspace for the workshop control page: a left navigation to switch
- * between Submissions, Poll Questions, Chats, Knowledge Base, and dedicated Settings.
+ * between Submissions, Poll Questions, Chats, Feedback, Knowledge Base, and dedicated Settings.
  */
 export function WorkshopWorkspace({
   submissions,
   polls,
   chats,
+  feedback,
   knowledgeBase,
   settingsView,
 }: WorkshopWorkspaceProps) {
@@ -37,6 +40,7 @@ export function WorkshopWorkspace({
     submissions,
     polls,
     chats,
+    feedback,
     knowledge_base: knowledgeBase,
     settings: settingsView,
   };

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../client";
-import { feedbackSubmissions } from "../schema";
+import { feedbackSubmissions, participants } from "../schema";
 import { newId } from "@/lib/ids";
 
 export type FeedbackSubmission = typeof feedbackSubmissions.$inferSelect;
@@ -46,4 +46,31 @@ export async function submitFeedback(input: {
     .returning();
 
   return created;
+}
+
+export async function listWorkshopFeedbackSubmissions(workshopId: string) {
+  const rows = await db
+    .select({
+      id: feedbackSubmissions.id,
+      participantId: feedbackSubmissions.participantId,
+      q1Usefulness: feedbackSubmissions.q1Usefulness,
+      q2MostValuable: feedbackSubmissions.q2MostValuable,
+      q3IdentifiedAssumptions: feedbackSubmissions.q3IdentifiedAssumptions,
+      q4AiToolUsefulness: feedbackSubmissions.q4AiToolUsefulness,
+      q5Next7DaysAction: feedbackSubmissions.q5Next7DaysAction,
+      q6Suggestions: feedbackSubmissions.q6Suggestions,
+      q7FollowupInterest: feedbackSubmissions.q7FollowupInterest,
+      q7ContactInfo: feedbackSubmissions.q7ContactInfo,
+      createdAt: feedbackSubmissions.createdAt,
+      founderName: participants.founderName,
+      startupName: participants.startupName,
+      contact: participants.contact,
+      mobile: participants.mobile,
+    })
+    .from(feedbackSubmissions)
+    .innerJoin(participants, eq(feedbackSubmissions.participantId, participants.id))
+    .where(eq(participants.workshopId, workshopId))
+    .orderBy(feedbackSubmissions.createdAt);
+
+  return rows;
 }
