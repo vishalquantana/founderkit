@@ -14,6 +14,11 @@ export function hasOpenRouterKey(): boolean {
 type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
 async function callOpenRouter(messages: ChatMessage[]): Promise<unknown> {
+  // A stalled LLM request must not hang the caller. Without a timeout, a hung
+  // fetch never throws, so the mock-fallback in evaluate.ts (which only catches
+  // errors) never fires and the result server-component loads forever on first
+  // scan-in. Aborting turns the stall into a throw the fallback handles.
+  const timeoutMs = Number(process.env.OPENROUTER_TIMEOUT_MS) || 20_000;
   const response = await fetch(OPENROUTER_URL, {
     method: "POST",
     headers: {
@@ -25,6 +30,7 @@ async function callOpenRouter(messages: ChatMessage[]): Promise<unknown> {
       messages,
       response_format: { type: "json_object" },
     }),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {

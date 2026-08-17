@@ -30,7 +30,11 @@ export default async function WorkshopSessionLayout({
     <>
       {pid ? <FeedbackNotificationBanner code={code} pid={pid} /> : null}
       {children}
-      {pid ? <PollTakeover code={code} /> : null}
+      {/* PollTakeover is intentionally ungated: a presenter-activated poll must
+          take over the screen even while the founder is still filling the intake
+          form (before registration). PollTakeover self-handles anonymous voters
+          (see resolveVoterId), so it needs only `code`, not a participant id. */}
+      <PollTakeover code={code} />
       {pid ? <VamshiChat code={code} participantId={pid} /> : null}
     </>
   );

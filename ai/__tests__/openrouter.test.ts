@@ -47,4 +47,32 @@ describe("openRouterEvaluate", () => {
     await expect(openRouterEvaluate({ participant: { founderName: "A", startupName: "S" }, responses: [] })).rejects.toThrow();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("passes an abort signal to fetch so requests can time out", async () => {
+    const fetchMock = vi.fn(async (_url: string, _opts?: RequestInit) => new Response(JSON.stringify({
+      choices: [{ message: { content: JSON.stringify(validJson) } }],
+    })));
+    vi.stubGlobal("fetch", fetchMock);
+    const { openRouterEvaluate } = await import("../openrouter");
+    await openRouterEvaluate({ participant: { founderName: "A", startupName: "S" }, responses: [] });
+    const opts = fetchMock.mock.calls[0][1];
+    expect(opts?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("aborts a stalled request via timeout so the caller can fall back", async () => {
+    // A hung fetch (no HTTP error, never resolves) must not hang forever — the
+    // timeout aborts it, turning the stall into a throw the mock-fallback catches.
+    process.env.OPENROUTER_TIMEOUT_MS = "40";
+    vi.stubGlobal("fetch", vi.fn((_url: string, opts: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        opts.signal?.addEventListener("abort", () =>
+          reject(new DOMException("The operation was aborted", "AbortError")));
+      }),
+    ));
+    const { openRouterEvaluate } = await import("../openrouter");
+    await expect(
+      openRouterEvaluate({ participant: { founderName: "A", startupName: "S" }, responses: [] }),
+    ).rejects.toThrow();
+    delete process.env.OPENROUTER_TIMEOUT_MS;
+  });
 });
