@@ -14,7 +14,7 @@ import { ChatsPanel } from "@/components/admin/ChatsPanel";
 import { KnowledgeBasePanel } from "@/components/admin/KnowledgeBasePanel";
 import { ActiveUsersBadge } from "@/components/admin/ActiveUsersBadge";
 import { assertOwnership } from "./ownership";
-import { updateStatus, updateSettings, updateWorkshopName } from "./actions";
+import { updateStatus, updateSettings, updateWorkshopName, resetAllQuizSubmissionsAction } from "./actions";
 import type { SectionKey, WorkshopStatus } from "@/db/schema";
 import type { WorkshopSettings } from "@/db/queries/workshops";
 
@@ -114,7 +114,7 @@ export default async function WorkshopDetailPage({
                 Workshop & Live Presentation Settings
               </h2>
               <p className="text-xs text-muted mt-0.5">
-                Configure workshop status, name, Lean Canvas lock state, and visible live projection tabs.
+                Configure workshop status, name, Lean Canvas lock state, visible live projection tabs, and quiz submissions.
               </p>
             </div>
             <div className="pulse-card p-6">
@@ -126,6 +126,7 @@ export default async function WorkshopDetailPage({
                 onUpdateStatus={updateStatus}
                 onUpdateSettings={updateSettings}
                 onUpdateName={updateWorkshopName}
+                onResetQuiz={resetAllQuizSubmissionsAction}
               />
             </div>
           </div>

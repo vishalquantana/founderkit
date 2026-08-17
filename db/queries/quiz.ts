@@ -96,3 +96,12 @@ export async function listWorkshopQuizLeaderboard(workshopId: string) {
     return [];
   }
 }
+
+export async function resetWorkshopQuizSubmissions(workshopId: string): Promise<void> {
+  await ensureQuizTable();
+  try {
+    await db.delete(quizSubmissions).where(eq(quizSubmissions.workshopId, workshopId));
+  } catch (err) {
+    console.warn("resetWorkshopQuizSubmissions warning:", err);
+  }
+}

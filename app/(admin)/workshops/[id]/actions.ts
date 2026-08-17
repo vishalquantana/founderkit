@@ -59,3 +59,16 @@ export async function deleteSubmissionAction(workshopId: string, participantId: 
   revalidatePath(`/workshops/${workshopId}`);
   revalidatePath(`/present/${workshopId}`);
 }
+
+export async function resetAllQuizSubmissionsAction(workshopId: string): Promise<void> {
+  const session = await auth();
+  const workshop = await getWorkshopById(workshopId);
+  if (!assertOwnership(session?.user?.id, workshop)) {
+    throw new Error("Not authorized to modify this workshop.");
+  }
+
+  const { resetWorkshopQuizSubmissions } = await import("@/db/queries/quiz");
+  await resetWorkshopQuizSubmissions(workshopId);
+  revalidatePath(`/workshops/${workshopId}`);
+  revalidatePath(`/present/${workshopId}`);
+}

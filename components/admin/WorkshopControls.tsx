@@ -14,6 +14,7 @@ export interface WorkshopControlsProps {
   onUpdateStatus: (id: string, status: WorkshopStatus) => Promise<void>;
   onUpdateSettings: (id: string, settings: WorkshopSettings) => Promise<void>;
   onUpdateName?: (id: string, name: string) => Promise<void>;
+  onResetQuiz?: (id: string) => Promise<void>;
   className?: string;
 }
 
@@ -81,6 +82,7 @@ export function WorkshopControls({
   onUpdateStatus,
   onUpdateSettings,
   onUpdateName,
+  onResetQuiz,
   className,
 }: WorkshopControlsProps) {
   const [currentStatus, setCurrentStatus] = useState(status);
@@ -88,6 +90,7 @@ export function WorkshopControls({
   const [nameText, setNameText] = useState(workshopName);
   const [isSavingName, setIsSavingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
+  const [confirmResetQuiz, setConfirmResetQuiz] = useState(false);
 
   async function handleSaveName() {
     const trimmed = nameText.trim();
@@ -112,6 +115,17 @@ export function WorkshopControls({
   async function changeSettings(next: WorkshopSettings) {
     setCurrentSettings(next);
     await onUpdateSettings(workshopId, next);
+  }
+
+  async function handleResetQuizClick() {
+    if (!confirmResetQuiz) {
+      setConfirmResetQuiz(true);
+      return;
+    }
+    if (onResetQuiz) {
+      await onResetQuiz(workshopId);
+    }
+    setConfirmResetQuiz(false);
   }
 
   return (
@@ -243,6 +257,32 @@ export function WorkshopControls({
           />
         </div>
       </div>
+
+      {/* AI Quiz Reset Option */}
+      {onResetQuiz && (
+        <div>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+            AI Quiz Challenge
+          </h2>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface px-4 py-3">
+            <ActionButton
+              type="button"
+              onAction={handleResetQuizClick}
+              pendingChildren="Resetting quiz responses…"
+              className={`self-start rounded-full px-4 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                confirmResetQuiz
+                  ? "bg-amber-500 text-white hover:bg-amber-400"
+                  : "pulse-btn-secondary"
+              }`}
+            >
+              {confirmResetQuiz ? "Confirm Reset All Quiz Responses?" : "Reset All AI Quiz Responses"}
+            </ActionButton>
+            <p className="text-xs text-muted">
+              Clears all participant quiz scores, badges, and the live showdown leaderboard so founders can retake it freshly.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
